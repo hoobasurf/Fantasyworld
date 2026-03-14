@@ -429,8 +429,8 @@ function initLights(){
   // Fill léger autour du joueur
   fillLight = new B.PointLight('fl', new B.Vector3(0,4,0), sc);
   fillLight.diffuse = new B.Color3(.9,.55,.15);
-  fillLight.intensity = 1.2;
-  fillLight.range = 12;
+  fillLight.intensity = 0.6;
+  fillLight.range = 8;
 }
 
 // ══════════════════════════════════════════
@@ -549,17 +549,19 @@ function addStreetLight(x,z){
   var pm=new B.StandardMaterial('lpm',sc); pm.diffuseColor=new B.Color3(.2,.2,.24); pole.material=pm;
   var head=B.MeshBuilder.CreateBox('lh',{width:.35,height:.15,depth:.15},sc);
   head.position.set(x+1.6,6.9,z);
-  var hm=new B.StandardMaterial('lhm',sc); hm.diffuseColor=new B.Color3(.9,.82,.5); hm.emissiveColor=new B.Color3(.6,.46,.15); head.material=hm;
-  var pl=new B.PointLight('sl'+x+z, new B.Vector3(x+1.6,4.5,z),sc);
-  pl.diffuse=new B.Color3(1,.78,.35); pl.intensity=2.5; pl.range=14;
+  var hm=new B.StandardMaterial('lhm',sc);
+  hm.emissiveColor=new B.Color3(.9,.7,.2); // lumière émissive visuelle seulement
+  head.material=hm;
+  // Pas de PointLight — évite le ciel jaune
 }
 
 function addNeonSign(x,y,z,col){
-  var pl=new B.PointLight('n'+x+z, new B.Vector3(x,y,z),sc);
-  pl.diffuse=col; pl.intensity=3; pl.range=10;
   var sign=B.MeshBuilder.CreateBox('ns',{width:2.5,height:.2,depth:.08},sc);
   sign.position.set(x,y,z);
-  var sm=new B.StandardMaterial('nsm'+x+z,sc); sm.emissiveColor=col; sign.material=sm;
+  var sm=new B.StandardMaterial('nsm'+x+z,sc);
+  sm.emissiveColor=col; sm.disableLighting=true;
+  sign.material=sm;
+  // Pas de PointLight — évite le ciel coloré
 }
 
 async function buildCity(){
@@ -621,7 +623,8 @@ async function buildCity(){
             var wn=B.MeshBuilder.CreateBox('wn',{width:.5,height:.5,depth:.05},sc);
             wn.position.set(wx+(Math.random()<.5?sc2*3.02:-sc2*3.02),wi*1.8+1,wz);
             var wmm=new B.StandardMaterial('wm'+ni+wi,sc);
-            wmm.emissiveColor=Math.random()<.4?new B.Color3(.95,.85,.5):new B.Color3(.25,.5,1);
+            wmm.emissiveColor=Math.random()<.4?new B.Color3(.8,.7,.3):new B.Color3(.2,.4,.9);
+            wmm.disableLighting=true;
             wn.material=wmm;
           }
         }
