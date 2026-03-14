@@ -397,48 +397,60 @@ function csUpdateInfo(){
 }
 
 async function csLoadModel(idx){
+  // Si déjà chargé, juste afficher
+  if(csModels[idx]){
+    csModels.forEach(function(m,i){if(m) m.setEnabled(i===idx);});
+    return;
+  }
   if(csLoading) return;
-  // Cacher ancien
-  csModels.forEach(function(m,i){if(m) m.setEnabled(i===idx);});
-  if(csModels[idx]){csModels[idx].setEnabled(true);return;}
-
   csLoading = true;
+  // Cacher tous les modèles existants
+  csModels.forEach(function(m){if(m) m.setEnabled(false);});
+
   var c = CHARS[idx];
   try{
     var res = await B.SceneLoader.ImportMeshAsync('','', BASE + c.file, csScene);
+    if(!res || !res.meshes || !res.meshes.length) throw new Error('no meshes');
     var root = res.meshes[0];
-    root.position = new B.Vector3(0, c.yOffset, 0);
-    root.scaling = new B.Vector3(c.scale, c.scale, c.scale);
-
-    // Auto-ajustement hauteur selon bounding box
+    // Mesure dimensions réelles
+    root.scaling = new B.Vector3(1,1,1);
+    root.position = B.Vector3.Zero();
     root.computeWorldMatrix(true);
     var bb = root.getHierarchyBoundingVectors();
     var h = bb.max.y - bb.min.y;
-    var targetH = 1.8;
-    var autoScale = h > 0.1 ? targetH / h : 1;
-    root.scaling = new B.Vector3(autoScale, autoScale, autoScale);
-    root.position.y = -bb.min.y * autoScale;
-
-    // Jouer animation idle si disponible
+    if(h < 0.05) h = 1.8;
+    var sc2 = 1.8 / h;
+    root.scaling = new B.Vector3(sc2, sc2, sc2);
+    root.computeWorldMatrix(true);
+    var bb2 = root.getHierarchyBoundingVectors();
+    root.position.y = -bb2.min.y;
+    // Animations idle
     if(res.animationGroups && res.animationGroups.length > 0){
       var idle = res.animationGroups.find(function(a){return /idle/i.test(a.name);}) || res.animationGroups[0];
-      if(idle){ idle.start(true); idle.speedRatio = 1; }
+      res.animationGroups.forEach(function(ag){ag.stop();});
+      if(idle) idle.start(true);
     }
-
     csModels[idx] = root;
-    csLoading = false;
+    root.setEnabled(true);
   }catch(e){
-    // Fallback : mannequin coloré
+    // Fallback mannequin stylé si GLB absent
     var g = new B.TransformNode('fb'+idx, csScene);
+    var col = B.Color3.FromHexString(c.color);
     var bm = new B.StandardMaterial('fbm'+idx, csScene);
-    bm.diffuseColor = B.Color3.FromHexString(c.color.replace('#','') ? c.color : '#f0c060');
-    var body = B.MeshBuilder.CreateCylinder('bd',{height:1.4,diameter:0.5,tessellation:16},csScene);
-    body.position.y = 0.7; body.material = bm; body.parent = g;
-    var head = B.MeshBuilder.CreateSphere('hd',{diameter:0.42,segments:14},csScene);
-    head.position.y = 1.7; head.material = bm; head.parent = g;
+    bm.diffuseColor = col; bm.emissiveColor = col.scale(0.25);
+    var body = B.MeshBuilder.CreateCylinder('bd'+idx,{height:1.1,diameter:0.48,tessellation:16},csScene);
+    body.position.y = 0.55; body.material = bm; body.parent = g;
+    var head = B.MeshBuilder.CreateSphere('hd'+idx,{diameter:0.44,segments:14},csScene);
+    head.position.y = 1.45; head.material = bm; head.parent = g;
+    [-1,1].forEach(function(sx){
+      var arm = B.MeshBuilder.CreateCylinder('arm'+idx+sx,{height:0.65,diameter:0.15,tessellation:8},csScene);
+      arm.position = new B.Vector3(sx*0.36,0.55,0); arm.rotation.z = sx*0.45;
+      arm.material = bm; arm.parent = g;
+    });
     csModels[idx] = g;
-    csLoading = false;
+    g.setEnabled(true);
   }
+  csLoading = false;
 }
 
 function csNav(dir){
@@ -742,7 +754,6 @@ async function buildPlayerGLB(){
     // D'abord reset scaling à 1 pour mesurer les vraies dimensions
     root.scaling = new B.Vector3(1, 1, 1);
     root.position = B.Vector3.Zero();
-    sc.render(); // forcer le calcul des matrices
     root.computeWorldMatrix(true);
     var bb = root.getHierarchyBoundingVectors();
     var h = bb.max.y - bb.min.y;
@@ -890,29 +901,30 @@ async function spawnNPCs(){
 }
 
 function addNpcLabel(root, name, color){
-  // Petit billboard text via plane
   try{
-    var plane = B.MeshBuilder.CreatePlane('lbl'+name, {width:1.2,height:0.3}, sc);
-    var dt = new B.DynamicTexture('dtxt'+name, {width:256,height:64}, sc);
+    var plane = B.MeshBuilder.CreatePlane('lbl'+name+Math.random(), {width:1.4,height:0.32}, sc);
+    var dt = new B.DynamicTexture('dtxt'+name+Math.random(), {width:280,height:64}, sc);
     dt.hasAlpha = true;
     var ctx = dt.getContext();
-    ctx.clearRect(0,0,256,64);
-    ctx.fillStyle = 'rgba(0,0,0,0.7)';
-    ctx.fillRect(0,8,256,48);
+    ctx.clearRect(0,0,280,64);
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.roundRect ? ctx.roundRect(2,6,276,52,8) : ctx.fillRect(2,6,276,52);
+    ctx.fill();
     ctx.fillStyle = color || '#f0c060';
-    ctx.font = 'bold 28px Cinzel, serif';
+    ctx.font = 'bold 26px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(name, 128, 42);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(name, 140, 34);
     dt.update();
-    var pm = new B.StandardMaterial('lm'+name, sc);
-    pm.diffuseTexture = dt;
-    pm.emissiveTexture = dt;
-    pm.opacityTexture = dt;
+    var pm = new B.StandardMaterial('lm'+name+Math.random(), sc);
+    pm.diffuseTexture = dt; pm.emissiveTexture = dt; pm.opacityTexture = dt;
     pm.backFaceCulling = false;
     plane.material = pm;
-    plane.parent = root;
-    plane.position.y = 2.1;
+    // Position absolue au-dessus du sol (pas parent-relative pour éviter double transform)
+    plane.position = new B.Vector3(root.position.x, 2.4, root.position.z);
     plane.billboardMode = B.Mesh.BILLBOARDMODE_ALL;
+    // Lier le label au root dans le loop
+    root._label = plane;
   }catch(e){}
 }
 
@@ -948,6 +960,11 @@ function updateNPCs(dt){
     while(da>Math.PI) da-=Math.PI*2;
     while(da<-Math.PI) da+=Math.PI*2;
     npc.root.rotation.y += da * Math.min(1, dt*8);
+    // Suivre le label
+    if(npc.root._label){
+      npc.root._label.position.x = pos.x;
+      npc.root._label.position.z = pos.z;
+    }
   });
 }
 
@@ -962,7 +979,6 @@ function loop(){
   updateCam();
   _mmt+=dt;if(_mmt>0.28){_mmt=0;drawMM();}
   animScene(now);
-  sc.render();
 }
 
 function movePlayer(dt){
