@@ -223,7 +223,7 @@ var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 // ══════════════════════════════════════════
 var CHARS = [
   {
-    file: 'joe_realistic_human_3d_model.glb',
+    file: 'joe__realistic_human_3d_model.glb',
     name: 'JOE',
     desc: 'Homme — Réaliste game-ready',
     scale: 1.0,
@@ -241,13 +241,13 @@ var CHARS = [
   {
     file: 'rumi_lobby.glb',
     name: 'RUMI',
-    desc: 'Personnage élégant — Lobby style',
+    desc: 'Personnage mystérieux',
     scale: 1.0,
     yOffset: 0,
     color: '#88ccff'
   },
   {
-    file: 'stitch 2.glb',
+    file: 'stitch%202.glb',
     name: 'STITCH',
     desc: 'Créature fantastique — Fan favorite',
     scale: 1.0,
@@ -290,6 +290,7 @@ var plotMeshes=[];
 
 // ── Référence au mesh joueur GLB ──
 var _playerRoot = null;
+var _playerYOffset = 0; // offset Y pour coller les pieds au sol
 var _playerAnims = {idle:null, walk:null, run:null};
 var _currentAnim = null;
 var _isMoving = false;
@@ -458,11 +459,15 @@ function csGoTo(idx){
 // ── Démarrer le jeu avec le perso choisi ──
 async function startGame(){
   selectedChar = csIndex;
-  // Fermer char select, arrêter son engine
   document.getElementById('charsel').style.display='none';
-  if(csEng){ csEng.stopRenderLoop(); }
-
-  // Montrer loading
+  // Disposer proprement l'engine de sélection avant d'initialiser le jeu
+  if(csEng){
+    csEng.stopRenderLoop();
+    csEng.dispose();
+    csEng = null;
+  }
+  // Attendre un frame pour que WebGL libère le contexte
+  await new Promise(r=>setTimeout(r,80));
   document.getElementById('ls').style.display='flex';
   stepLoad(1);
   await init();
@@ -734,12 +739,22 @@ async function buildPlayerGLB(){
     var root = res.meshes[0];
 
     // Echelle automatique → 1.8m
+    // D'abord reset scaling à 1 pour mesurer les vraies dimensions
+    root.scaling = new B.Vector3(1, 1, 1);
+    root.position = B.Vector3.Zero();
+    sc.render(); // forcer le calcul des matrices
     root.computeWorldMatrix(true);
     var bb = root.getHierarchyBoundingVectors();
     var h = bb.max.y - bb.min.y;
-    var autoScale = h > 0.1 ? 1.8 / h : c.scale;
+    if(h < 0.01) h = 1.8; // sécurité si bounding box invalide
+    var autoScale = 1.8 / h;
     root.scaling = new B.Vector3(autoScale, autoScale, autoScale);
-    root.position = new B.Vector3(playerPos.x, playerPos.y, playerPos.z);
+    // Recalculer après scaling pour corriger le pivot
+    root.computeWorldMatrix(true);
+    var bb2 = root.getHierarchyBoundingVectors();
+    var yOffset = -bb2.min.y; // coller les pieds au sol
+    _playerYOffset = yOffset;
+    root.position = new B.Vector3(playerPos.x, playerPos.y + yOffset, playerPos.z);
     root.rotation.y = playerAngle;
 
     res.meshes.forEach(function(m){
@@ -816,12 +831,18 @@ async function spawnNPCs(){
       var res = await B.SceneLoader.ImportMeshAsync('','', BASE + c.file, sc);
       var root = res.meshes[0];
 
+      root.scaling = new B.Vector3(1,1,1);
+      root.position = B.Vector3.Zero();
       root.computeWorldMatrix(true);
       var bb = root.getHierarchyBoundingVectors();
       var h = bb.max.y - bb.min.y;
-      var autoScale = h > 0.1 ? 1.8 / h : c.scale;
+      if(h < 0.01) h = 1.8;
+      var autoScale = 1.8 / h;
       root.scaling = new B.Vector3(autoScale, autoScale, autoScale);
-      root.position = new B.Vector3(startPt.x, 0, startPt.z);
+      root.computeWorldMatrix(true);
+      var bb2 = root.getHierarchyBoundingVectors();
+      var yOff = -bb2.min.y;
+      root.position = new B.Vector3(startPt.x, yOff, startPt.z);
 
       res.meshes.forEach(function(m){m.receiveShadows=true;if(_shadows)_shadows.addShadowCaster(m,true);});
 
@@ -977,7 +998,7 @@ function movePlayer(dt){
 
   if(_playerRoot){
     _playerRoot.position.x = playerPos.x;
-    _playerRoot.position.y = playerPos.y;
+    _playerRoot.position.y = playerPos.y + _playerYOffset;
     _playerRoot.position.z = playerPos.z;
     // Rotation smooth
     var da2 = playerAngle - _playerRoot.rotation.y;
