@@ -241,7 +241,7 @@ var CHARS = [
   {
     file: 'rumi_lobby.glb',
     name: 'RUMI',
-    desc: 'Personnage mystérieux',
+    desc: 'Personnage élégant — Lobby style',
     scale: 1.0,
     yOffset: 0,
     color: '#88ccff'
@@ -290,7 +290,6 @@ var plotMeshes=[];
 
 // ── Référence au mesh joueur GLB ──
 var _playerRoot = null;
-var _playerYOffset = 0; // offset Y pour coller les pieds au sol
 var _playerAnims = {idle:null, walk:null, run:null};
 var _currentAnim = null;
 var _isMoving = false;
@@ -397,60 +396,49 @@ function csUpdateInfo(){
 }
 
 async function csLoadModel(idx){
-  // Si déjà chargé, juste afficher
+  // Si déjà chargé : juste l'afficher
   if(csModels[idx]){
     csModels.forEach(function(m,i){if(m) m.setEnabled(i===idx);});
     return;
   }
   if(csLoading) return;
   csLoading = true;
-  // Cacher tous les modèles existants
   csModels.forEach(function(m){if(m) m.setEnabled(false);});
-
   var c = CHARS[idx];
   try{
     var res = await B.SceneLoader.ImportMeshAsync('','', BASE + c.file, csScene);
-    if(!res || !res.meshes || !res.meshes.length) throw new Error('no meshes');
     var root = res.meshes[0];
-    // Mesure dimensions réelles
+    // Mesure à scale 1 pour avoir les vraies dimensions
     root.scaling = new B.Vector3(1,1,1);
     root.position = B.Vector3.Zero();
     root.computeWorldMatrix(true);
     var bb = root.getHierarchyBoundingVectors();
     var h = bb.max.y - bb.min.y;
-    if(h < 0.05) h = 1.8;
-    var sc2 = 1.8 / h;
-    root.scaling = new B.Vector3(sc2, sc2, sc2);
+    var autoScale = h > 0.05 ? 1.8 / h : 1;
+    root.scaling = new B.Vector3(autoScale, autoScale, autoScale);
     root.computeWorldMatrix(true);
     var bb2 = root.getHierarchyBoundingVectors();
     root.position.y = -bb2.min.y;
-    // Animations idle
     if(res.animationGroups && res.animationGroups.length > 0){
       var idle = res.animationGroups.find(function(a){return /idle/i.test(a.name);}) || res.animationGroups[0];
       res.animationGroups.forEach(function(ag){ag.stop();});
-      if(idle) idle.start(true);
+      if(idle){ idle.start(true); }
     }
     csModels[idx] = root;
-    root.setEnabled(true);
   }catch(e){
-    // Fallback mannequin stylé si GLB absent
+    // Fallback mannequin si GLB absent ou erreur réseau
     var g = new B.TransformNode('fb'+idx, csScene);
     var col = B.Color3.FromHexString(c.color);
     var bm = new B.StandardMaterial('fbm'+idx, csScene);
-    bm.diffuseColor = col; bm.emissiveColor = col.scale(0.25);
-    var body = B.MeshBuilder.CreateCylinder('bd'+idx,{height:1.1,diameter:0.48,tessellation:16},csScene);
+    bm.diffuseColor = col; bm.emissiveColor = col.scale(0.2);
+    var body = B.MeshBuilder.CreateCylinder('bdy'+idx,{height:1.1,diameter:0.48,tessellation:16},csScene);
     body.position.y = 0.55; body.material = bm; body.parent = g;
-    var head = B.MeshBuilder.CreateSphere('hd'+idx,{diameter:0.44,segments:14},csScene);
+    var head = B.MeshBuilder.CreateSphere('hed'+idx,{diameter:0.44,segments:14},csScene);
     head.position.y = 1.45; head.material = bm; head.parent = g;
-    [-1,1].forEach(function(sx){
-      var arm = B.MeshBuilder.CreateCylinder('arm'+idx+sx,{height:0.65,diameter:0.15,tessellation:8},csScene);
-      arm.position = new B.Vector3(sx*0.36,0.55,0); arm.rotation.z = sx*0.45;
-      arm.material = bm; arm.parent = g;
-    });
     csModels[idx] = g;
-    g.setEnabled(true);
   }
   csLoading = false;
+  if(csModels[idx]) csModels[idx].setEnabled(true);
 }
 
 function csNav(dir){
@@ -472,14 +460,14 @@ function csGoTo(idx){
 async function startGame(){
   selectedChar = csIndex;
   document.getElementById('charsel').style.display='none';
-  // Disposer proprement l'engine de sélection avant d'initialiser le jeu
+  // Disposer l'engine de sélection pour libérer WebGL
   if(csEng){
     csEng.stopRenderLoop();
-    csEng.dispose();
+    try{ csEng.dispose(); }catch(e){}
     csEng = null;
+    csScene = null;
   }
-  // Attendre un frame pour que WebGL libère le contexte
-  await new Promise(r=>setTimeout(r,80));
+  await new Promise(r=>requestAnimationFrame(function(){requestAnimationFrame(r);}));
   document.getElementById('ls').style.display='flex';
   stepLoad(1);
   await init();
@@ -751,21 +739,12 @@ async function buildPlayerGLB(){
     var root = res.meshes[0];
 
     // Echelle automatique → 1.8m
-    // D'abord reset scaling à 1 pour mesurer les vraies dimensions
-    root.scaling = new B.Vector3(1, 1, 1);
-    root.position = B.Vector3.Zero();
     root.computeWorldMatrix(true);
     var bb = root.getHierarchyBoundingVectors();
     var h = bb.max.y - bb.min.y;
-    if(h < 0.01) h = 1.8; // sécurité si bounding box invalide
-    var autoScale = 1.8 / h;
+    var autoScale = h > 0.1 ? 1.8 / h : c.scale;
     root.scaling = new B.Vector3(autoScale, autoScale, autoScale);
-    // Recalculer après scaling pour corriger le pivot
-    root.computeWorldMatrix(true);
-    var bb2 = root.getHierarchyBoundingVectors();
-    var yOffset = -bb2.min.y; // coller les pieds au sol
-    _playerYOffset = yOffset;
-    root.position = new B.Vector3(playerPos.x, playerPos.y + yOffset, playerPos.z);
+    root.position = new B.Vector3(playerPos.x, playerPos.y, playerPos.z);
     root.rotation.y = playerAngle;
 
     res.meshes.forEach(function(m){
@@ -842,18 +821,12 @@ async function spawnNPCs(){
       var res = await B.SceneLoader.ImportMeshAsync('','', BASE + c.file, sc);
       var root = res.meshes[0];
 
-      root.scaling = new B.Vector3(1,1,1);
-      root.position = B.Vector3.Zero();
       root.computeWorldMatrix(true);
       var bb = root.getHierarchyBoundingVectors();
       var h = bb.max.y - bb.min.y;
-      if(h < 0.01) h = 1.8;
-      var autoScale = 1.8 / h;
+      var autoScale = h > 0.1 ? 1.8 / h : c.scale;
       root.scaling = new B.Vector3(autoScale, autoScale, autoScale);
-      root.computeWorldMatrix(true);
-      var bb2 = root.getHierarchyBoundingVectors();
-      var yOff = -bb2.min.y;
-      root.position = new B.Vector3(startPt.x, yOff, startPt.z);
+      root.position = new B.Vector3(startPt.x, 0, startPt.z);
 
       res.meshes.forEach(function(m){m.receiveShadows=true;if(_shadows)_shadows.addShadowCaster(m,true);});
 
@@ -901,30 +874,29 @@ async function spawnNPCs(){
 }
 
 function addNpcLabel(root, name, color){
+  // Petit billboard text via plane
   try{
-    var plane = B.MeshBuilder.CreatePlane('lbl'+name+Math.random(), {width:1.4,height:0.32}, sc);
-    var dt = new B.DynamicTexture('dtxt'+name+Math.random(), {width:280,height:64}, sc);
+    var plane = B.MeshBuilder.CreatePlane('lbl'+name, {width:1.2,height:0.3}, sc);
+    var dt = new B.DynamicTexture('dtxt'+name, {width:256,height:64}, sc);
     dt.hasAlpha = true;
     var ctx = dt.getContext();
-    ctx.clearRect(0,0,280,64);
-    ctx.fillStyle = 'rgba(0,0,0,0.8)';
-    ctx.roundRect ? ctx.roundRect(2,6,276,52,8) : ctx.fillRect(2,6,276,52);
-    ctx.fill();
+    ctx.clearRect(0,0,256,64);
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0,8,256,48);
     ctx.fillStyle = color || '#f0c060';
-    ctx.font = 'bold 26px sans-serif';
+    ctx.font = 'bold 28px Cinzel, serif';
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(name, 140, 34);
+    ctx.fillText(name, 128, 42);
     dt.update();
-    var pm = new B.StandardMaterial('lm'+name+Math.random(), sc);
-    pm.diffuseTexture = dt; pm.emissiveTexture = dt; pm.opacityTexture = dt;
+    var pm = new B.StandardMaterial('lm'+name, sc);
+    pm.diffuseTexture = dt;
+    pm.emissiveTexture = dt;
+    pm.opacityTexture = dt;
     pm.backFaceCulling = false;
     plane.material = pm;
-    // Position absolue au-dessus du sol (pas parent-relative pour éviter double transform)
-    plane.position = new B.Vector3(root.position.x, 2.4, root.position.z);
+    plane.parent = root;
+    plane.position.y = 2.1;
     plane.billboardMode = B.Mesh.BILLBOARDMODE_ALL;
-    // Lier le label au root dans le loop
-    root._label = plane;
   }catch(e){}
 }
 
@@ -960,11 +932,6 @@ function updateNPCs(dt){
     while(da>Math.PI) da-=Math.PI*2;
     while(da<-Math.PI) da+=Math.PI*2;
     npc.root.rotation.y += da * Math.min(1, dt*8);
-    // Suivre le label
-    if(npc.root._label){
-      npc.root._label.position.x = pos.x;
-      npc.root._label.position.z = pos.z;
-    }
   });
 }
 
@@ -979,6 +946,7 @@ function loop(){
   updateCam();
   _mmt+=dt;if(_mmt>0.28){_mmt=0;drawMM();}
   animScene(now);
+  sc.render();
 }
 
 function movePlayer(dt){
@@ -1014,7 +982,7 @@ function movePlayer(dt){
 
   if(_playerRoot){
     _playerRoot.position.x = playerPos.x;
-    _playerRoot.position.y = playerPos.y + _playerYOffset;
+    _playerRoot.position.y = playerPos.y;
     _playerRoot.position.z = playerPos.z;
     // Rotation smooth
     var da2 = playerAngle - _playerRoot.rotation.y;
