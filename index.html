@@ -362,6 +362,7 @@ async function initWorld(){
   // Caméra 3ème personne
   cam = new B.FreeCamera('c', new B.Vector3(0,8,20), sc);
   cam.minZ=.1; cam.maxZ=900; cam.fov=.92;
+  cam.setTarget(new B.Vector3(0,1,0));
 
   setStep(1);
   initLights();
@@ -373,35 +374,34 @@ async function initWorld(){
 
   setStep(2);
   buildGround();
-  await buildRoads();
-
-  setStep(3);
-  await buildCity();
-
-  setStep(4);
-  await buildNature();
   buildPlots();
-
-  setStep(5);
-  await loadPlayer();
-  await spawnNPCs();
-
   setupJoystick();
   setupCamDrag(cv);
   setupKeys();
 
-  setStep(6, 'PRÊT !');
-  await new Promise(function(r){ setTimeout(r,350); });
+  // Lancer le renderLoop IMMÉDIATEMENT — le sol est déjà là
+  eng.runRenderLoop(gameLoop);
+  window.addEventListener('resize', function(){ if(eng) eng.resize(); });
 
+  // Masquer le loading, afficher le jeu
   document.getElementById('loading').style.display='none';
   document.getElementById('cv').style.display='block';
   document.getElementById('hud').style.display='block';
   document.getElementById('mbar').style.display='flex';
   document.getElementById('charBadge').textContent = '👤 '+CHARS[selChar].name;
-
-  eng.runRenderLoop(gameLoop);
-  window.addEventListener('resize', function(){ if(eng) eng.resize(); });
   toast('✦ BIENVENUE — '+CHARS[selChar].name+' ✦');
+
+  // Charger le reste en arrière-plan (non bloquant)
+  loadWorldAsync();
+}
+
+// Chargement asynchrone du monde (non-bloquant)
+async function loadWorldAsync(){
+  try{ await buildRoads(); }catch(e){}
+  try{ await buildCity(); }catch(e){}
+  try{ await buildNature(); }catch(e){}
+  try{ await loadPlayer(); }catch(e){}
+  try{ await spawnNPCs(); }catch(e){}
 }
 
 // ══════════════════════════════════════════
@@ -464,24 +464,34 @@ async function loadTmpl(file){
   try{
     var r = await B.SceneLoader.ImportMeshAsync('','', BASE+file, sc);
     if(!r||!r.meshes.length) return null;
-    var root = r.meshes[0];
-    root.setEnabled(false);
-    TMPL[file] = root;
-    return root;
+    // Masquer tous les meshes du template
+    r.meshes.forEach(function(m){ m.setEnabled(false); });
+    TMPL[file] = r.meshes; // stocker TOUS les meshes
+    return r.meshes;
   }catch(e){ return null; }
 }
 function place(file, x, y, z, ry, sc2){
-  var t = TMPL[file]; if(!t) return null;
-  var c = t.clone('i_'+Math.random().toString(36).slice(2));
-  c.setEnabled(true);
-  c.position.set(x, y||0, z);
-  if(ry!=null) c.rotation.y = ry;
-  if(sc2)  c.scaling.setAll(sc2);
-  c.getChildMeshes().forEach(function(m){
-    m.receiveShadows=true;
-    if(shadows) shadows.addShadowCaster(m,true);
+  var meshes = TMPL[file]; if(!meshes||!meshes.length) return null;
+  // Cloner chaque mesh individuellement et les regrouper
+  var root = new B.TransformNode('g_'+Math.random().toString(36).slice(2), sc);
+  root.position.set(x, y||0, z);
+  if(ry!=null) root.rotation.y = ry;
+  if(sc2) root.scaling.setAll(sc2);
+  // Trouver le vrai root (pas de parent dans notre set)
+  var meshSet = new Set(meshes);
+  meshes.forEach(function(m){
+    // Cloner seulement les meshes visibles (pas les TransformNodes racines)
+    if(m.getClassName && (m.getClassName()==='Mesh' || m.getClassName()==='AbstractMesh')){
+      var c = m.clone('c_'+Math.random().toString(36).slice(2), root);
+      if(c){
+        c.setEnabled(true);
+        c.isVisible = true;
+        c.receiveShadows = true;
+        if(shadows) shadows.addShadowCaster(c, false);
+      }
+    }
   });
-  return c;
+  return root;
 }
 
 // ══════════════════════════════════════════
