@@ -126,7 +126,8 @@ var night=false;
 var sun,amb,shadows,fillLight;
 var pPos={x:0,y:0,z:0},pAngle=0,pVY=0,onGround=true;
 var jX=0,jY=0,sprint=false,stamina=100;
-var camYaw=0,CAM_D=12,CAM_H=5;
+var camYaw=Math.PI,camPitch=0.35,CAM_D=12;
+var CAM_PITCH_MIN=0.1,CAM_PITCH_MAX=1.1;
 var gold=5000,props=0,mode='explore';
 var toastT=null;
 var pRoot=null,pYOff=0,pAnims={},curAnim=null;
@@ -305,8 +306,6 @@ async function initWorld(){
   await loadNature();
   setStep(75,'ROCHERS...');
   await loadRocks();
-  setStep(90,'AMIS...');
-  await spawnNPCs();
   setStep(100,'');
 }
 
@@ -533,63 +532,6 @@ function playAnim(a){
   a.start(true); curAnim=a;
 }
 
-// - PNJ -
-async function spawnNPCs(){
-  var others=CHARS.map(function(c,i){return{ci:i,c:c};}).filter(function(x){return x.ci!==selChar;});
-  var routes=[
-    [{x:10,z:10},{x:10,z:-10},{x:-10,z:-10},{x:-10,z:10}],
-    [{x:5,z:15},{x:15,z:5},{x:5,z:-15},{x:-15,z:5}],
-    [{x:8,z:3},{x:-5,z:8},{x:-8,z:-3},{x:5,z:-8}]
-  ];
-  for(var n=0;n<Math.min(others.length,3);n++){
-    var o=others[n],route=routes[n%routes.length],sp=route[0];
-    var npc={route:route,ptIdx:0,speed:1.5+Math.random()*.5,root:null,yOff:0,ci:o.ci,lbl:null};
-    try{
-      var r=await B.SceneLoader.ImportMeshAsync('','',BASE+o.c.file,sc);
-      if(!r.meshes.length) throw 0;
-      var root=r.meshes[0];
-      root.scaling.setAll(1);
-      root.computeWorldMatrix(true);
-      var bb=root.getHierarchyBoundingVectors();
-      var nh=bb.max.y-bb.min.y;
-      var ns=nh>0.05?1.8/nh:1.0;
-      root.scaling.setAll(ns);
-      root.computeWorldMatrix(true);
-      var bb2=root.getHierarchyBoundingVectors();
-      npc.yOff=-bb2.min.y;
-      root.position.set(sp.x,npc.yOff,sp.z);
-      r.meshes.forEach(function(m){m.receiveShadows=true;if(shadows)shadows.addShadowCaster(m,true);});
-      if(r.animationGroups.length){
-        r.animationGroups.forEach(function(ag){ag.stop();});
-        var wk=r.animationGroups.find(function(a){return /walk/i.test(a.name);})||r.animationGroups[0];
-        if(wk) wk.start(true);
-      }
-      npc.root=root;
-    }catch(e){
-      var sph2=B.MeshBuilder.CreateSphere('npc'+n,{diameter:.7,segments:12},sc);
-      sph2.position.set(sp.x,.35,sp.z);
-      var nm=new B.StandardMaterial('nm',sc);
-      nm.diffuseColor=B.Color3.FromHexString(o.c.color);
-      sph2.material=nm; npc.root=sph2; npc.yOff=.35;
-    }
-    try{
-      var lbl=B.MeshBuilder.CreatePlane('lbl'+n,{width:1.2,height:.25},sc);
-      var dt=new B.DynamicTexture('dt'+n,{width:256,height:52},sc);
-      dt.hasAlpha=true;
-      var ctx=dt.getContext();
-      ctx.clearRect(0,0,256,52);
-      ctx.fillStyle='rgba(0,10,25,.8)'; ctx.fillRect(0,4,256,44);
-      ctx.fillStyle=o.c.color; ctx.font='bold 20px sans-serif';
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText(o.c.name,128,26); dt.update();
-      var lm=new B.StandardMaterial('lm'+n,sc);
-      lm.diffuseTexture=dt; lm.emissiveTexture=dt; lm.opacityTexture=dt; lm.backFaceCulling=false;
-      lbl.material=lm; lbl.billboardMode=7;
-      lbl.position.set(sp.x,2.4,sp.z); npc.lbl=lbl;
-    }catch(e){}
-    npcs.push(npc);
-  }
-}
 
 // - GAME LOOP -
 function gameLoop(){
@@ -615,12 +557,12 @@ function movePlayer(dt){
 
   var mx=0,mz=0,walking=false;
   if(Math.abs(jY)>.04){
-    mx=-Math.sin(pAngle)*jY*spd;
-    mz=-Math.cos(pAngle)*jY*spd;
+    mx=-Math.sin(camYaw)*jY*spd;
+    mz=-Math.cos(camYaw)*jY*spd;
     moved=true; walking=true;
   }
-  if(_k.u){mx+=-Math.sin(pAngle)*spd;mz+=-Math.cos(pAngle)*spd;moved=true;walking=true;}
-  if(_k.d){mx+=Math.sin(pAngle)*spd;mz+=Math.cos(pAngle)*spd;moved=true;walking=true;}
+  if(_k.u){mx+=-Math.sin(camYaw)*spd;mz+=-Math.cos(camYaw)*spd;moved=true;walking=true;}
+  if(_k.d){mx+=Math.sin(camYaw)*spd;mz+=Math.cos(camYaw)*spd;moved=true;walking=true;}
 
   if(moved) sprint?stamina=Math.max(0,stamina-dt*22):stamina=Math.min(100,stamina+dt*10);
   else stamina=Math.min(100,stamina+dt*16);
@@ -632,6 +574,13 @@ function movePlayer(dt){
   pVY-=20*dt; pPos.y+=pVY*dt;
   if(pPos.y<0){pPos.y=0;pVY=0;onGround=true;}else onGround=false;
 
+  // Perso se tourne vers la direction de marche
+  if(walking&&(mx!==0||mz!==0)){
+    var tgt=Math.atan2(mx,mz);
+    var dd=tgt-pAngle;
+    while(dd>Math.PI)dd-=Math.PI*2;while(dd<-Math.PI)dd+=Math.PI*2;
+    pAngle+=dd*Math.min(1,dt*10);
+  }
   if(pRoot){
     pRoot.position.x=pPos.x;
     pRoot.position.y=pPos.y+pYOff;
@@ -648,17 +597,19 @@ function movePlayer(dt){
   updateZone();
 }
 
-// - CAMERA -
+// - CAMERA orbitale Mario Odyssey -
 function updateCam(){
-  var tx = pPos.x - Math.sin(pAngle)*CAM_D;
-  var ty = pPos.y + CAM_H;
-  var tz = pPos.z - Math.cos(pAngle)*CAM_D;
-  cam.position.x = tx;
-  cam.position.z = tz;
-  cam.position.y += (ty - cam.position.y) * 0.15;
-  cam.target.x = pPos.x;
-  cam.target.z = pPos.z;
-  cam.target.y += (pPos.y + 1.4 - cam.target.y) * 0.15;
+  var cosP=Math.cos(camPitch),sinP=Math.sin(camPitch);
+  var tx=pPos.x,ty=pPos.y+1.4,tz=pPos.z;
+  var cx=tx+CAM_D*cosP*Math.sin(camYaw);
+  var cy=ty+CAM_D*sinP;
+  var cz=tz+CAM_D*Math.cos(camYaw);
+  cam.position.x+=(cx-cam.position.x)*.12;
+  cam.position.y+=(cy-cam.position.y)*.12;
+  cam.position.z+=(cz-cam.position.z)*.12;
+  cam.target.x+=(tx-cam.target.x)*.15;
+  cam.target.y+=(ty-cam.target.y)*.15;
+  cam.target.z+=(tz-cam.target.z)*.15;
 }
 
 function moveNPCs(dt){
@@ -724,9 +675,47 @@ function setupJoystick(){
   window.addEventListener('mouseup',reset);
 }
 
-// - CAMERA DRAG -
+// - CAMERA DRAG Mario Odyssey -
 function setupCamDrag(cv){
-  window.addEventListener('wheel',function(e){CAM_D=Math.max(4,Math.min(22,CAM_D+e.deltaY*.01));},{passive:true});
+  var drag=false,lastX=0,lastY=0,dragId=-1;
+  var joyEl=document.getElementById('joy');
+  var btnsEl=document.getElementById('btns');
+  function inEl(el,x,y){var r=el.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;}
+  document.addEventListener('touchstart',function(e){
+    if(dragId!==-1) return;
+    for(var i=0;i<e.changedTouches.length;i++){
+      var t=e.changedTouches[i];
+      if(!inEl(joyEl,t.clientX,t.clientY)&&!inEl(btnsEl,t.clientX,t.clientY)){
+        dragId=t.identifier;lastX=t.clientX;lastY=t.clientY;drag=true;break;
+      }
+    }
+  },{passive:true});
+  document.addEventListener('touchmove',function(e){
+    if(!drag)return;
+    for(var i=0;i<e.changedTouches.length;i++){
+      var t=e.changedTouches[i];
+      if(t.identifier===dragId){
+        camYaw+=(t.clientX-lastX)*.008;
+        camPitch-=(t.clientY-lastY)*.006;
+        camPitch=Math.max(CAM_PITCH_MIN,Math.min(CAM_PITCH_MAX,camPitch));
+        lastX=t.clientX;lastY=t.clientY;break;
+      }
+    }
+  },{passive:true});
+  document.addEventListener('touchend',function(e){
+    for(var i=0;i<e.changedTouches.length;i++)
+      if(e.changedTouches[i].identifier===dragId){drag=false;dragId=-1;break;}
+  },{passive:true});
+  cv.addEventListener('mousedown',function(e){drag=true;lastX=e.clientX;lastY=e.clientY;e.preventDefault();});
+  window.addEventListener('mousemove',function(e){
+    if(!drag)return;
+    camYaw+=(e.clientX-lastX)*.008;
+    camPitch-=(e.clientY-lastY)*.006;
+    camPitch=Math.max(CAM_PITCH_MIN,Math.min(CAM_PITCH_MAX,camPitch));
+    lastX=e.clientX;lastY=e.clientY;
+  });
+  window.addEventListener('mouseup',function(){drag=false;});
+  window.addEventListener('wheel',function(e){CAM_D=Math.max(4,Math.min(22,CAM_D+e.deltaY*.02));},{passive:true});
   cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 }
 
