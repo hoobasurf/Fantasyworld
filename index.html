@@ -511,61 +511,41 @@ function spawnTempPlayer(){
   window._tempPlayer=cap;
 }
 
-var TMPL={};
-async function loadT(file){
-  if(TMPL[file]!==undefined) return TMPL[file];
-  TMPL[file]=null;
+// Charger et placer un GLB directement (pas de clonage - compatible Safari)
+async function placeGLB(file,x,y,z,ry,sc2){
   try{
     var r=await B.SceneLoader.ImportMeshAsync('','',BASE+file,sc);
-    if(!r||!r.meshes.length){TMPL[file]=null;return null;}
-    r.meshes.forEach(function(m){m.setEnabled(false);});
-    TMPL[file]=r.meshes;
-    return r.meshes;
-  }catch(e){TMPL[file]=null;return null;}
-}
-
-function placeGLB(file,x,y,z,ry,sc2){
-  var meshes=TMPL[file];
-  if(!meshes||!meshes.length) return null;
-  var root=new B.TransformNode('g'+Math.random(),sc);
-  root.position.set(x,y||0,z);
-  if(ry!=null) root.rotation.y=ry;
-  if(sc2) root.scaling.setAll(sc2);
-  meshes.forEach(function(m){
-    if(!m||!m.clone) return;
-    try{
-      var c=m.clone('c'+Math.random());
-      if(!c) return;
-      c.parent=root;
-      c.setEnabled(true);
-      c.isVisible=true;
-      c.receiveShadows=true;
-      if(m.material) c.material=m.material.clone('mat'+Math.random());
-      if(shadows) shadows.addShadowCaster(c,false);
-    }catch(e){}
-  });
-  return root;
+    if(!r||!r.meshes.length) return null;
+    var root=r.meshes[0];
+    root.position.set(x,y||0,z);
+    if(ry!=null) root.rotation.y=ry;
+    if(sc2) root.scaling.setAll(sc2);
+    r.meshes.forEach(function(m){
+      m.receiveShadows=true;
+      if(shadows) shadows.addShadowCaster(m,true);
+    });
+    return root;
+  }catch(e){ return null; }
 }
 
 async function loadGLBWorld(){
   //  ROUTES GLB
   setStep(35,'ROUTES...');
-  await loadT('road-straight.glb');
-  await loadT('road-crossroad.glb');
+
   // Grille de routes : espacées de 32u, rues de 2u de dalles
   var STREET=[-64,-32,0,32,64];
   if(TMPL['road-straight.glb']){
     STREET.forEach(function(sx){
-      for(var j=-20;j<=20;j++) placeGLB('road-straight.glb',sx,0,j*2,Math.PI/2,1);
+      for(var j=-20;j<=20;j++) await placeGLB('road-straight.glb',sx,0,j*2,Math.PI/2,1);
     });
     STREET.forEach(function(sz){
-      for(var i=-20;i<=20;i++) placeGLB('road-straight.glb',i*2,0,sz,0,1);
+      for(var i=-20;i<=20;i++) await placeGLB('road-straight.glb',i*2,0,sz,0,1);
     });
   }
   if(TMPL['road-crossroad.glb']){
     STREET.forEach(function(sx){
       STREET.forEach(function(sz){
-        placeGLB('road-crossroad.glb',sx,0,sz,0,1);
+        await placeGLB('road-crossroad.glb',sx,0,sz,0,1);
       });
     });
   }
@@ -584,10 +564,10 @@ async function loadGLBWorld(){
   var BTYPE=['building-type-a','building-type-b','building-type-c','building-type-d',
              'building-type-e','building-type-f','building-type-g','building-type-h'];
 
-  for(var i=0;i<BLDG.length;i++) await loadT(BLDG[i]+'.glb');
-  for(var i=0;i<SKY.length;i++)  await loadT(SKY[i]+'.glb');
-  for(var i=0;i<LOW.length;i++)  await loadT(LOW[i]+'.glb');
-  for(var i=0;i<BTYPE.length;i++) await loadT(BTYPE[i]+'.glb');
+  for(var i=0;i<BLDG.length;i++)
+  for(var i=0;i<SKY.length;i++)
+  for(var i=0;i<LOW.length;i++)
+  for(var i=0;i<BTYPE.length;i++)
 
   // Ilots entre les rues (centres à -48,-16,16,48)
   var ISLANDS=[-48,-16,16,48];
@@ -603,65 +583,64 @@ async function loadGLBWorld(){
         if(d<25) file=SKY[ni%SKY.length]+'.glb';
         else if(d<50) file=BLDG[ni%BLDG.length]+'.glb';
         else file=LOW[ni%LOW.length]+'.glb';
-        placeGLB(file,bx,0,bz,ry,sc2);
+        await placeGLB(file,bx,0,bz,ry,sc2);
         ni++;
       });
     });
   });
   // Bâtiments supplémentaires type
   [[-80,-80],[80,-80],[-80,80],[80,80],[-80,0],[80,0],[0,-80],[0,80]].forEach(function(p,i){
-    placeGLB(BTYPE[i%BTYPE.length]+'.glb',p[0],0,p[1],Math.random()*Math.PI*2,.9+Math.random()*.3);
-    placeGLB(LOW[i%LOW.length]+'.glb',p[0]+15,0,p[1],Math.random()*Math.PI*2,.8);
-    placeGLB(LOW[(i+1)%LOW.length]+'.glb',p[0]-15,0,p[1],Math.random()*Math.PI*2,.85);
+    await placeGLB(BTYPE[i%BTYPE.length]+'.glb',p[0],0,p[1],Math.random()*Math.PI*2,.9+Math.random()*.3);
+    await placeGLB(LOW[i%LOW.length]+'.glb',p[0]+15,0,p[1],Math.random()*Math.PI*2,.8);
+    await placeGLB(LOW[(i+1)%LOW.length]+'.glb',p[0]-15,0,p[1],Math.random()*Math.PI*2,.85);
   });
 
   //  NATURE
   setStep(70,'NATURE...');
   var TREES=['tree_oak','tree_default','tree_cone','tree_fat',
              'tree_pineDefaultA','tree-large','tree_detailed','tree_simple'];
-  for(var i=0;i<TREES.length;i++) await loadT(TREES[i]+'.glb');
-  await loadT('plant_bush.glb');
-  await loadT('plant_bushLarge.glb');
+  for(var i=0;i<TREES.length;i++)
+
+
   // Ceinture d'arbres
   for(var a=0;a<Math.PI*2;a+=.2){
     var rd=75+Math.random()*18;
     var tf=TREES[Math.floor(Math.random()*TREES.length)]+'.glb';
-    placeGLB(tf,Math.cos(a)*rd,0,Math.sin(a)*rd,Math.random()*Math.PI*2,.7+Math.random()*.8);
+    await placeGLB(tf,Math.cos(a)*rd,0,Math.sin(a)*rd,Math.random()*Math.PI*2,.7+Math.random()*.8);
   }
   // Parcs dans les ilots libres
   [{x:0,z:0},{x:-32,z:32},{x:32,z:-32}].forEach(function(p,i){
     for(var t=0;t<4;t++){
-      placeGLB(TREES[t%TREES.length]+'.glb',p.x+(Math.random()*8-4),0,p.z+(Math.random()*8-4),Math.random()*Math.PI*2,.8+Math.random()*.4);
+      await placeGLB(TREES[t%TREES.length]+'.glb',p.x+(Math.random()*8-4),0,p.z+(Math.random()*8-4),Math.random()*Math.PI*2,.8+Math.random()*.4);
     }
-    placeGLB('plant_bushLarge.glb',p.x+5,0,p.z-3,0,.9);
-    placeGLB('plant_bush.glb',p.x-4,0,p.z+4,0,.8);
+    await placeGLB('plant_bushLarge.glb',p.x+5,0,p.z-3,0,.9);
+    await placeGLB('plant_bush.glb',p.x-4,0,p.z+4,0,.8);
   });
 
   // Rochers
-  await loadT('rock_largeA.glb'); await loadT('rock_tallA.glb');
+  await loadT('rock_largeA.glb');
   for(var i=0;i<16;i++){
     var a2=i/16*Math.PI*2, rd2=68+Math.random()*15;
-    placeGLB(i%2?'rock_largeA.glb':'rock_tallA.glb',Math.cos(a2)*rd2,0,Math.sin(a2)*rd2,Math.random()*Math.PI*2,.8+Math.random());
+    await placeGLB(i%2?'rock_largeA.glb':'rock_tallA.glb',Math.cos(a2)*rd2,0,Math.sin(a2)*rd2,Math.random()*Math.PI*2,.8+Math.random());
   }
 
   //  PROPS
   setStep(80,'DÉCORS...');
-  await loadT('Taxi.glb');
-  await loadT('construction-cone.glb');
-  await loadT('sign-highway.glb');
-  await loadT('statue_column.glb');
+
+
+
   [[12,0,4,.3],[-18,0,-12,2.8],[30,0,8,1.1],[-30,0,20,0]].forEach(function(p){
-    placeGLB('Taxi.glb',p[0],p[1],p[2],p[3],.5);
+    await placeGLB('Taxi.glb',p[0],p[1],p[2],p[3],.5);
   });
   // Cônes de chantier
-  for(var i=0;i<8;i++) placeGLB('construction-cone.glb',-10+i*2.5,0,-4,0,.8);
+  for(var i=0;i<8;i++) await placeGLB('construction-cone.glb',-10+i*2.5,0,-4,0,.8);
   // Panneaux
   [[20,-8,0],[-20,-8,Math.PI]].forEach(function(p){
-    placeGLB('sign-highway.glb',p[0],0,p[1],p[2],.9);
+    await placeGLB('sign-highway.glb',p[0],0,p[1],p[2],.9);
   });
   // Statues déco
   [[0,0,-28],[28,0,0],[-28,0,0]].forEach(function(p){
-    placeGLB('statue_column.glb',p[0],0,p[1],0,1);
+    await placeGLB('statue_column.glb',p[0],0,p[1],0,1);
   });
 
   //  PERSONNAGES
@@ -794,14 +773,15 @@ function gameLoop(){
 // MOUVEMENT JOUEUR
 function movePlayer(dt){
   var spd=(sprint&&stamina>2?9:5)*dt;
-  // Direction basée sur camYaw
+  // GTA : fw = direction caméra, rt = strafe latéral
   var fw=new B.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
   var rt=new B.Vector3(Math.cos(camYaw),0,-Math.sin(camYaw));
   var mv=B.Vector3.Zero(), moved=false;
 
+  // Joystick : Y haut = avancer, X = strafe
   if(Math.abs(jX)>.04||Math.abs(jY)>.04){
-    mv.addInPlace(rt.scale(jX));
-    mv.addInPlace(fw.scale(jY));
+    mv.addInPlace(fw.scale(jY));   // haut du joystick = fw
+    mv.addInPlace(rt.scale(jX));   // droite = strafe droite
     moved=true;
     var l=mv.length(); if(l>0) mv.scaleInPlace(spd*Math.min(l,1)/l);
   }else{
@@ -813,9 +793,10 @@ function movePlayer(dt){
   _isMoving=moved;
 
   if(moved){
+    // Stitch se tourne vers la direction de mouvement
     var ta=Math.atan2(-mv.x,-mv.z), da=ta-pAngle;
     while(da>Math.PI)da-=Math.PI*2; while(da<-Math.PI)da+=Math.PI*2;
-    pAngle+=da*Math.min(1,dt*12);
+    pAngle+=da*Math.min(1,dt*10);
     sprint?stamina=Math.max(0,stamina-dt*22):stamina=Math.min(100,stamina+dt*10);
     playAnim(sprint&&pAnims.run?pAnims.run:pAnims.walk||pAnims.idle);
   }else{
