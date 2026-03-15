@@ -126,7 +126,7 @@ var night=false;
 var sun,amb,shadows,fillLight;
 var pPos={x:0,y:0,z:0},pAngle=0,pVY=0,onGround=true;
 var jX=0,jY=0,sprint=false,stamina=100;
-var camYaw=Math.PI,camPitch=0.35,CAM_D=12;
+var camYaw=0,camPitch=0.35,CAM_D=12;
 var CAM_PITCH_MIN=0.1,CAM_PITCH_MAX=1.1;
 var gold=5000,props=0,mode='explore';
 var toastT=null;
@@ -549,7 +549,7 @@ function movePlayer(dt){
   var moved=false;
 
   if(Math.abs(jX)>.04){
-    pAngle += jX * dt * 2.8;
+    camYaw += jX * dt * 2.5;
     moved=true;
   }
   if(_k.l){pAngle-=dt*2.5;moved=true;}
@@ -557,8 +557,8 @@ function movePlayer(dt){
 
   var mx=0,mz=0,walking=false;
   if(Math.abs(jY)>.04){
-    mx=-Math.sin(camYaw)*jY*spd;
-    mz=-Math.cos(camYaw)*jY*spd;
+    mx=Math.sin(camYaw)*jY*spd;
+    mz=Math.cos(camYaw)*jY*spd;
     moved=true; walking=true;
   }
   if(_k.u){mx+=-Math.sin(camYaw)*spd;mz+=-Math.cos(camYaw)*spd;moved=true;walking=true;}
