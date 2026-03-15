@@ -92,8 +92,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#001830;font-family:
   <div class="mbb" onclick="toggleDN()">&#9728; JOUR/NUIT</div>
 </div>
 <div id="toast"></div>
-<script src="https://cdn.babylonjs.com/babylon.js"></script>
-<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+<script src="https://unpkg.com/babylonjs@6.26.0/babylon.js"></script>
+<script src="https://unpkg.com/babylonjs-loaders@6.26.0/babylonjs.loaders.min.js"></script>
 <script>
 'use strict';
 var B=BABYLON;
@@ -723,7 +723,7 @@ function tryInit(){clearInterval(anim);document.getElementById(‘barFill’).st
 if(typeof BABYLON!==‘undefined’) setTimeout(tryInit,300);
 else{
 var check=setInterval(function(){if(typeof BABYLON!==‘undefined’){clearInterval(check);tryInit();}},100);
-setTimeout(function(){clearInterval(check);tryInit();},12000);
+setTimeout(function(){clearInterval(check);tryInit();},8000);
 }
 });
 </script></body>
