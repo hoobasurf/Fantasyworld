@@ -119,6 +119,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Ba
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 
 <script>
+// Attraper les erreurs globales pour debug
+window.onerror=function(msg,src,line){
+  var el=document.getElementById('stepTxt');
+  if(el) el.textContent='ERREUR: '+msg.substring(0,50);
+  return false;
+};
+</script>
+
+<script>
 'use strict';
 var B = BABYLON;
 var BASE = 'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
@@ -1008,7 +1017,36 @@ function toast(msg){
 // DÉMARRAGE
 // ══════════════════════════════════════════
 window.addEventListener('load',function(){
-  setTimeout(initCharSelect,150);
+  // Animer la barre pendant le chargement
+  var pct=0;
+  var anim=setInterval(function(){
+    pct=Math.min(pct+2,85);
+    document.getElementById('barFill').style.width=pct+'%';
+  },50);
+  
+  function tryInit(){
+    clearInterval(anim);
+    document.getElementById('barFill').style.width='100%';
+    setTimeout(initCharSelect,200);
+  }
+  
+  // Attendre que Babylon soit prêt
+  if(typeof BABYLON !== 'undefined'){
+    setTimeout(tryInit,300);
+  } else {
+    // Attendre le chargement du script
+    var check=setInterval(function(){
+      if(typeof BABYLON !== 'undefined'){
+        clearInterval(check);
+        tryInit();
+      }
+    },100);
+    // Timeout 10s
+    setTimeout(function(){
+      clearInterval(check);
+      tryInit();
+    },10000);
+  }
 });
 </script>
 
