@@ -280,8 +280,14 @@ async function startGame(){
 async function initWorld(){
   var cv=document.getElementById('cv');
 
-  // 1. Babylon + scène d'abord
+  // CRITIQUE : afficher le canvas AVANT Babylon sinon dimensions=0
+  cv.style.display='block';
+  cv.width=window.innerWidth;
+  cv.height=window.innerHeight;
+  await new Promise(function(r){requestAnimationFrame(r);});
+
   eng=new B.Engine(cv,true,{antialias:true,stencil:true},true);
+  eng.resize();
   sc=new B.Scene(eng);
   sc.clearColor=new B.Color4(.45,.75,.95,1);
   sc.fogMode=B.Scene.FOGMODE_EXP2;
@@ -309,7 +315,6 @@ async function initWorld(){
   window.addEventListener('resize',function(){if(eng)eng.resize();});
 
   // 3. Afficher le jeu — masquer le loading
-  cv.style.display='block';
   document.getElementById('loading').style.display='none';
   document.getElementById('hud').style.display='block';
   document.getElementById('mbar').style.display='flex';
