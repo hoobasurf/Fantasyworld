@@ -671,16 +671,17 @@ function movePlayer(dt){
 // - CAMERA -
 // La camera reste DERRIERE Stitch selon pAngle + ajustement manuel camYaw
 function updateCam(){
-  // La caméra est TOUJOURS derrière Stitch (suit pAngle)
-  // + offset camYaw si l'utilisateur glisse le doigt
-  var angle = pAngle + camYaw;
-  var tx = pPos.x - Math.sin(angle)*CAM_D;
+  // Caméra FIXE derrière Stitch - suit pAngle sans délai
+  var tx = pPos.x - Math.sin(pAngle)*CAM_D;
   var ty = pPos.y + CAM_H;
-  var tz = pPos.z - Math.cos(angle)*CAM_D;
-  cam.position=B.Vector3.Lerp(cam.position,new B.Vector3(tx,ty,tz),.12);
-  cam.target=B.Vector3.Lerp(cam.target,new B.Vector3(pPos.x,pPos.y+1.4,pPos.z),.14);
-  // Retour progressif à 0 de l'offset manuel
-  camYaw *= 0.92;
+  var tz = pPos.z - Math.cos(pAngle)*CAM_D;
+  // Position X/Z suit immédiatement, Y avec léger lerp
+  cam.position.x = tx;
+  cam.position.z = tz;
+  cam.position.y += (ty - cam.position.y) * 0.15;
+  cam.target.x = pPos.x;
+  cam.target.z = pPos.z;
+  cam.target.y += (pPos.y + 1.4 - cam.target.y) * 0.15;
 }
 
 function moveNPCs(dt){
@@ -751,48 +752,7 @@ function setupJoystick(){
 
 // - CAMERA DRAG -
 function setupCamDrag(cv){
-  var lx=0, cid=-1, dragging=false;
-
-  function isOnJoy(x,y){
-    var r=document.getElementById('joy').getBoundingClientRect();
-    return x>=r.left-15&&x<=r.right+15&&y>=r.top-15&&y<=r.bottom+15;
-  }
-  function isOnBtns(x,y){
-    var r=document.getElementById('btns').getBoundingClientRect();
-    return x>=r.left-10&&x<=r.right+10&&y>=r.top-10&&y<=r.bottom+10;
-  }
-  function isOnMbar(x,y){
-    var r=document.getElementById('mbar').getBoundingClientRect();
-    return y>=r.top;
-  }
-
-  document.addEventListener('touchstart',function(e){
-    for(var i=0;i<e.changedTouches.length;i++){
-      var t=e.changedTouches[i];
-      if(!isOnJoy(t.clientX,t.clientY)&&!isOnBtns(t.clientX,t.clientY)&&!isOnMbar(t.clientX,t.clientY)){
-        lx=t.clientX; cid=t.identifier; dragging=true; break;
-      }
-    }
-  },{passive:true});
-
-  document.addEventListener('touchmove',function(e){
-    if(!dragging) return;
-    for(var i=0;i<e.changedTouches.length;i++){
-      if(e.changedTouches[i].identifier===cid){
-        camYaw+=(e.changedTouches[i].clientX-lx)*0.007;
-        lx=e.changedTouches[i].clientX;
-      }
-    }
-  },{passive:true});
-
-  document.addEventListener('touchend',function(e){
-    for(var i=0;i<e.changedTouches.length;i++)
-      if(e.changedTouches[i].identifier===cid){dragging=false;cid=-1;}
-  },{passive:true});
-
-  cv.addEventListener('mousedown',function(e){if(e.button===2){lx=e.clientX;dragging=true;}});
-  window.addEventListener('mousemove',function(e){if(dragging){camYaw+=(e.clientX-lx)*0.004;lx=e.clientX;}});
-  window.addEventListener('mouseup',function(){dragging=false;});
+  // Pas de rotation manuelle - la caméra suit Stitch automatiquement
   window.addEventListener('wheel',function(e){CAM_D=Math.max(4,Math.min(22,CAM_D+e.deltaY*.01));},{passive:true});
   cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 }
