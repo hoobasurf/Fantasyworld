@@ -548,12 +548,15 @@ function movePlayer(dt){
   var spd=(sprint&&stamina>2?8:4.5)*dt;
   var moved=false;
 
+  // jX = strafe lateral
   if(Math.abs(jX)>.04){
-    camYaw += jX * dt * 2.5;
-    moved=true;
+    var rx=Math.cos(camYaw)*jX*spd;
+    var rz=-Math.sin(camYaw)*jX*spd;
+    mx+=rx; mz+=rz;
+    moved=true; walking=true;
   }
-  if(_k.l){pAngle-=dt*2.5;moved=true;}
-  if(_k.r){pAngle+=dt*2.5;moved=true;}
+  if(_k.l){mx+=Math.cos(camYaw)*(-spd);mz+=-Math.sin(camYaw)*(-spd);moved=true;walking=true;}
+  if(_k.r){mx+=Math.cos(camYaw)*spd;mz+=-Math.sin(camYaw)*spd;moved=true;walking=true;}
 
   var mx=0,mz=0,walking=false;
   if(Math.abs(jY)>.04){
@@ -597,19 +600,23 @@ function movePlayer(dt){
   updateZone();
 }
 
-// - CAMERA orbitale Mario Odyssey -
+// - CAMERA style Mario Odyssey -
 function updateCam(){
   var cosP=Math.cos(camPitch),sinP=Math.sin(camPitch);
+  // Position cible = tête de Stitch
   var tx=pPos.x,ty=pPos.y+1.4,tz=pPos.z;
+  // Position caméra orbitale autour de Stitch
   var cx=tx+CAM_D*cosP*Math.sin(camYaw);
   var cy=ty+CAM_D*sinP;
-  var cz=tz+CAM_D*Math.cos(camYaw);
-  cam.position.x+=(cx-cam.position.x)*.12;
-  cam.position.y+=(cy-cam.position.y)*.12;
-  cam.position.z+=(cz-cam.position.z)*.12;
-  cam.target.x+=(tx-cam.target.x)*.15;
-  cam.target.y+=(ty-cam.target.y)*.15;
-  cam.target.z+=(tz-cam.target.z)*.15;
+  var cz=tz+CAM_D*cosP*Math.cos(camYaw);
+  // Lerp fluide
+  cam.position.x+=(cx-cam.position.x)*.18;
+  cam.position.y+=(cy-cam.position.y)*.18;
+  cam.position.z+=(cz-cam.position.z)*.18;
+  // Toujours regarder Stitch
+  cam.target.x=tx;
+  cam.target.y=ty;
+  cam.target.z=tz;
 }
 
 function moveNPCs(dt){
