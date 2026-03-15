@@ -43,6 +43,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#001830;font-family:
 .mbb.on{background:rgba(125,232,255,.15);border-color:#7de8ff;color:#7de8ff}
 #toast{position:fixed;top:56px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;z-index:80;background:rgba(0,10,25,.95);border:1.5px solid #7de8ff;border-radius:20px;padding:6px 18px;color:#7de8ff;font-size:11px;letter-spacing:.5px;white-space:nowrap;pointer-events:none;transition:all .15s;backdrop-filter:blur(8px)}
 #toast.show{transform:translateX(-50%) scale(1);opacity:1}
+/* Indicateur caméra */
+#camHint{position:fixed;bottom:148px;left:50%;transform:translateX(-50%);z-index:25;background:rgba(0,10,25,.7);border:1px solid rgba(125,232,255,.2);border-radius:12px;padding:4px 12px;color:rgba(125,232,255,.5);font-size:9px;letter-spacing:1px;pointer-events:none;opacity:1;transition:opacity 1s}
+#camHint.hidden{opacity:0}
 </style>
 </head>
 <body>
@@ -90,6 +93,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#001830;font-family:
   <div id="minimap"><canvas id="mmcv" width="100" height="100"></canvas></div>
 </div>
 
+<!-- Hint caméra -->
+
+<div id="camHint">&#128247; GLISSER = CAMÉRA &nbsp;|&nbsp; &#128269; MOLETTE = ZOOM</div>
+
 <div id="joy"><div id="jnub"></div></div>
 <div id="btns">
   <div class="btn" style="border:2px solid #7de8ff;color:#7de8ff" ontouchstart="doJump(event)" onclick="doJump()">&#8679;<br>JUMP</div>
@@ -120,13 +127,21 @@ var CHARS=[
 ];
 var selChar=0;
 
-// - ETAT -
+// --- ETAT ---
 var eng,sc,cam;
 var night=false;
 var sun,amb,shadows,fillLight;
 var pPos={x:0,y:0,z:0},pAngle=0,pVY=0,onGround=true;
 var jX=0,jY=0,sprint=false,stamina=100;
-var camYaw=0,CAM_D=12,CAM_H=5;
+
+// Caméra orbitale style Mario/GTA
+var camYaw   = Math.PI;    // angle horizontal (derrière le perso au départ)
+var camPitch = 0.32;       // angle vertical  (0 = horizontal, π/2 = dessus)
+var CAM_D    = 12;         // distance caméra-perso
+var CAM_H_OFFSET = 1.4;    // hauteur de la cible (tête du perso)
+var CAM_PITCH_MIN = 0.08;  // pas trop bas
+var CAM_PITCH_MAX = 1.2;   // pas trop haut
+
 var gold=5000,props=0,mode='explore';
 var toastT=null;
 var pRoot=null,pYOff=0,pAnims={},curAnim=null;
@@ -142,13 +157,13 @@ var PLOTS=[
   {x:25,z:-5,price:4000,name:'FALAISE',desc:'Bord de mer'}
 ];
 
-// - LOADING -
+// --- LOADING ---
 function setStep(pct,txt){
   document.getElementById('barFill').style.width=pct+'%';
   if(txt) document.getElementById('stepTxt').textContent=txt;
 }
 
-// - CHARACTER SELECT -
+// --- CHARACTER SELECT ---
 var csEng=null,csScene=null,csModels=[],csIdx=0,csLock=false;
 
 function initCharSelect(){
@@ -249,7 +264,7 @@ function csGoTo(idx){
   csIdx=idx; csUpdateUI(); csLoad(idx);
 }
 
-// - START GAME -
+// --- START GAME ---
 async function startGame(){
   selChar=csIdx;
   document.getElementById('charsel').style.display='none';
@@ -260,18 +275,18 @@ async function startGame(){
   await initWorld();
 }
 
-// - INIT MONDE -
+// --- INIT MONDE ---
 async function initWorld(){
   var cv=document.getElementById('cv');
   cv.style.display='block';
   eng=new B.Engine(cv,true,{antialias:true,stencil:true},true);
   sc=new B.Scene(eng);
-  // Ciel tropical bleu
   sc.clearColor=new B.Color4(.45,.75,.95,1);
   sc.fogMode=B.Scene.FOGMODE_EXP2;
   sc.fogDensity=.006;
   sc.fogColor=new B.Color3(.6,.85,1);
 
+  // FreeCamera pour contrôle total
   cam=new B.FreeCamera('c',new B.Vector3(0,6,14),sc);
   cam.minZ=.1; cam.maxZ=600; cam.fov=.95;
   cam.setTarget(new B.Vector3(0,1,0));
@@ -285,7 +300,7 @@ async function initWorld(){
   buildPlots();
 
   setupJoystick();
-  setupCamDrag(cv);
+  setupCamDrag(cv);   // ← caméra orbitale sur le canvas
   setupKeys();
 
   eng.runRenderLoop(gameLoop);
@@ -295,7 +310,13 @@ async function initWorld(){
   cv.style.display='block';
   document.getElementById('hud').style.display='block';
   document.getElementById('mbar').style.display='flex';
-  document.getElementById('charBadge').textContent='&#128100; '+CHARS[selChar].name;
+  document.getElementById('charBadge').textContent='👤 '+CHARS[selChar].name;
+
+  // Cache le hint après 4s
+  setTimeout(function(){
+    var h=document.getElementById('camHint');
+    if(h) h.classList.add('hidden');
+  },4000);
 
   setStep(35,'PERSONNAGE...');
   await loadPlayer();
@@ -310,7 +331,7 @@ async function initWorld(){
   setStep(100,'');
 }
 
-// - LUMIERES -
+// --- LUMIERES ---
 function initLights(){
   amb=new B.HemisphericLight('a',new B.Vector3(0,1,0),sc);
   amb.intensity=.9;
@@ -336,9 +357,8 @@ function initLights(){
   fillLight.range=10;
 }
 
-// - OCEAN + ILES -
+// --- OCEAN + ILES ---
 function buildOcean(){
-  // Ocean bleu
   var ocean=B.MeshBuilder.CreateGround('ocean',{width:400,height:400,subdivisions:4},sc);
   var om=new B.StandardMaterial('om',sc);
   om.diffuseColor=new B.Color3(.05,.4,.7);
@@ -349,9 +369,7 @@ function buildOcean(){
 }
 
 function buildIslands(){
-  // Ile principale (grande)
   buildIslandMesh(0,0,28,22,'main');
-  // Ilots secondaires
   buildIslandMesh(55,0,12,9,'ile2');
   buildIslandMesh(-50,0,10,8,'ile3');
   buildIslandMesh(20,-50,14,10,'ile4');
@@ -359,7 +377,6 @@ function buildIslands(){
 }
 
 function buildIslandMesh(cx,cz,rx,rz,name){
-  // Sol sableux
   var sand=B.MeshBuilder.CreateGround(name+'_sand',{width:rx*2,height:rz*2,subdivisions:8},sc);
   sand.position.set(cx,.01,cz);
   var sm=new B.StandardMaterial(name+'sm',sc);
@@ -367,7 +384,6 @@ function buildIslandMesh(cx,cz,rx,rz,name){
   sm.specularColor=new B.Color3(.1,.1,.05);
   sand.material=sm; sand.receiveShadows=true;
 
-  // Vegetation (cercle d'herbe au centre)
   var grass=B.MeshBuilder.CreateGround(name+'_grass',{width:rx*.8,height:rz*.8,subdivisions:4},sc);
   grass.position.set(cx,.02,cz);
   var gm=new B.StandardMaterial(name+'gm',sc);
@@ -375,7 +391,6 @@ function buildIslandMesh(cx,cz,rx,rz,name){
   gm.emissiveColor=new B.Color3(.05,.15,.03);
   grass.material=gm; grass.receiveShadows=true;
 
-  // Rivage (ombre douce)
   var shore=B.MeshBuilder.CreateGround(name+'_shore',{width:rx*2.2,height:rz*2.2,subdivisions:4},sc);
   shore.position.set(cx,-.02,cz);
   var shm=new B.StandardMaterial(name+'shm',sc);
@@ -393,7 +408,6 @@ function buildPlots(){
     var g=B.MeshBuilder.CreateGround('pl'+i,{width:8,height:8},sc);
     g.position.set(p.x,.05,p.z);
     var m=mat.clone('pm'+i); g.material=m;
-    // Bornes (spheres pas cubes)
     [[-4,-4],[-4,4],[4,-4],[4,4]].forEach(function(c){
       var b=B.MeshBuilder.CreateSphere('bk',{diameter:.3,segments:8},sc);
       b.position.set(p.x+c[0],.5,p.z+c[1]);
@@ -405,7 +419,7 @@ function buildPlots(){
   });
 }
 
-// - GLB -
+// --- GLB ---
 async function placeGLB(file,x,y,z,ry,s){
   try{
     var r=await B.SceneLoader.ImportMeshAsync('','',BASE+file,sc);
@@ -428,7 +442,6 @@ async function loadNature(){
     ['tree_palmDetailedShort.glb',5.3],['tree_palmBend.glb',5.1],
     ['tree_palmShort.glb',3.8],['tree_palm.glb',4.0]
   ];
-  // Ile principale - ceinture de palmiers
   var pts=[
     [12,3],[10,-4],[7,8],[-7,6],[-11,2],[-8,-7],[3,-9],[0,7],
     [-4,3],[6,-2],[9,5],[-5,8],[8,-8],[-9,-3],[4,6],[-6,-5]
@@ -441,11 +454,9 @@ async function loadNature(){
   }
   await Promise.all(pp);
 
-  // Ilot 2 - palmiers
   var p2=[placeGLB('tree_palmTall.glb',52,0,0,0,5.9),placeGLB('tree_palmBend.glb',56,0,3,.5,5.1),placeGLB('tree_palmDetailedShort.glb',58,0,-2,1,5.3)];
   await Promise.all(p2);
 
-  // Fleurs
   var flowers=[['flower_redA.glb',2.735],['flower_yellowA.glb',4.156],['flower_purpleA.glb',3.299]];
   var fp=[];
   var flpos=[[-2,4],[4,-3],[7,2],[-5,-2],[2,-6],[-1,5],[6,-1],[-4,3],[3,5],[-6,1]];
@@ -455,20 +466,17 @@ async function loadNature(){
   }
   await Promise.all(fp);
 
-  // Herbes
   var gp=[placeGLB('grass_large.glb',3,0,-1,0,3.937),placeGLB('grass_leafsLarge.glb',-3,0,2,1,10.526),placeGLB('grass_large.glb',-1,0,4,2,3.937)];
   await Promise.all(gp);
 }
 
 async function loadRocks(){
   var rp=[];
-  // Rochers volcaniques sur les bords de l'ile principale
   var rockPos=[
     ['rock_largeA.glb',18,11.548],['rock_largeB.glb',-18,9.297],
     ['rock_tallA.glb',15,-15,5.02],['rock_tallB.glb',-15,12,4.526],
     ['rock_smallA.glb',8,-10,7.844],['rock_smallB.glb',-9,7,8.485],
     ['rock_largeC.glb',20,-5,9.342],['rock_tallC.glb',-20,-8,3.832],
-    // Bord ocean
     ['rock_largeA.glb',30,0,11.548],['rock_largeB.glb',-28,5,9.297],
     ['rock_tallA.glb',25,18,5.02],['rock_tallB.glb',-22,-15,4.526],
   ];
@@ -479,7 +487,6 @@ async function loadRocks(){
   }
   await Promise.all(rp);
 
-  // Falaises sur les ilots
   var cp=[
     placeGLB('cliff_rock.glb',50,0,0,0,5),
     placeGLB('cliff_large_rock.glb',-48,0,0,1,6),
@@ -489,14 +496,13 @@ async function loadRocks(){
   await Promise.all(cp);
 }
 
-// - JOUEUR -
+// --- JOUEUR ---
 async function loadPlayer(){
   var c=CHARS[selChar];
   try{
     var r=await B.SceneLoader.ImportMeshAsync('','',BASE+c.file,sc);
     if(!r.meshes.length) throw 0;
     var root=r.meshes[0];
-    // Auto-scale : mesure les dimensions réelles et normalise à 1.8m
     root.scaling.setAll(1);
     root.computeWorldMatrix(true);
     var bb=root.getHierarchyBoundingVectors();
@@ -511,7 +517,6 @@ async function loadPlayer(){
     r.meshes.forEach(function(m){
       m.receiveShadows=true;
       if(shadows) shadows.addShadowCaster(m,true);
-      // Supprimer les contours noirs
       if(m.disableEdgesRendering) m.disableEdgesRendering();
       if(m.material){
         m.material.wireframe=false;
@@ -549,7 +554,7 @@ function playAnim(a){
   a.start(true); curAnim=a;
 }
 
-// - PNJ -
+// --- PNJ ---
 async function spawnNPCs(){
   var others=CHARS.map(function(c,i){return{ci:i,c:c};}).filter(function(x){return x.ci!==selChar;});
   var routes=[
@@ -588,7 +593,6 @@ async function spawnNPCs(){
       nm.diffuseColor=B.Color3.FromHexString(o.c.color);
       sph2.material=nm; npc.root=sph2; npc.yOff=.35;
     }
-    // Label
     try{
       var lbl=B.MeshBuilder.CreatePlane('lbl'+n,{width:1.2,height:.25},sc);
       var dt=new B.DynamicTexture('dt'+n,{width:256,height:52},sc);
@@ -608,7 +612,9 @@ async function spawnNPCs(){
   }
 }
 
-// - GAME LOOP -
+// ============================================================
+//  GAME LOOP
+// ============================================================
 function gameLoop(){
   var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;
   movePlayer(dt);
@@ -618,97 +624,111 @@ function gameLoop(){
   sc.render();
 }
 
-// - MOUVEMENT -
+// ============================================================
+//  MOUVEMENT DU JOUEUR
+//  Le perso se déplace SELON L'ANGLE DE LA CAMERA (comme Mario Odyssey)
+// ============================================================
 function movePlayer(dt){
   var spd=(sprint&&stamina>2?8:4.5)*dt;
-  var moved=false;
+  var moved=false, walking=false;
 
-  // Rotation gauche/droite avec joystick jX
-  if(Math.abs(jX)>.04){
-    pAngle += jX * dt * 2.8;
-    moved=true;
-  }
-  // Clavier rotation
-  if(_k.l){pAngle-=dt*2.5;moved=true;}
-  if(_k.r){pAngle+=dt*2.5;moved=true;}
+  // Direction de déplacement = angle caméra (camYaw)
+  // Joystick : jX = latéral, jY = avant/arrière
+  var mx=0, mz=0;
 
-  // Avancer/reculer dans la direction ou Stitch regarde
-  var mx=0,mz=0,walking=false;
-  if(Math.abs(jY)>.04){
-    mx=-Math.sin(pAngle)*jY*spd;
-    mz=-Math.cos(pAngle)*jY*spd;
+  if(Math.abs(jX)>.04 || Math.abs(jY)>.04){
+    // Direction caméra → monde
+    var camFwdX = -Math.sin(camYaw);
+    var camFwdZ = -Math.cos(camYaw);
+    var camRgtX =  Math.cos(camYaw);
+    var camRgtZ = -Math.sin(camYaw);
+
+    mx = (camFwdX * (-jY) + camRgtX * jX) * spd;
+    mz = (camFwdZ * (-jY) + camRgtZ * jX) * spd;
     moved=true; walking=true;
   }
-  if(_k.u){mx+=-Math.sin(pAngle)*spd;mz+=-Math.cos(pAngle)*spd;moved=true;walking=true;}
-  if(_k.d){mx+=Math.sin(pAngle)*spd;mz+=Math.cos(pAngle)*spd;moved=true;walking=true;}
 
+  // Clavier (ZQSD / flèches) - relatif à la caméra
+  var kfx = -Math.sin(camYaw), kfz = -Math.cos(camYaw);
+  var krx =  Math.cos(camYaw), krz = -Math.sin(camYaw);
+  if(_k.u){mx+=kfx*spd;mz+=kfz*spd;moved=true;walking=true;}
+  if(_k.d){mx-=kfx*spd;mz-=kfz*spd;moved=true;walking=true;}
+  if(_k.l){mx-=krx*spd;mz-=krz*spd;moved=true;walking=true;}
+  if(_k.r){mx+=krx*spd;mz+=krz*spd;moved=true;walking=true;}
+
+  // Stamina
   if(moved) sprint?stamina=Math.max(0,stamina-dt*22):stamina=Math.min(100,stamina+dt*10);
   else stamina=Math.min(100,stamina+dt*16);
 
+  // Animation
   playAnim(walking?(sprint&&pAnims.run?pAnims.run:pAnims.walk||pAnims.idle):pAnims.idle);
 
+  // Physique
   pPos.x=Math.max(-120,Math.min(120,pPos.x+mx));
   pPos.z=Math.max(-120,Math.min(120,pPos.z+mz));
   pVY-=20*dt; pPos.y+=pVY*dt;
   if(pPos.y<0){pPos.y=0;pVY=0;onGround=true;}else onGround=false;
 
+  // Rotation du personnage vers la direction de déplacement
+  if(walking && (mx!==0||mz!==0)){
+    var targetAngle = Math.atan2(mx,mz);
+    var diff = targetAngle - pAngle;
+    while(diff>Math.PI)diff-=Math.PI*2;
+    while(diff<-Math.PI)diff+=Math.PI*2;
+    pAngle += diff * Math.min(1, dt*12);  // rotation rapide et fluide
+  }
+
   if(pRoot){
     pRoot.position.x=pPos.x;
     pRoot.position.y=pPos.y+pYOff;
     pRoot.position.z=pPos.z;
-    var diff=(pAngle+Math.PI)-pRoot.rotation.y;
-    while(diff>Math.PI)diff-=Math.PI*2;
-    while(diff<-Math.PI)diff+=Math.PI*2;
-    pRoot.rotation.y+=diff*Math.min(1,dt*15);
+    // Synchronise le mesh 3D avec pAngle
+    var meshDiff = pAngle - pRoot.rotation.y;
+    while(meshDiff>Math.PI)meshDiff-=Math.PI*2;
+    while(meshDiff<-Math.PI)meshDiff+=Math.PI*2;
+    pRoot.rotation.y += meshDiff * Math.min(1, dt*15);
   }
 
-  var spEl=document.getElementById('spBar');
-  if(spEl) spEl.style.width=stamina+'%';
   if(fillLight) fillLight.position.set(pPos.x,pPos.y+4,pPos.z);
   updateZone();
 }
 
-// - CAMERA -
-// La camera reste DERRIERE Stitch selon pAngle + ajustement manuel camYaw
+// ============================================================
+//  CAMERA ORBITALE (style Mario/GTA/Kirby)
+//  - camYaw  : angle horizontal autour du perso
+//  - camPitch: angle vertical (elevation)
+//  - CAM_D   : distance
+//  La caméra tourne autour de pPos en coordonnées sphériques
+// ============================================================
 function updateCam(){
-  // Caméra FIXE derrière Stitch - suit pAngle sans délai
-  var tx = pPos.x - Math.sin(pAngle)*CAM_D;
-  var ty = pPos.y + CAM_H;
-  var tz = pPos.z - Math.cos(pAngle)*CAM_D;
-  // Position X/Z suit immédiatement, Y avec léger lerp
-  cam.position.x = tx;
-  cam.position.z = tz;
-  cam.position.y += (ty - cam.position.y) * 0.15;
-  cam.target.x = pPos.x;
-  cam.target.z = pPos.z;
-  cam.target.y += (pPos.y + 1.4 - cam.target.y) * 0.15;
+  // Position sphérique autour du perso
+  var cosP = Math.cos(camPitch);
+  var sinP = Math.sin(camPitch);
+
+  // Cible : tête du personnage
+  var tx = pPos.x;
+  var ty = pPos.y + CAM_H_OFFSET;
+  var tz = pPos.z;
+
+  // Position de la caméra
+  var cx = tx + CAM_D * cosP * Math.sin(camYaw);
+  var cy = ty + CAM_D * sinP;
+  var cz = tz + CAM_D * cosP * Math.cos(camYaw);
+
+  // Lerp doux pour amortir les mouvements
+  cam.position.x += (cx - cam.position.x) * 0.12;
+  cam.position.y += (cy - cam.position.y) * 0.12;
+  cam.position.z += (cz - cam.position.z) * 0.12;
+
+  // La caméra regarde toujours le perso
+  cam.target.x += (tx - cam.target.x) * 0.15;
+  cam.target.y += (ty - cam.target.y) * 0.15;
+  cam.target.z += (tz - cam.target.z) * 0.15;
 }
 
-function moveNPCs(dt){
-  npcs.forEach(function(npc){
-    if(!npc.root) return;
-    var tgt=npc.route[npc.ptIdx];
-    var dx=tgt.x-npc.root.position.x, dz=tgt.z-npc.root.position.z;
-    var dist=Math.sqrt(dx*dx+dz*dz);
-    if(dist<.6){npc.ptIdx=(npc.ptIdx+1)%npc.route.length; return;}
-    npc.root.position.x+=dx/dist*npc.speed*dt;
-    npc.root.position.z+=dz/dist*npc.speed*dt;
-    var ta=Math.atan2(dx,dz),da=ta-npc.root.rotation.y;
-    while(da>Math.PI)da-=Math.PI*2; while(da<-Math.PI)da+=Math.PI*2;
-    npc.root.rotation.y+=da*Math.min(1,dt*8);
-    if(npc.lbl){npc.lbl.position.x=npc.root.position.x;npc.lbl.position.z=npc.root.position.z;}
-  });
-}
-
-function updateZone(){
-  var d=Math.sqrt(pPos.x*pPos.x+pPos.z*pPos.z);
-  var z=d<8?'&#127956; VILLAGE':d<18?'&#127944; PLAGE':d<35?'&#127807; JUNGLE':'&#127754; OCEAN';
-  document.getElementById('zoneTxt').innerHTML=z;
-}
-
-// - JOYSTICK -
-// Principe : le joystick capture ses touches en stopPropagation
-// La camera tourne via un listener sur document qui ignore la zone joystick
+// ============================================================
+//  JOYSTICK (inchangé – monopolise ses propres touches)
+// ============================================================
 function setupJoystick(){
   var base=document.getElementById('joy');
   var nub=document.getElementById('jnub');
@@ -745,39 +765,118 @@ function setupJoystick(){
     e.stopPropagation(); reset();
   },{passive:true,capture:true});
 
-  // Mouse fallback
   base.addEventListener('mousedown',function(e){updateJoy(e.clientX,e.clientY);});
   window.addEventListener('mouseup',reset);
 }
 
-// - CAMERA DRAG -
+// ============================================================
+//  CAMERA DRAG — glisser sur l'écran (hors joystick/boutons)
+//  Touch : 2ème doigt OU zone centrale
+//  Mouse : clic droit + glisser
+// ============================================================
 function setupCamDrag(cv){
-  // Pas de rotation manuelle - la caméra suit Stitch automatiquement
-  window.addEventListener('wheel',function(e){CAM_D=Math.max(4,Math.min(22,CAM_D+e.deltaY*.01));},{passive:true});
+  var camDragging=false;
+  var camLastX=0, camLastY=0;
+  var camTouchId=-1;
+
+  // Sensibilité
+  var SENS_X = 0.005;   // horizontal
+  var SENS_Y = 0.004;   // vertical
+
+  // --- TOUCH ---
+  // On écoute sur le document pour attraper les 2nd doigts
+  document.addEventListener('touchstart',function(e){
+    // Ignore si dans le joystick ou les boutons
+    var joyRect=document.getElementById('joy').getBoundingClientRect();
+    var btnsRect=document.getElementById('btns').getBoundingClientRect();
+
+    for(var i=0;i<e.changedTouches.length;i++){
+      var t=e.changedTouches[i];
+      var inJoy=(t.clientX>=joyRect.left&&t.clientX<=joyRect.right&&t.clientY>=joyRect.top&&t.clientY<=joyRect.bottom);
+      var inBtns=(t.clientX>=btnsRect.left&&t.clientX<=btnsRect.right&&t.clientY>=btnsRect.top&&t.clientY<=btnsRect.bottom);
+      if(!inJoy&&!inBtns&&camTouchId===-1){
+        camTouchId=t.identifier;
+        camLastX=t.clientX; camLastY=t.clientY;
+        camDragging=true;
+        break;
+      }
+    }
+  },{passive:true,capture:false});
+
+  document.addEventListener('touchmove',function(e){
+    if(!camDragging) return;
+    for(var i=0;i<e.changedTouches.length;i++){
+      var t=e.changedTouches[i];
+      if(t.identifier===camTouchId){
+        var dx=t.clientX-camLastX;
+        var dy=t.clientY-camLastY;
+        camLastX=t.clientX; camLastY=t.clientY;
+        camYaw   += dx * SENS_X * 10;
+        camPitch -= dy * SENS_Y * 8;
+        camPitch  = Math.max(CAM_PITCH_MIN, Math.min(CAM_PITCH_MAX, camPitch));
+        break;
+      }
+    }
+  },{passive:true});
+
+  document.addEventListener('touchend',function(e){
+    for(var i=0;i<e.changedTouches.length;i++){
+      if(e.changedTouches[i].identifier===camTouchId){
+        camDragging=false; camTouchId=-1; break;
+      }
+    }
+  },{passive:true});
+
+  // --- MOUSE (clic gauche sur canvas hors UI) ---
+  cv.addEventListener('mousedown',function(e){
+    if(e.button===0||e.button===2){
+      camDragging=true; camLastX=e.clientX; camLastY=e.clientY;
+      e.preventDefault();
+    }
+  });
+  window.addEventListener('mousemove',function(e){
+    if(!camDragging) return;
+    var dx=e.clientX-camLastX, dy=e.clientY-camLastY;
+    camLastX=e.clientX; camLastY=e.clientY;
+    camYaw   += dx * SENS_X * 10;
+    camPitch -= dy * SENS_Y * 8;
+    camPitch  = Math.max(CAM_PITCH_MIN, Math.min(CAM_PITCH_MAX, camPitch));
+  });
+  window.addEventListener('mouseup',function(){camDragging=false;});
+
+  // --- ZOOM molette ---
+  window.addEventListener('wheel',function(e){
+    CAM_D=Math.max(4,Math.min(22,CAM_D+e.deltaY*.02));
+  },{passive:true});
+
   cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 }
 
+// ============================================================
+//  CLAVIER
+// ============================================================
 function setupKeys(){
   window.addEventListener('keydown',function(e){
-    if(e.key==='ArrowUp'||e.key==='w'||e.key==='W') _k.u=1;
-    if(e.key==='ArrowDown'||e.key==='s'||e.key==='S') _k.d=1;
-    if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') _k.l=1;
+    if(e.key==='ArrowUp'   ||e.key==='w'||e.key==='W') _k.u=1;
+    if(e.key==='ArrowDown' ||e.key==='s'||e.key==='S') _k.d=1;
+    if(e.key==='ArrowLeft' ||e.key==='a'||e.key==='A') _k.l=1;
     if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') _k.r=1;
     if(e.key===' '){e.preventDefault();doJump();}
     if(e.key==='Shift') sprint=true;
   });
   window.addEventListener('keyup',function(e){
-    if(e.key==='ArrowUp'||e.key==='w'||e.key==='W') _k.u=0;
-    if(e.key==='ArrowDown'||e.key==='s'||e.key==='S') _k.d=0;
-    if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A') _k.l=0;
+    if(e.key==='ArrowUp'   ||e.key==='w'||e.key==='W') _k.u=0;
+    if(e.key==='ArrowDown' ||e.key==='s'||e.key==='S') _k.d=0;
+    if(e.key==='ArrowLeft' ||e.key==='a'||e.key==='A') _k.l=0;
     if(e.key==='ArrowRight'||e.key==='d'||e.key==='D') _k.r=0;
     if(e.key==='Shift') sprint=false;
   });
 }
+
 function doJump(e){if(e&&e.preventDefault)e.preventDefault();if(onGround){pVY=8;onGround=false;if(pAnims.jump)playAnim(pAnims.jump);}}
 function setSprint(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;}
 
-// - JOUR/NUIT -
+// --- JOUR/NUIT ---
 function toggleDN(){
   night=!night;
   if(night){
@@ -797,7 +896,7 @@ function toggleDN(){
   }
 }
 
-// - MODE ACHAT -
+// --- MODE ACHAT ---
 function setMode(m,el){
   mode=m;
   document.querySelectorAll('.mbb').forEach(function(b){b.classList.remove('on');});
@@ -824,7 +923,7 @@ function buyPlot(i){
 }
 setInterval(function(){if(eng){gold+=60+props*35;document.getElementById('goldVal').textContent=gold.toLocaleString('fr-FR');}},30000);
 
-// - MINIMAP -
+// --- MINIMAP ---
 var mmCtx=null;
 function drawMinimap(){
   if(!mmCtx){var c=document.getElementById('mmcv');if(!c)return;mmCtx=c.getContext('2d');}
@@ -832,7 +931,6 @@ function drawMinimap(){
   mmCtx.clearRect(0,0,W,H);
   mmCtx.save();mmCtx.beginPath();mmCtx.arc(50,50,49,0,Math.PI*2);mmCtx.clip();
   mmCtx.fillStyle='#023060';mmCtx.fillRect(0,0,W,H);
-  // Iles
   mmCtx.fillStyle='#c8b860';
   [[0,0,14,11],[55,0,6,5],[-50,0,5,4],[20,-50,7,5],[-30,55,4,4]].forEach(function(isle){
     var mx=(isle[0]/150+.5)*W, mz=(isle[1]/150+.5)*H;
@@ -854,7 +952,14 @@ function drawMinimap(){
   mmCtx.restore();mmCtx.restore();
 }
 
-// - TOAST -
+// --- ZONES ---
+function updateZone(){
+  var d=Math.sqrt(pPos.x*pPos.x+pPos.z*pPos.z);
+  var z=d<8?'&#127956; VILLAGE':d<18?'&#127944; PLAGE':d<35?'&#127807; JUNGLE':'&#127754; OCEAN';
+  document.getElementById('zoneTxt').innerHTML=z;
+}
+
+// --- TOAST ---
 function toast(msg){
   var t=document.getElementById('toast');
   t.textContent=msg; t.className='show';
@@ -862,7 +967,7 @@ function toast(msg){
   toastT=setTimeout(function(){t.className='';},3000);
 }
 
-// - DEMARRAGE -
+// --- DEMARRAGE ---
 window.addEventListener('load',function(){
   var pct=0;
   var anim=setInterval(function(){pct=Math.min(pct+3,90);document.getElementById('barFill').style.width=pct+'%';},60);
