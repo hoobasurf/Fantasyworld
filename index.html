@@ -132,9 +132,7 @@ window.onerror=function(msg,src,line){
 var B = BABYLON;
 var BASE = 'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
 
-// ══════════════════════════════════════════
 // PERSONNAGES
-// ══════════════════════════════════════════
 var CHARS = [
   {file:'joe__realistic_human_3d_model.glb', name:'JOE',   desc:'Homme réaliste',      color:'#f0c060'},
   {file:'Ely%20By%20K.Atienza.glb',          name:'ELY',   desc:'Style cinématique',   color:'#ff88cc'},
@@ -143,9 +141,7 @@ var CHARS = [
 ];
 var selChar = 0;
 
-// ══════════════════════════════════════════
 // ÉTAT GLOBAL
-// ══════════════════════════════════════════
 var eng, sc, cam;
 var night = true;
 var sun, amb, shadows, fillLight;
@@ -168,17 +164,13 @@ var PLOTS=[
   {x:28,z:-52, price:4500,name:'LOT PREMIUM',desc:'Exclusif'}
 ];
 
-// ══════════════════════════════════════════
 // LOADING
-// ══════════════════════════════════════════
 function setStep(pct, txt){
   document.getElementById('barFill').style.width = pct+'%';
   if(txt) document.getElementById('stepTxt').textContent = txt;
 }
 
-// ══════════════════════════════════════════
 // CHARACTER SELECT
-// ══════════════════════════════════════════
 var csEng=null, csScene=null, csModels=[], csIdx=0, csLock=false;
 
 function initCharSelect(){
@@ -281,9 +273,7 @@ function csGoTo(idx){
   csIdx=idx; csUpdateUI(); csLoad(idx);
 }
 
-// ══════════════════════════════════════════
 // START GAME
-// ══════════════════════════════════════════
 async function startGame(){
   selChar=csIdx;
   document.getElementById('charsel').style.display='none';
@@ -294,9 +284,7 @@ async function startGame(){
   await initWorld();
 }
 
-// ══════════════════════════════════════════
 // INIT MONDE
-// ══════════════════════════════════════════
 async function initWorld(){
   var cv=document.getElementById('cv');
   cv.style.display='block';
@@ -316,29 +304,30 @@ async function initWorld(){
 
   setStep(30,'SOL...');
   buildGround();
-  buildFallbackCity();  // Ville immédiate sans GLB
   buildPlots();
   setupJoystick();
   setupCamDrag(cv);
   setupKeys();
 
-  // Lancer le jeu MAINTENANT — le monde de base est déjà là
+  // Spawner une capsule joueur immédiate pendant le chargement GLB
+  spawnTempPlayer();
+
+  // Lancer le renderLoop immédiatement
   eng.runRenderLoop(gameLoop);
   window.addEventListener('resize',function(){if(eng)eng.resize();});
+
+  // Charger tout le monde GLB en affichant la progression
+  await loadGLBWorld();
+
   document.getElementById('loading').style.display='none';
   document.getElementById('cv').style.display='block';
   document.getElementById('hud').style.display='block';
   document.getElementById('mbar').style.display='flex';
   document.getElementById('charBadge').textContent='👤 '+CHARS[selChar].name;
-  toast('✦ BIENVENUE — '+CHARS[selChar].name+' ✦');
-
-  // Charger les GLB en arrière-plan
-  loadGLBWorld();
+  toast('✦ BIENVENUE - '+CHARS[selChar].name+' ✦');
 }
 
-// ══════════════════════════════════════════
-// LUMIÈRES — ambiance nuit GTA
-// ══════════════════════════════════════════
+// LUMIÈRES - ambiance nuit GTA
 function initLights(){
   amb=new B.HemisphericLight('a',new B.Vector3(0,1,0),sc);
   amb.intensity=.25;
@@ -364,9 +353,7 @@ function initLights(){
   fillLight.range=10;
 }
 
-// ══════════════════════════════════════════
 // SOL
-// ══════════════════════════════════════════
 function buildGround(){
   var g=B.MeshBuilder.CreateGround('gnd',{width:500,height:500,subdivisions:1},sc);
   var m=new B.StandardMaterial('gm',sc);
@@ -376,9 +363,7 @@ function buildGround(){
   g.material=m; g.receiveShadows=true;
 }
 
-// ══════════════════════════════════════════
 // VILLE IMMÉDIATE (fallback cubes + routes)
-// ══════════════════════════════════════════
 function buildFallbackCity(){
   // Routes principales
   var roadMat=new B.StandardMaterial('rm',sc);
@@ -493,9 +478,7 @@ function addLamp(x,z){
   hm.disableLighting=true; head.material=hm;
 }
 
-// ══════════════════════════════════════════
 // TERRAINS À ACHETER
-// ══════════════════════════════════════════
 function buildPlots(){
   PLOTS.forEach(function(p,i){
     var g=B.MeshBuilder.CreateGround('pl'+i,{width:11,height:11},sc);
@@ -515,9 +498,19 @@ function buildPlots(){
   });
 }
 
-// ══════════════════════════════════════════
 // CHARGEMENT GLB EN ARRIÈRE-PLAN
-// ══════════════════════════════════════════
+// Capsule temporaire le temps que le GLB charge
+function spawnTempPlayer(){
+  if(pRoot) return;
+  var cap=B.MeshBuilder.CreateCapsule('tmp',{height:1.8,radius:.28},sc);
+  cap.position.set(0,.9,0);
+  var m=new B.StandardMaterial('tmpm',sc);
+  m.diffuseColor=B.Color3.FromHexString(CHARS[selChar].color);
+  m.alpha=0; // invisible - juste pour la physique
+  cap.material=m; pRoot=cap; pYOff=.9;
+  window._tempPlayer=cap;
+}
+
 var TMPL={};
 async function loadT(file){
   if(TMPL[file]!==undefined) return TMPL[file];
@@ -555,27 +548,30 @@ function placeGLB(file,x,y,z,ry,sc2){
 }
 
 async function loadGLBWorld(){
-  // ── Routes GLB
+  //  ROUTES GLB
+  setStep(35,'ROUTES...');
   await loadT('road-straight.glb');
   await loadT('road-crossroad.glb');
-  await loadT('road-bend.glb');
+  // Grille de routes : espacées de 32u, rues de 2u de dalles
+  var STREET=[-64,-32,0,32,64];
   if(TMPL['road-straight.glb']){
-    [-48,-16,16,48].forEach(function(sx){
-      for(var j=-12;j<=12;j++) placeGLB('road-straight.glb',sx,0,j*2,Math.PI/2,1);
+    STREET.forEach(function(sx){
+      for(var j=-20;j<=20;j++) placeGLB('road-straight.glb',sx,0,j*2,Math.PI/2,1);
     });
-    [-48,-16,16,48].forEach(function(sz){
-      for(var i=-12;i<=12;i++) placeGLB('road-straight.glb',i*2,0,sz,0,1);
+    STREET.forEach(function(sz){
+      for(var i=-20;i<=20;i++) placeGLB('road-straight.glb',i*2,0,sz,0,1);
     });
   }
   if(TMPL['road-crossroad.glb']){
-    [-48,-16,16,48].forEach(function(sx){
-      [-48,-16,16,48].forEach(function(sz){
+    STREET.forEach(function(sx){
+      STREET.forEach(function(sz){
         placeGLB('road-crossroad.glb',sx,0,sz,0,1);
       });
     });
   }
 
-  // ── Bâtiments GLB (remplacent les fallback cubes)
+  //  BÂTIMENTS GLB
+  setStep(50,'BÂTIMENTS...');
   var BLDG=['building-a','building-b','building-c','building-d','building-e',
             'building-f','building-g','building-h','building-i','building-j',
             'building-k','building-l','building-m','building-n','building-o',
@@ -583,70 +579,100 @@ async function loadGLBWorld(){
   var SKY=['building-skyscraper-a','building-skyscraper-b','building-skyscraper-c',
            'building-skyscraper-d','building-skyscraper-e'];
   var LOW=['low-detail-building-a','low-detail-building-b','low-detail-building-c',
-           'low-detail-building-d','low-detail-building-e','low-detail-building-f'];
+           'low-detail-building-d','low-detail-building-e','low-detail-building-f',
+           'low-detail-building-g','low-detail-building-h'];
+  var BTYPE=['building-type-a','building-type-b','building-type-c','building-type-d',
+             'building-type-e','building-type-f','building-type-g','building-type-h'];
 
-  for(var i=0;i<6;i++) await loadT(BLDG[i]+'.glb');
-  for(var i=0;i<SKY.length;i++) await loadT(SKY[i]+'.glb');
-  for(var i=0;i<LOW.length;i++) await loadT(LOW[i]+'.glb');
+  for(var i=0;i<BLDG.length;i++) await loadT(BLDG[i]+'.glb');
+  for(var i=0;i<SKY.length;i++)  await loadT(SKY[i]+'.glb');
+  for(var i=0;i<LOW.length;i++)  await loadT(LOW[i]+'.glb');
+  for(var i=0;i<BTYPE.length;i++) await loadT(BTYPE[i]+'.glb');
 
+  // Ilots entre les rues (centres à -48,-16,16,48)
+  var ISLANDS=[-48,-16,16,48];
   var ni=0;
-  [-32,0,32].forEach(function(ix){
-    [-32,0,32].forEach(function(iz){
-      var isCentre=(ix===0&&iz===0);
-      for(var ci=0;ci<3;ci++){
-        for(var ri=0;ri<3;ri++){
-          var bx=ix-13+(ci+.5)*26/3;
-          var bz=iz-13+(ri+.5)*26/3;
-          var file;
-          if(isCentre) file=SKY[ni%SKY.length]+'.glb';
-          else if(Math.abs(ix)<35&&Math.abs(iz)<35) file=BLDG[ni%6]+'.glb';
-          else file=LOW[ni%LOW.length]+'.glb';
-          var sc2=.9+Math.random()*.3;
-          var ry=Math.round(Math.random()*3)*Math.PI*.5;
-          placeGLB(file,bx,0,bz,ry,sc2);
-          ni++;
-        }
-      }
+  ISLANDS.forEach(function(ix){
+    ISLANDS.forEach(function(iz){
+      var d=Math.sqrt(ix*ix+iz*iz);
+      // 2x2 bâtiments par ilot
+      [[-7,-7],[-7,7],[7,-7],[7,7]].forEach(function(off){
+        var bx=ix+off[0], bz=iz+off[1];
+        var file, sc2=.9+Math.random()*.35;
+        var ry=Math.round(Math.random()*3)*Math.PI*.5;
+        if(d<25) file=SKY[ni%SKY.length]+'.glb';
+        else if(d<50) file=BLDG[ni%BLDG.length]+'.glb';
+        else file=LOW[ni%LOW.length]+'.glb';
+        placeGLB(file,bx,0,bz,ry,sc2);
+        ni++;
+      });
     });
   });
-
-  // ── Arbres
-  var TREES=['tree_oak','tree_default','tree_cone','tree_fat',
-             'tree_pineDefaultA','tree_pineDefaultB','tree-large','tree-small'];
-  for(var i=0;i<TREES.length;i++) await loadT(TREES[i]+'.glb');
-  for(var a=0;a<Math.PI*2;a+=.25){
-    var rd=62+Math.random()*14;
-    placeGLB(TREES[Math.floor(Math.random()*TREES.length)+'.glb']||TREES[0]+'.glb',
-             Math.cos(a)*rd,0,Math.sin(a)*rd,Math.random()*Math.PI*2,.7+Math.random()*.7);
-  }
-  // Arbres dans les parcs
-  [{x:-32,z:0},{x:32,z:0},{x:0,z:-32},{x:0,z:32}].forEach(function(p,i){
-    placeGLB(TREES[i%TREES.length]+'.glb',p.x+3,0,p.z,0,.9);
-    placeGLB(TREES[(i+2)%TREES.length]+'.glb',p.x-3,0,p.z+2,0,.8);
+  // Bâtiments supplémentaires type
+  [[-80,-80],[80,-80],[-80,80],[80,80],[-80,0],[80,0],[0,-80],[0,80]].forEach(function(p,i){
+    placeGLB(BTYPE[i%BTYPE.length]+'.glb',p[0],0,p[1],Math.random()*Math.PI*2,.9+Math.random()*.3);
+    placeGLB(LOW[i%LOW.length]+'.glb',p[0]+15,0,p[1],Math.random()*Math.PI*2,.8);
+    placeGLB(LOW[(i+1)%LOW.length]+'.glb',p[0]-15,0,p[1],Math.random()*Math.PI*2,.85);
   });
 
-  // ── Rochers
-  await loadT('rock_largeA.glb'); await loadT('rock_tallA.glb'); await loadT('rock_smallA.glb');
-  for(var i=0;i<12;i++){
-    var a2=i/12*Math.PI*2, rd2=58+Math.random()*12;
-    var rf=['rock_largeA.glb','rock_tallA.glb','rock_smallA.glb'][i%3];
-    placeGLB(rf,Math.cos(a2)*rd2,0,Math.sin(a2)*rd2,Math.random()*Math.PI*2,.8+Math.random());
+  //  NATURE
+  setStep(70,'NATURE...');
+  var TREES=['tree_oak','tree_default','tree_cone','tree_fat',
+             'tree_pineDefaultA','tree-large','tree_detailed','tree_simple'];
+  for(var i=0;i<TREES.length;i++) await loadT(TREES[i]+'.glb');
+  await loadT('plant_bush.glb');
+  await loadT('plant_bushLarge.glb');
+  // Ceinture d'arbres
+  for(var a=0;a<Math.PI*2;a+=.2){
+    var rd=75+Math.random()*18;
+    var tf=TREES[Math.floor(Math.random()*TREES.length)]+'.glb';
+    placeGLB(tf,Math.cos(a)*rd,0,Math.sin(a)*rd,Math.random()*Math.PI*2,.7+Math.random()*.8);
+  }
+  // Parcs dans les ilots libres
+  [{x:0,z:0},{x:-32,z:32},{x:32,z:-32}].forEach(function(p,i){
+    for(var t=0;t<4;t++){
+      placeGLB(TREES[t%TREES.length]+'.glb',p.x+(Math.random()*8-4),0,p.z+(Math.random()*8-4),Math.random()*Math.PI*2,.8+Math.random()*.4);
+    }
+    placeGLB('plant_bushLarge.glb',p.x+5,0,p.z-3,0,.9);
+    placeGLB('plant_bush.glb',p.x-4,0,p.z+4,0,.8);
+  });
+
+  // Rochers
+  await loadT('rock_largeA.glb'); await loadT('rock_tallA.glb');
+  for(var i=0;i<16;i++){
+    var a2=i/16*Math.PI*2, rd2=68+Math.random()*15;
+    placeGLB(i%2?'rock_largeA.glb':'rock_tallA.glb',Math.cos(a2)*rd2,0,Math.sin(a2)*rd2,Math.random()*Math.PI*2,.8+Math.random());
   }
 
-  // ── Taxis
+  //  PROPS
+  setStep(80,'DÉCORS...');
   await loadT('Taxi.glb');
-  [[12,0,4,.3],[-18,0,-12,2.8],[30,0,8,1.1]].forEach(function(p){
+  await loadT('construction-cone.glb');
+  await loadT('sign-highway.glb');
+  await loadT('statue_column.glb');
+  [[12,0,4,.3],[-18,0,-12,2.8],[30,0,8,1.1],[-30,0,20,0]].forEach(function(p){
     placeGLB('Taxi.glb',p[0],p[1],p[2],p[3],.5);
   });
+  // Cônes de chantier
+  for(var i=0;i<8;i++) placeGLB('construction-cone.glb',-10+i*2.5,0,-4,0,.8);
+  // Panneaux
+  [[20,-8,0],[-20,-8,Math.PI]].forEach(function(p){
+    placeGLB('sign-highway.glb',p[0],0,p[1],p[2],.9);
+  });
+  // Statues déco
+  [[0,0,-28],[28,0,0],[-28,0,0]].forEach(function(p){
+    placeGLB('statue_column.glb',p[0],0,p[1],0,1);
+  });
 
-  // ── Joueur + PNJ
+  //  PERSONNAGES
+  setStep(90,'PERSONNAGES...');
   await loadPlayer();
   await spawnNPCs();
+
+  setStep(100,'PRÊT !');
 }
 
-// ══════════════════════════════════════════
 // JOUEUR GLB
-// ══════════════════════════════════════════
 async function loadPlayer(){
   var c=CHARS[selChar];
   try{
@@ -697,9 +723,7 @@ function playAnim(a){
   a.start(true); curAnim=a;
 }
 
-// ══════════════════════════════════════════
 // PNJ
-// ══════════════════════════════════════════
 var PATROL=[
   [{x:-14,z:-14},{x:-14,z:14},{x:14,z:14},{x:14,z:-14}],
   [{x:-28,z:0},{x:0,z:-28},{x:28,z:0},{x:0,z:28}],
@@ -757,9 +781,7 @@ async function spawnNPCs(){
   }
 }
 
-// ══════════════════════════════════════════
 // GAME LOOP
-// ══════════════════════════════════════════
 function gameLoop(){
   var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;
   movePlayer(dt);
@@ -769,9 +791,7 @@ function gameLoop(){
   sc.render();
 }
 
-// ══════════════════════════════════════════
 // MOUVEMENT JOUEUR
-// ══════════════════════════════════════════
 function movePlayer(dt){
   var spd=(sprint&&stamina>2?9:5)*dt;
   // Direction basée sur camYaw
@@ -823,21 +843,19 @@ function movePlayer(dt){
   updateZone();
 }
 
-// ══════════════════════════════════════════
-// CAMÉRA — suit le joueur de derrière
-// ══════════════════════════════════════════
+// CAMÉRA - suit le joueur de derrière
 function updateCam(){
-  // La caméra suit doucement l'angle du joueur en mouvement
-  if(_isMoving){
-    var da=pAngle-camYaw;
-    while(da>Math.PI)da-=Math.PI*2; while(da<-Math.PI)da+=Math.PI*2;
-    camYaw+=da*.05;
-  }
-  var tx=pPos.x-Math.sin(camYaw)*CAM_D;
-  var ty=pPos.y+CAM_H;
-  var tz=pPos.z-Math.cos(camYaw)*CAM_D;
-  cam.position=B.Vector3.Lerp(cam.position,new B.Vector3(tx,ty,tz),.1);
-  cam.target=B.Vector3.Lerp(cam.target,new B.Vector3(pPos.x,pPos.y+1.5,pPos.z),.12);
+  // camYaw suit TOUJOURS pAngle - caméra 360° collée derrière Stitch
+  var da = pAngle - camYaw;
+  while(da>Math.PI) da-=Math.PI*2;
+  while(da<-Math.PI) da+=Math.PI*2;
+  camYaw += da * 0.08; // vitesse de suivi (0.08 = doux mais réactif)
+
+  var tx = pPos.x - Math.sin(camYaw)*CAM_D;
+  var ty = pPos.y + CAM_H;
+  var tz = pPos.z - Math.cos(camYaw)*CAM_D;
+  cam.position = B.Vector3.Lerp(cam.position, new B.Vector3(tx,ty,tz), .12);
+  cam.target   = B.Vector3.Lerp(cam.target,   new B.Vector3(pPos.x, pPos.y+1.5, pPos.z), .14);
 }
 
 function moveNPCs(dt){
@@ -863,9 +881,7 @@ function updateZone(){
   document.getElementById('zoneTxt').textContent=z;
 }
 
-// ══════════════════════════════════════════
 // JOUR / NUIT
-// ══════════════════════════════════════════
 function toggleDN(){
   night=!night;
   if(night){
@@ -885,9 +901,7 @@ function toggleDN(){
   }
 }
 
-// ══════════════════════════════════════════
 // CONTRÔLES
-// ══════════════════════════════════════════
 function setupJoystick(){
   var base=document.getElementById('joy'),nub=document.getElementById('jnub'),tid=-1;
   function mv(cx,cy){
@@ -945,15 +959,13 @@ function setupKeys(){
 function doJump(e){if(e&&e.preventDefault)e.preventDefault();if(onGround){pVY=9;onGround=false;if(pAnims.jump)playAnim(pAnims.jump);}}
 function setSprint(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;}
 
-// ══════════════════════════════════════════
 // MODE ACHAT
-// ══════════════════════════════════════════
 function setMode(m,el){
   mode=m;
   document.querySelectorAll('.mbb').forEach(function(b){b.classList.remove('on');});
   if(el)el.classList.add('on');
   if(m==='buy'){
-    toast('MODE ACHAT — approche un terrain vert');
+    toast('MODE ACHAT - approche un terrain vert');
     plotMeshes.forEach(function(mesh,i){
       if(!mesh.actionManager)mesh.actionManager=new B.ActionManager(sc);
       mesh.actionManager.registerAction(new B.ExecuteCodeAction(B.ActionManager.OnPickTrigger,function(){buyPlot(i);}));
@@ -972,9 +984,7 @@ function buyPlot(i){
 }
 setInterval(function(){if(eng){gold+=80+props*40;document.getElementById('goldVal').textContent=gold.toLocaleString('fr-FR');}},30000);
 
-// ══════════════════════════════════════════
 // MINIMAP
-// ══════════════════════════════════════════
 var mmCtx=null;
 function drawMinimap(){
   if(!mmCtx){var c=document.getElementById('mmcv');if(!c)return;mmCtx=c.getContext('2d');}
@@ -1003,9 +1013,7 @@ function drawMinimap(){
   mmCtx.restore();mmCtx.restore();
 }
 
-// ══════════════════════════════════════════
 // TOAST
-// ══════════════════════════════════════════
 function toast(msg){
   var t=document.getElementById('toast');
   t.textContent=msg; t.className='show';
@@ -1013,9 +1021,7 @@ function toast(msg){
   toastT=setTimeout(function(){t.className='';},3000);
 }
 
-// ══════════════════════════════════════════
 // DÉMARRAGE
-// ══════════════════════════════════════════
 window.addEventListener('load',function(){
   // Animer la barre pendant le chargement
   var pct=0;
