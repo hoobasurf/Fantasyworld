@@ -170,7 +170,7 @@ var sun, amb, shadows;
 var fillLight;
 var pPos = {x:0,y:0,z:0}, pAngle = 0, pVY = 0, onGround = true;
 var jX=0, jY=0, sprint=false, stamina=100;
-var camYaw = Math.PI, CAM_D = 14, CAM_H = 6;
+var camYaw = 0, CAM_D = 14, CAM_H = 6;
 var gold = 5000, props = 0;
 var mode = 'explore';
 var toastTimer = null;
@@ -724,7 +724,7 @@ async function loadPlayer(){
     var bb2 = root.getHierarchyBoundingVectors();
     pYOff = -bb2.min.y;
     root.position.set(pPos.x, pPos.y+pYOff, pPos.z);
-    root.rotation.y = pAngle;
+    root.rotation.y = pAngle + Math.PI;
 
     r.meshes.forEach(function(m){
       m.receiveShadows=true;
@@ -844,12 +844,13 @@ function gameLoop(){
 
 function movePlayer(dt){
   var spd=(sprint&&stamina>2?9:5)*dt;
-  var fw=new B.Vector3(Math.sin(camYaw),0,Math.cos(camYaw));
+  // fw = direction DEVANT le joueur (vers laquelle la caméra regarde)
+  var fw=new B.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw));
   var rt=new B.Vector3(Math.cos(camYaw),0,-Math.sin(camYaw));
   var mv=B.Vector3.Zero(), moved=false;
 
   if(Math.abs(jX)>.04||Math.abs(jY)>.04){
-    mv.addInPlace(rt.scale(jX)); mv.addInPlace(fw.scale(-jY)); moved=true;
+    mv.addInPlace(rt.scale(jX)); mv.addInPlace(fw.scale(jY)); moved=true;
     var l=mv.length(); if(l>0) mv.scaleInPlace(spd*Math.min(l,1)/l);
   }else{
     if(_k.u) mv.subtractInPlace(fw); if(_k.d) mv.addInPlace(fw);
@@ -909,9 +910,9 @@ function moveNPCs(dt){
 }
 
 function updateCam(){
-  var tx=pPos.x+Math.sin(camYaw)*CAM_D;
+  var tx=pPos.x-Math.sin(camYaw)*CAM_D;
   var ty=pPos.y+CAM_H;
-  var tz=pPos.z+Math.cos(camYaw)*CAM_D;
+  var tz=pPos.z-Math.cos(camYaw)*CAM_D;
   cam.position=B.Vector3.Lerp(cam.position,new B.Vector3(tx,ty,tz),.1);
   cam.target=B.Vector3.Lerp(cam.target,new B.Vector3(pPos.x,pPos.y+1.7,pPos.z),.12);
 }
