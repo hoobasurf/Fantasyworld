@@ -180,6 +180,7 @@ var curAnim = null;
 var npcs = [];
 var plotMeshes = [];
 var _k = {u:0,d:0,l:0,r:0};
+var _isMoving = false;
 var lastT = performance.now(), mmT = 0;
 
 var PLOTS = [
@@ -374,6 +375,7 @@ async function initWorld(){
 
   setStep(2);
   buildGround();
+  buildFallbackCity(); // bâtiments immédiats sans GLB
   buildPlots();
   setupJoystick();
   setupCamDrag(cv);
@@ -393,6 +395,91 @@ async function initWorld(){
 
   // Charger le reste en arrière-plan (non bloquant)
   loadWorldAsync();
+}
+
+// Bâtiments fallback immédiats — s'affichent instantanément
+function buildFallbackCity(){
+  var BCOLORS = [
+    [.12,.12,.15],[.10,.10,.14],[.15,.12,.10],[.08,.10,.16],
+    [.14,.10,.08],[.11,.13,.16],[.13,.11,.09],[.09,.11,.14]
+  ];
+  var WCOLORS = [
+    new B.Color3(.95,.85,.45), new B.Color3(.3,.6,1),
+    new B.Color3(.9,.4,.1), new B.Color3(.5,.9,.5)
+  ];
+
+  var ni=0;
+  // Grille de blocs : ilots entre les rues à -48,-16,16,48
+  var BLOCKS = [
+    // [centerX, centerZ, largeur, profondeur, hauteur]
+    [-32,-32,28,28],[0,-32,24,28],[32,-32,28,28],
+    [-32,0,28,24],[32,0,28,24],
+    [-32,32,28,28],[0,32,24,28],[32,32,28,28],
+    // Centre : gratte-ciels
+    [-8,-8,10,10],[-8,8,10,10],[8,-8,10,10],[8,8,10,10],
+  ];
+
+  BLOCKS.forEach(function(b){
+    var bx=b[0], bz=b[1], bw=b[2], bd=b[3];
+    // Remplir chaque bloc avec 2-4 bâtiments
+    var cols = Math.floor(bw/10)+1;
+    var rows = Math.floor(bd/10)+1;
+    for(var ci=0;ci<cols;ci++){
+      for(var ri=0;ri<rows;ri++){
+        var wx = bx - bw/2 + ci*(bw/cols) + bw/cols/2;
+        var wz = bz - bd/2 + ri*(bd/rows) + bd/rows/2;
+        var isCentre = Math.abs(bx)<12 && Math.abs(bz)<12;
+        var h = isCentre ? (18+Math.random()*20) : (6+Math.random()*10);
+        var w = bw/cols * .85;
+        var d2 = bd/rows * .85;
+
+        var col = BCOLORS[ni%BCOLORS.length];
+        var box = B.MeshBuilder.CreateBox('bld'+ni, {width:w, height:h, depth:d2}, sc);
+        box.position.set(wx, h/2, wz);
+        var bm = new B.StandardMaterial('bm'+ni, sc);
+        bm.diffuseColor = new B.Color3(col[0],col[1],col[2]);
+        bm.emissiveColor = new B.Color3(col[0]*.4,col[1]*.4,col[2]*.4);
+        bm.specularColor = new B.Color3(.3,.3,.4);
+        bm.specularPower = 60;
+        box.material = bm;
+        box.receiveShadows = true;
+        if(shadows) shadows.addShadowCaster(box);
+
+        // Fenêtres lumineuses
+        var floors = Math.floor(h/2.2);
+        for(var fl=0;fl<floors;fl++){
+          var wcount = Math.floor(w/1.5);
+          for(var wc=0;wc<wcount;wc++){
+            if(Math.random()<.55){
+              var wn = B.MeshBuilder.CreateBox('wn', {width:.55,height:.55,depth:.06}, sc);
+              wn.position.set(wx-w/2+1.2+wc*1.5+(Math.random()*.3), fl*2.2+1.5, wz+(Math.random()<.5?d2/2+.04:-d2/2-.04));
+              var wm = new B.StandardMaterial('wm'+ni+fl+wc, sc);
+              var wcol = WCOLORS[Math.floor(Math.random()*WCOLORS.length)];
+              wm.emissiveColor = wcol.scale(.7+(Math.random()*.3));
+              wm.disableLighting = true;
+              wn.material = wm;
+            }
+          }
+        }
+        ni++;
+      }
+    }
+  });
+
+  // Route principale visible immédiatement (simples plans gris)
+  var rm = new B.StandardMaterial('rdm', sc);
+  rm.diffuseColor = new B.Color3(.18,.18,.20);
+  rm.emissiveColor = new B.Color3(.05,.05,.06);
+  [-48,-16,16,48].forEach(function(sx){
+    var road = B.MeshBuilder.CreateGround('rd'+sx, {width:12, height:200}, sc);
+    road.position.set(sx,.02,0);
+    road.material = rm;
+  });
+  [-48,-16,16,48].forEach(function(sz){
+    var road = B.MeshBuilder.CreateGround('rdz'+sz, {width:200, height:12}, sc);
+    road.position.set(0,.02,sz);
+    road.material = rm;
+  });
 }
 
 // Chargement asynchrone du monde (non-bloquant)
@@ -477,24 +564,23 @@ async function loadTmpl(file){
 }
 function place(file, x, y, z, ry, sc2){
   var meshes = TMPL[file]; if(!meshes||!meshes.length) return null;
-  // Cloner chaque mesh individuellement et les regrouper
   var root = new B.TransformNode('g_'+Math.random().toString(36).slice(2), sc);
   root.position.set(x, y||0, z);
   if(ry!=null) root.rotation.y = ry;
   if(sc2) root.scaling.setAll(sc2);
-  // Trouver le vrai root (pas de parent dans notre set)
-  var meshSet = new Set(meshes);
   meshes.forEach(function(m){
-    // Cloner seulement les meshes visibles (pas les TransformNodes racines)
-    if(m.getClassName && (m.getClassName()==='Mesh' || m.getClassName()==='AbstractMesh')){
-      var c = m.clone('c_'+Math.random().toString(36).slice(2), root);
-      if(c){
-        c.setEnabled(true);
-        c.isVisible = true;
-        c.receiveShadows = true;
-        if(shadows) shadows.addShadowCaster(c, false);
-      }
-    }
+    if(!m || !m.clone) return;
+    try{
+      var c = m.clone('c_'+Math.random().toString(36).slice(2));
+      if(!c) return;
+      c.parent = root;
+      c.setEnabled(true);
+      c.isVisible = true;
+      c.receiveShadows = true;
+      // Conserver les matériaux du template
+      if(m.material) c.material = m.material;
+      if(shadows) shadows.addShadowCaster(c, false);
+    }catch(e){}
   });
   return root;
 }
@@ -850,12 +936,12 @@ function movePlayer(dt){
   var mv=B.Vector3.Zero(), moved=false;
 
   if(Math.abs(jX)>.04||Math.abs(jY)>.04){
-    mv.addInPlace(rt.scale(jX)); mv.addInPlace(fw.scale(jY)); moved=true;
+    mv.addInPlace(rt.scale(jX)); mv.addInPlace(fw.scale(jY)); moved=true; _isMoving=true;
     var l=mv.length(); if(l>0) mv.scaleInPlace(spd*Math.min(l,1)/l);
   }else{
     if(_k.u) mv.subtractInPlace(fw); if(_k.d) mv.addInPlace(fw);
     if(_k.l) mv.subtractInPlace(rt); if(_k.r) mv.addInPlace(rt);
-    if(mv.length()>0){moved=true; mv.normalize().scaleInPlace(spd);}
+    if(mv.length()>0){moved=true; _isMoving=true; mv.normalize().scaleInPlace(spd);}
   }
 
   if(moved){
@@ -867,6 +953,7 @@ function movePlayer(dt){
   }else{
     stamina=Math.min(100,stamina+dt*16);
     playAnim(pAnims.idle);
+    _isMoving=false;
   }
 
   pPos.x=Math.max(-110,Math.min(110,pPos.x+mv.x));
@@ -910,11 +997,19 @@ function moveNPCs(dt){
 }
 
 function updateCam(){
-  var tx=pPos.x-Math.sin(camYaw)*CAM_D;
-  var ty=pPos.y+CAM_H;
-  var tz=pPos.z-Math.cos(camYaw)*CAM_D;
-  cam.position=B.Vector3.Lerp(cam.position,new B.Vector3(tx,ty,tz),.1);
-  cam.target=B.Vector3.Lerp(cam.target,new B.Vector3(pPos.x,pPos.y+1.7,pPos.z),.12);
+  // camYaw suit doucement pAngle quand le joueur bouge
+  if(_isMoving){
+    var da = pAngle - camYaw;
+    while(da>Math.PI) da-=Math.PI*2;
+    while(da<-Math.PI) da+=Math.PI*2;
+    camYaw += da * 0.06; // suit le joueur en douceur
+  }
+  // Caméra derrière le joueur
+  var tx = pPos.x - Math.sin(camYaw) * CAM_D;
+  var ty = pPos.y + CAM_H;
+  var tz = pPos.z - Math.cos(camYaw) * CAM_D;
+  cam.position = B.Vector3.Lerp(cam.position, new B.Vector3(tx,ty,tz), .12);
+  cam.target   = B.Vector3.Lerp(cam.target,   new B.Vector3(pPos.x, pPos.y+1.4, pPos.z), .14);
 }
 
 function updateZone(){
