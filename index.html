@@ -272,13 +272,15 @@ async function startGame(){
   await new Promise(function(r){requestAnimationFrame(function(){requestAnimationFrame(r);});});
   document.getElementById('loading').style.display='flex';
   setStep(5,'INITIALISATION...');
-  await initWorld();
+  try{ await initWorld(); }
+  catch(e){ console.error('initWorld:',e); document.getElementById('stepTxt').textContent='ERR: '+String(e).substring(0,80); }
 }
 
 // --- INIT MONDE ---
 async function initWorld(){
   var cv=document.getElementById('cv');
-  cv.style.display='block';
+
+  // 1. Babylon + scène d'abord
   eng=new B.Engine(cv,true,{antialias:true,stencil:true},true);
   sc=new B.Scene(eng);
   sc.clearColor=new B.Color4(.45,.75,.95,1);
@@ -286,7 +288,6 @@ async function initWorld(){
   sc.fogDensity=.006;
   sc.fogColor=new B.Color3(.6,.85,1);
 
-  // FreeCamera pour contrôle total
   cam=new B.FreeCamera('c',new B.Vector3(0,6,14),sc);
   cam.minZ=.1; cam.maxZ=600; cam.fov=.95;
   cam.setTarget(new B.Vector3(0,1,0));
@@ -294,41 +295,61 @@ async function initWorld(){
   setStep(15,'LUMIERES...');
   initLights();
 
-  setStep(25,'OCEAN...');
+  setStep(25,'TERRAIN...');
   buildOcean();
   buildIslands();
   buildPlots();
 
   setupJoystick();
-  setupCamDrag(cv);   // ← caméra orbitale sur le canvas
+  setupCamDrag(cv);
   setupKeys();
 
+  // 2. Démarrer le render loop AVANT d'afficher
   eng.runRenderLoop(gameLoop);
   window.addEventListener('resize',function(){if(eng)eng.resize();});
 
-  document.getElementById('loading').style.display='none';
+  // 3. Afficher le jeu — masquer le loading
   cv.style.display='block';
+  document.getElementById('loading').style.display='none';
   document.getElementById('hud').style.display='block';
   document.getElementById('mbar').style.display='flex';
-  document.getElementById('charBadge').textContent='👤 '+CHARS[selChar].name;
+  document.getElementById('charBadge').innerHTML='&#128100; '+CHARS[selChar].name;
 
-  // Cache le hint après 4s
   setTimeout(function(){
     var h=document.getElementById('camHint');
     if(h) h.classList.add('hidden');
   },4000);
 
+  // 4. Charger les assets en arrière-plan (erreurs silencieuses)
   setStep(35,'PERSONNAGE...');
-  await loadPlayer();
-  toast('Bienvenue sur l\'ile ! - '+CHARS[selChar].name);
+  try{ await loadPlayer(); }catch(e){ console.warn('loadPlayer:',e); spawnFallbackPlayer(); }
+  toast('Bienvenue ! - '+CHARS[selChar].name);
 
   setStep(50,'PALMIERS...');
-  await loadNature();
+  try{ await loadNature(); }catch(e){ console.warn('loadNature:',e); }
   setStep(75,'ROCHERS...');
-  await loadRocks();
+  try{ await loadRocks(); }catch(e){ console.warn('loadRocks:',e); }
   setStep(90,'AMIS...');
-  await spawnNPCs();
+  try{ await spawnNPCs(); }catch(e){ console.warn('spawnNPCs:',e); }
   setStep(100,'');
+}
+
+// Fallback si le GLB du joueur échoue
+function spawnFallbackPlayer(){
+  var c=CHARS[selChar];
+  var col=B.Color3.FromHexString(c.color);
+  var body=B.MeshBuilder.CreateCylinder('pb',{height:1.2,diameter:.55,tessellation:14},sc);
+  body.position.set(0,.6,0);
+  var head=B.MeshBuilder.CreateSphere('ph',{diameter:.55,segments:10},sc);
+  head.position.set(0,1.5,0);
+  var mat=new B.StandardMaterial('pm',sc);
+  mat.diffuseColor=col; mat.emissiveColor=col.scale(.15);
+  body.material=mat; head.material=mat;
+  // Regroupe
+  var root=new B.TransformNode('proot',sc);
+  body.parent=root; head.parent=root;
+  pRoot=root; pYOff=0;
+  if(shadows){shadows.addShadowCaster(body,true);shadows.addShadowCaster(head,true);}
 }
 
 // --- LUMIERES ---
