@@ -126,8 +126,9 @@ var night=false;
 var sun,amb,shadows,fillLight;
 var pPos={x:0,y:0,z:0},pAngle=0,pVY=0,onGround=true;
 var jX=0,jY=0,sprint=false,stamina=100;
-var camYaw=0,camPitch=0.35,CAM_D=12;
-var CAM_PITCH_MIN=0.1,CAM_PITCH_MAX=1.1;
+// Caméra style Kirby
+var CAM={yaw:0,pitch:.28,dist:195};
+var camTX=0,camTY=13,camTZ=160;
 var gold=5000,props=0,mode='explore';
 var toastT=null;
 var pRoot=null,pYOff=0,pAnims={},curAnim=null;
@@ -543,29 +544,27 @@ function gameLoop(){
   sc.render();
 }
 
-// - MOUVEMENT -
+// - MOUVEMENT style Kirby -
 function movePlayer(dt){
   var spd=(sprint&&stamina>2?8:4.5)*dt;
-  var moved=false;
+  var moved=false, walking=false;
+  var mx=0, mz=0;
 
-  // jX = strafe lateral
-  if(Math.abs(jX)>.04){
-    var rx=Math.cos(camYaw)*jX*spd;
-    var rz=-Math.sin(camYaw)*jX*spd;
-    mx+=rx; mz+=rz;
+  // Joystick : mouvement relatif à la caméra (comme Kirby)
+  var moveX = -Math.sin(CAM.yaw)*(-jY) + Math.cos(CAM.yaw)*jX;
+  var moveZ = -Math.cos(CAM.yaw)*(-jY) - Math.sin(CAM.yaw)*jX;
+  var moveMag = Math.sqrt(moveX*moveX + moveZ*moveZ);
+  if(moveMag > .05){
+    mx = moveX/moveMag * spd;
+    mz = moveZ/moveMag * spd;
     moved=true; walking=true;
   }
-  if(_k.l){mx+=Math.cos(camYaw)*(-spd);mz+=-Math.sin(camYaw)*(-spd);moved=true;walking=true;}
-  if(_k.r){mx+=Math.cos(camYaw)*spd;mz+=-Math.sin(camYaw)*spd;moved=true;walking=true;}
 
-  var mx=0,mz=0,walking=false;
-  if(Math.abs(jY)>.04){
-    mx=Math.sin(camYaw)*jY*spd;
-    mz=Math.cos(camYaw)*jY*spd;
-    moved=true; walking=true;
-  }
-  if(_k.u){mx+=-Math.sin(camYaw)*spd;mz+=-Math.cos(camYaw)*spd;moved=true;walking=true;}
-  if(_k.d){mx+=Math.sin(camYaw)*spd;mz+=Math.cos(camYaw)*spd;moved=true;walking=true;}
+  // Clavier
+  if(_k.u){mx+=-Math.sin(CAM.yaw)*spd;mz+=-Math.cos(CAM.yaw)*spd;moved=true;walking=true;}
+  if(_k.d){mx+= Math.sin(CAM.yaw)*spd;mz+= Math.cos(CAM.yaw)*spd;moved=true;walking=true;}
+  if(_k.l){mx+=-Math.cos(CAM.yaw)*spd;mz+= Math.sin(CAM.yaw)*spd;moved=true;walking=true;}
+  if(_k.r){mx+= Math.cos(CAM.yaw)*spd;mz+=-Math.sin(CAM.yaw)*spd;moved=true;walking=true;}
 
   if(moved) sprint?stamina=Math.max(0,stamina-dt*22):stamina=Math.min(100,stamina+dt*10);
   else stamina=Math.min(100,stamina+dt*16);
@@ -577,20 +576,20 @@ function movePlayer(dt){
   pVY-=20*dt; pPos.y+=pVY*dt;
   if(pPos.y<0){pPos.y=0;pVY=0;onGround=true;}else onGround=false;
 
-  // Perso se tourne vers la direction de marche
-  if(walking&&(mx!==0||mz!==0)){
+  // Stitch se tourne vers la direction de marche
+  if(walking && (mx!==0||mz!==0)){
     var tgt=Math.atan2(mx,mz);
     var dd=tgt-pAngle;
-    while(dd>Math.PI)dd-=Math.PI*2;while(dd<-Math.PI)dd+=Math.PI*2;
+    while(dd>Math.PI)dd-=Math.PI*2; while(dd<-Math.PI)dd+=Math.PI*2;
     pAngle+=dd*Math.min(1,dt*10);
   }
+
   if(pRoot){
     pRoot.position.x=pPos.x;
     pRoot.position.y=pPos.y+pYOff;
     pRoot.position.z=pPos.z;
     var diff=(pAngle+Math.PI)-pRoot.rotation.y;
-    while(diff>Math.PI)diff-=Math.PI*2;
-    while(diff<-Math.PI)diff+=Math.PI*2;
+    while(diff>Math.PI)diff-=Math.PI*2; while(diff<-Math.PI)diff+=Math.PI*2;
     pRoot.rotation.y+=diff*Math.min(1,dt*15);
   }
 
@@ -600,23 +599,29 @@ function movePlayer(dt){
   updateZone();
 }
 
-// - CAMERA style Mario Odyssey -
+// - CAMERA style Kirby -
 function updateCam(){
-  var cosP=Math.cos(camPitch),sinP=Math.sin(camPitch);
-  // Position cible = tête de Stitch
-  var tx=pPos.x,ty=pPos.y+1.4,tz=pPos.z;
-  // Position caméra orbitale autour de Stitch
-  var cx=tx+CAM_D*cosP*Math.sin(camYaw);
-  var cy=ty+CAM_D*sinP;
-  var cz=tz+CAM_D*cosP*Math.cos(camYaw);
-  // Lerp fluide
-  cam.position.x+=(cx-cam.position.x)*.18;
-  cam.position.y+=(cy-cam.position.y)*.18;
-  cam.position.z+=(cz-cam.position.z)*.18;
-  // Toujours regarder Stitch
-  cam.target.x=tx;
-  cam.target.y=ty;
-  cam.target.z=tz;
+  // Cible lerp douce vers Stitch
+  camTX += (pPos.x - camTX) * .12;
+  camTY += (pPos.y - camTY) * .10;
+  camTZ += (pPos.z - camTZ) * .12;
+  // Si le joueur bouge et ne touche pas le joystick droit → caméra suit derrière
+  var moveMag = Math.sqrt(jX*jX + jY*jY);
+  if(moveMag > .05){
+    var tcy = pAngle;
+    var cdiff = tcy - CAM.yaw;
+    while(cdiff > Math.PI)  cdiff -= Math.PI*2;
+    while(cdiff < -Math.PI) cdiff += Math.PI*2;
+    CAM.yaw += cdiff * .025;
+  }
+  // Position caméra en sphérique autour de la cible
+  var cr = CAM.dist * Math.cos(CAM.pitch);
+  cam.position.x = camTX + Math.sin(CAM.yaw) * cr;
+  cam.position.y = camTY + CAM.dist * Math.sin(CAM.pitch);
+  cam.position.z = camTZ + Math.cos(CAM.yaw) * cr;
+  cam.target.x = camTX;
+  cam.target.y = camTY + 9;
+  cam.target.z = camTZ;
 }
 
 function moveNPCs(dt){
@@ -682,14 +687,28 @@ function setupJoystick(){
   window.addEventListener('mouseup',reset);
 }
 
-// - CAMERA DRAG Mario Odyssey -
+// - CAMERA DRAG style Kirby (joystick droit + souris) -
 function setupCamDrag(cv){
+  // Joystick droit géré dans le game loop via jRX/jRY
+  // Souris : clic gauche + glisser
+  var mDn=false, mLx=0, mLy=0;
+  cv.addEventListener('mousedown',function(e){
+    mDn=true; mLx=e.clientX; mLy=e.clientY;
+  });
+  window.addEventListener('mouseup',function(){mDn=false;});
+  window.addEventListener('mousemove',function(e){
+    if(!mDn)return;
+    CAM.yaw  -= (e.clientX-mLx)*.004;
+    CAM.pitch = Math.max(.08,Math.min(.92,CAM.pitch+(e.clientY-mLy)*.003));
+    mLx=e.clientX; mLy=e.clientY;
+  });
+  // Touch : glisser zone centrale
   var drag=false,lastX=0,lastY=0,dragId=-1;
   var joyEl=document.getElementById('joy');
   var btnsEl=document.getElementById('btns');
   function inEl(el,x,y){var r=el.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;}
   document.addEventListener('touchstart',function(e){
-    if(dragId!==-1) return;
+    if(dragId!==-1)return;
     for(var i=0;i<e.changedTouches.length;i++){
       var t=e.changedTouches[i];
       if(!inEl(joyEl,t.clientX,t.clientY)&&!inEl(btnsEl,t.clientX,t.clientY)){
@@ -702,10 +721,9 @@ function setupCamDrag(cv){
     for(var i=0;i<e.changedTouches.length;i++){
       var t=e.changedTouches[i];
       if(t.identifier===dragId){
-        camYaw+=(t.clientX-lastX)*.008;
-        camPitch-=(t.clientY-lastY)*.006;
-        camPitch=Math.max(CAM_PITCH_MIN,Math.min(CAM_PITCH_MAX,camPitch));
-        lastX=t.clientX;lastY=t.clientY;break;
+        CAM.yaw  -= (t.clientX-lastX)*.004;
+        CAM.pitch = Math.max(.08,Math.min(.92,CAM.pitch+(t.clientY-lastY)*.003));
+        lastX=t.clientX; lastY=t.clientY; break;
       }
     }
   },{passive:true});
@@ -713,16 +731,9 @@ function setupCamDrag(cv){
     for(var i=0;i<e.changedTouches.length;i++)
       if(e.changedTouches[i].identifier===dragId){drag=false;dragId=-1;break;}
   },{passive:true});
-  cv.addEventListener('mousedown',function(e){drag=true;lastX=e.clientX;lastY=e.clientY;e.preventDefault();});
-  window.addEventListener('mousemove',function(e){
-    if(!drag)return;
-    camYaw+=(e.clientX-lastX)*.008;
-    camPitch-=(e.clientY-lastY)*.006;
-    camPitch=Math.max(CAM_PITCH_MIN,Math.min(CAM_PITCH_MAX,camPitch));
-    lastX=e.clientX;lastY=e.clientY;
-  });
-  window.addEventListener('mouseup',function(){drag=false;});
-  window.addEventListener('wheel',function(e){CAM_D=Math.max(4,Math.min(22,CAM_D+e.deltaY*.02));},{passive:true});
+  window.addEventListener('wheel',function(e){
+    CAM.dist=Math.max(85,Math.min(420,CAM.dist+e.deltaY*.15));
+  },{passive:true});
   cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 }
 
