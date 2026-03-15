@@ -635,7 +635,7 @@ async function loadGLBWorld(){
 
   // ── Taxis
   await loadT('Taxi.glb');
-  [[12,0,4,.3],[−18,0,-12,2.8],[30,0,8,1.1]].forEach(function(p){
+  [[12,0,4,.3],[-18,0,-12,2.8],[30,0,8,1.1]].forEach(function(p){
     placeGLB('Taxi.glb',p[0],p[1],p[2],p[3],.5);
   });
 
