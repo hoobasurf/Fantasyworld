@@ -15,12 +15,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#001830;font-family:
 .bar-wrap{width:240px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
 .bar-fill{height:100%;background:linear-gradient(90deg,#7de8ff,#ff6b9d);border-radius:2px;width:0%;transition:width .4s}
 #stepTxt{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:3px}
-#charsel{position:fixed;inset:0;background:linear-gradient(180deg,#001020,#002040);z-index:90;display:none;flex-direction:column}
+#charsel{position:fixed;inset:0;background:linear-gradient(180deg,#001020,#002040);z-index:90;display:none;flex-direction:column;overflow:hidden}
 .cs-top{flex-shrink:0;padding:14px 0 2px;text-align:center}
 .cs-top h2{font-family:'Cinzel',serif;font-size:9px;letter-spacing:8px;color:rgba(125,232,255,.4)}
 .cs-top h1{font-family:'Cinzel',serif;font-size:18px;letter-spacing:4px;color:#7de8ff}
-#cscv{flex:1;display:block;width:100%;min-height:0;touch-action:none}
-.cs-bot{flex-shrink:0;background:rgba(0,10,25,.95);border-top:1px solid rgba(125,232,255,.15);padding:10px 16px 14px}
+#cscv{flex:1;display:block;width:100%;min-height:0;max-height:calc(100vh - 220px);touch-action:none}
+.cs-bot{flex-shrink:0;background:rgba(0,10,25,.95);border-top:1px solid rgba(125,232,255,.15);padding:10px 16px 16px;position:relative;z-index:10}
 .cs-nav{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .cs-arr{width:44px;height:44px;background:rgba(125,232,255,.08);border:1.5px solid rgba(125,232,255,.3);border-radius:3px;color:#7de8ff;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;touch-action:manipulation}
 .cs-info{flex:1;text-align:center}
