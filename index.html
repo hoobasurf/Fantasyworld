@@ -113,9 +113,9 @@ var B=BABYLON;
 var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
 
 var CHARS=[
-  {file:'stitch2.glb',          name:'STITCH', desc:'Creature from outer space', color:'#7de8ff', scale:0.5238},
+  {file:'stitch2.glb',          name:'STITCH', desc:'Creature from outer space', color:'#7de8ff', scale:1.8},
   {file:'Ely%20By%20K.Atienza.glb', name:'ELY', desc:'Style cinematique',        color:'#ff88cc', scale:1.0},
-  {file:'joe__realistic_human_3d_model.glb', name:'JOE', desc:'Homme realiste',  color:'#ffd700', scale:0.0294},
+  {file:'joe__realistic_human_3d_model.glb', name:'JOE', desc:'Homme realiste',  color:'#ffd700', scale:1.8},
   {file:'rumi_lobby.glb',        name:'RUMI',   desc:'Personnage elegant',        color:'#aaffaa', scale:1.0}
 ];
 var selChar=0;
@@ -210,10 +210,15 @@ async function csLoad(idx){
     var r=await B.SceneLoader.ImportMeshAsync('','',BASE+c.file,csScene);
     if(!r.meshes.length) throw 0;
     var root=r.meshes[0];
-    root.scaling.setAll(c.scale);
+    root.scaling.setAll(1);
     root.computeWorldMatrix(true);
     var bb=root.getHierarchyBoundingVectors();
-    root.position.y=-bb.min.y*c.scale;
+    var ch=bb.max.y-bb.min.y;
+    var cs=ch>0.05?1.8/ch:1.0;
+    root.scaling.setAll(cs);
+    root.computeWorldMatrix(true);
+    var bb2=root.getHierarchyBoundingVectors();
+    root.position.y=-bb2.min.y;
     if(r.animationGroups.length){
       r.animationGroups.forEach(function(ag){ag.stop();});
       var idle=r.animationGroups.find(function(a){return /idle/i.test(a.name);})||r.animationGroups[0];
@@ -491,13 +496,30 @@ async function loadPlayer(){
     var r=await B.SceneLoader.ImportMeshAsync('','',BASE+c.file,sc);
     if(!r.meshes.length) throw 0;
     var root=r.meshes[0];
-    root.scaling.setAll(c.scale);
+    // Auto-scale : mesure les dimensions réelles et normalise à 1.8m
+    root.scaling.setAll(1);
     root.computeWorldMatrix(true);
     var bb=root.getHierarchyBoundingVectors();
-    pYOff=-bb.min.y*c.scale;
+    var h=bb.max.y-bb.min.y;
+    var autoS = h>0.05 ? 1.8/h : 1.0;
+    root.scaling.setAll(autoS);
+    root.computeWorldMatrix(true);
+    var bb2=root.getHierarchyBoundingVectors();
+    pYOff=-bb2.min.y;
     root.position.set(0,pYOff,0);
     root.rotation.y=Math.PI;
-    r.meshes.forEach(function(m){m.receiveShadows=true;if(shadows)shadows.addShadowCaster(m,true);});
+    r.meshes.forEach(function(m){
+      m.receiveShadows=true;
+      if(shadows) shadows.addShadowCaster(m,true);
+      // Supprimer les contours noirs
+      if(m.disableEdgesRendering) m.disableEdgesRendering();
+      if(m.material){
+        m.material.wireframe=false;
+        if(m.material.subMaterials){
+          m.material.subMaterials.forEach(function(sub){if(sub)sub.wireframe=false;});
+        }
+      }
+    });
     if(r.animationGroups.length){
       r.animationGroups.forEach(function(ag){ag.stop();
         var n=ag.name.toLowerCase();
@@ -542,10 +564,15 @@ async function spawnNPCs(){
       var r=await B.SceneLoader.ImportMeshAsync('','',BASE+o.c.file,sc);
       if(!r.meshes.length) throw 0;
       var root=r.meshes[0];
-      root.scaling.setAll(o.c.scale);
+      root.scaling.setAll(1);
       root.computeWorldMatrix(true);
       var bb=root.getHierarchyBoundingVectors();
-      npc.yOff=-bb.min.y*o.c.scale;
+      var nh=bb.max.y-bb.min.y;
+      var ns=nh>0.05?1.8/nh:1.0;
+      root.scaling.setAll(ns);
+      root.computeWorldMatrix(true);
+      var bb2=root.getHierarchyBoundingVectors();
+      npc.yOff=-bb2.min.y;
       root.position.set(sp.x,npc.yOff,sp.z);
       r.meshes.forEach(function(m){m.receiveShadows=true;if(shadows)shadows.addShadowCaster(m,true);});
       if(r.animationGroups.length){
@@ -594,45 +621,31 @@ function gameLoop(){
 // - MOUVEMENT -
 function movePlayer(dt){
   var spd=(sprint&&stamina>2?8:4.5)*dt;
-
-  // JOYSTICK :
-  // jY > 0 = haut = avancer dans la direction ou Stitch regarde (pAngle)
-  // jY < 0 = bas  = reculer
-  // jX = tourner Stitch sur lui-meme (pas strafe)
-
   var moved=false;
 
+  // Rotation gauche/droite avec joystick jX
   if(Math.abs(jX)>.04){
-    // Rotation de Stitch
-    pAngle += jX * dt * 3.0;
+    pAngle += jX * dt * 2.8;
     moved=true;
   }
+  // Clavier rotation
+  if(_k.l){pAngle-=dt*2.5;moved=true;}
+  if(_k.r){pAngle+=dt*2.5;moved=true;}
 
-  var mx=0,mz=0;
+  // Avancer/reculer dans la direction ou Stitch regarde
+  var mx=0,mz=0,walking=false;
   if(Math.abs(jY)>.04){
-    // Avancer/reculer dans la direction de pAngle
-    mx = -Math.sin(pAngle) * jY * spd;
-    mz = -Math.cos(pAngle) * jY * spd;
-    moved=true;
+    mx=-Math.sin(pAngle)*jY*spd;
+    mz=-Math.cos(pAngle)*jY*spd;
+    moved=true; walking=true;
   }
+  if(_k.u){mx+=-Math.sin(pAngle)*spd;mz+=-Math.cos(pAngle)*spd;moved=true;walking=true;}
+  if(_k.d){mx+=Math.sin(pAngle)*spd;mz+=Math.cos(pAngle)*spd;moved=true;walking=true;}
 
-  // Clavier
-  if(_k.u){mx+=-Math.sin(pAngle)*spd; mz+=-Math.cos(pAngle)*spd; moved=true;}
-  if(_k.d){mx+=Math.sin(pAngle)*spd;  mz+=Math.cos(pAngle)*spd;  moved=true;}
-  if(_k.l){pAngle-=dt*2.5; moved=true;}
-  if(_k.r){pAngle+=dt*2.5; moved=true;}
+  if(moved) sprint?stamina=Math.max(0,stamina-dt*22):stamina=Math.min(100,stamina+dt*10);
+  else stamina=Math.min(100,stamina+dt*16);
 
-  if(moved){
-    sprint?stamina=Math.max(0,stamina-dt*22):stamina=Math.min(100,stamina+dt*10);
-    if(Math.abs(mx)>.001||Math.abs(mz)>.001){
-      playAnim(sprint&&pAnims.run?pAnims.run:pAnims.walk||pAnims.idle);
-    }else{
-      playAnim(pAnims.idle);
-    }
-  }else{
-    stamina=Math.min(100,stamina+dt*16);
-    playAnim(pAnims.idle);
-  }
+  playAnim(walking?(sprint&&pAnims.run?pAnims.run:pAnims.walk||pAnims.idle):pAnims.idle);
 
   pPos.x=Math.max(-120,Math.min(120,pPos.x+mx));
   pPos.z=Math.max(-120,Math.min(120,pPos.z+mz));
@@ -643,14 +656,12 @@ function movePlayer(dt){
     pRoot.position.x=pPos.x;
     pRoot.position.y=pPos.y+pYOff;
     pRoot.position.z=pPos.z;
-    // Rotation smooth vers pAngle
-    var diff=pAngle+Math.PI-pRoot.rotation.y;
-    while(diff>Math.PI) diff-=Math.PI*2;
-    while(diff<-Math.PI) diff+=Math.PI*2;
-    pRoot.rotation.y+=diff*Math.min(1,dt*14);
+    var diff=(pAngle+Math.PI)-pRoot.rotation.y;
+    while(diff>Math.PI)diff-=Math.PI*2;
+    while(diff<-Math.PI)diff+=Math.PI*2;
+    pRoot.rotation.y+=diff*Math.min(1,dt*15);
   }
 
-  // Barres
   var spEl=document.getElementById('spBar');
   if(spEl) spEl.style.width=stamina+'%';
   if(fillLight) fillLight.position.set(pPos.x,pPos.y+4,pPos.z);
@@ -660,13 +671,16 @@ function movePlayer(dt){
 // - CAMERA -
 // La camera reste DERRIERE Stitch selon pAngle + ajustement manuel camYaw
 function updateCam(){
-  // camYaw = pAngle + offset manuel (glissement doigt)
+  // La caméra est TOUJOURS derrière Stitch (suit pAngle)
+  // + offset camYaw si l'utilisateur glisse le doigt
   var angle = pAngle + camYaw;
   var tx = pPos.x - Math.sin(angle)*CAM_D;
   var ty = pPos.y + CAM_H;
   var tz = pPos.z - Math.cos(angle)*CAM_D;
-  cam.position=B.Vector3.Lerp(cam.position,new B.Vector3(tx,ty,tz),.1);
-  cam.target=B.Vector3.Lerp(cam.target,new B.Vector3(pPos.x,pPos.y+1.4,pPos.z),.12);
+  cam.position=B.Vector3.Lerp(cam.position,new B.Vector3(tx,ty,tz),.12);
+  cam.target=B.Vector3.Lerp(cam.target,new B.Vector3(pPos.x,pPos.y+1.4,pPos.z),.14);
+  // Retour progressif à 0 de l'offset manuel
+  camYaw *= 0.92;
 }
 
 function moveNPCs(dt){
