@@ -613,8 +613,8 @@ function movePlayer(dt){
   var mx=0,mz=0,walking=false;
 
   // Joystick — direction relative à la caméra (copie Kirby)
-  var fwd=-jY;  // joystick haut = avancer
-  var lat=jX;   // joystick droite = aller à droite
+  var fwd=jY;   // corrigé : haut = avancer
+  var lat=-jX;  // corrigé : droite = aller à droite
   var moveX=-Math.sin(CAM.yaw)*fwd+Math.cos(CAM.yaw)*lat;
   var moveZ=-Math.cos(CAM.yaw)*fwd-Math.sin(CAM.yaw)*lat;
   var moveMag=Math.sqrt(moveX*moveX+moveZ*moveZ);
@@ -671,10 +671,19 @@ function updateCam(){
   camTX+=(pPos.x-camTX)*.12;
   camTY+=(pPos.y-camTY)*.10;
   camTZ+=(pPos.z-camTZ)*.12;
-  // Joystick droit = tourne la caméra (exactement comme Kirby jR)
+  // Joystick droit = tourne la caméra manuellement
   if(Math.abs(jRX)>.12||Math.abs(jRY)>.12){
     CAM.yaw-=jRX*.018;
     CAM.pitch=Math.max(.08,Math.min(.92,CAM.pitch+jRY*.012));
+  } else {
+    // Caméra suit Stitch quand il tourne (comme Kirby)
+    var moveMag=Math.sqrt(jX*jX+jY*jY);
+    if(moveMag>.05){
+      var cdiff=pAngle-CAM.yaw;
+      while(cdiff>Math.PI)cdiff-=Math.PI*2;
+      while(cdiff<-Math.PI)cdiff+=Math.PI*2;
+      CAM.yaw+=cdiff*.032;
+    }
   }
 
   // Position orbitale — copie exacte Kirby
