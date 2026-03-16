@@ -14,619 +14,449 @@ html,body{width:100%;height:100%;overflow:hidden;background:#001020}
 .bw{width:220px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
 .bf{height:100%;background:linear-gradient(90deg,#7de8ff,#6affb0);border-radius:2px;transition:width .3s}
 #stepTxt{font-size:9px;color:rgba(255,255,255,.28);letter-spacing:2px}
-/* HUD */
 #hud{position:fixed;top:12px;left:0;right:0;display:none;justify-content:space-between;align-items:flex-start;padding:0 14px;pointer-events:none;z-index:20}
 .pill{background:rgba(0,8,20,.82);border-radius:20px;padding:5px 13px;font-family:Georgia,serif;font-size:10px;backdrop-filter:blur(8px);color:#7de8ff;border:1px solid rgba(125,232,255,.2)}
 #zone{position:fixed;bottom:78px;left:130px;pointer-events:none;z-index:20;display:none}
-/* Joystick */
 #joy{position:fixed;left:16px;bottom:78px;z-index:30;width:108px;height:108px;border-radius:50%;background:rgba(255,255,255,.04);border:2px solid rgba(125,232,255,.2);touch-action:none}
 #jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 38% 32%,rgba(125,232,255,.55),rgba(0,60,100,.95));border:2px solid rgba(125,232,255,.5)}
-/* Boutons */
 #btns{position:fixed;right:14px;bottom:78px;z-index:30;display:flex;flex-direction:column;gap:7px}
 .btn{width:52px;height:52px;border-radius:50%;background:rgba(0,8,22,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-family:Georgia,serif;font-size:8px;cursor:pointer;touch-action:manipulation;backdrop-filter:blur(6px)}
-/* Barre bas */
 #mbar{position:fixed;bottom:0;left:0;right:0;height:62px;background:rgba(0,5,15,.96);border-top:1px solid rgba(125,232,255,.08);z-index:30;display:none;align-items:center;justify-content:center;gap:6px;padding:0 8px}
-/* Toast */
 #toast{position:fixed;top:54px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;z-index:80;background:rgba(0,8,22,.95);border:1.5px solid #7de8ff;border-radius:20px;padding:7px 18px;color:#7de8ff;font-size:11px;font-family:Georgia,serif;white-space:nowrap;pointer-events:none;transition:all .18s;backdrop-filter:blur(10px)}
 #toast.show{transform:translateX(-50%) scale(1);opacity:1}
 </style>
 </head>
 <body>
 <div id="loading">
-  <h1>LILO & STITCH ISLAND</h1>
+  <h1>LILO &amp; STITCH ISLAND</h1>
   <p>HAWAII — PARADISE</p>
   <div class="bw"><div class="bf" id="bf" style="width:3%"></div></div>
   <div id="stepTxt">CHARGEMENT...</div>
 </div>
 <canvas id="cv"></canvas>
-<div id="hud" style="display:none;flex">
+<div id="hud">
   <div class="pill">&#9728; HAWAII</div>
-  <div class="pill" id="charBadge">&#128100; STITCH</div>
+  <div class="pill">&#128100; STITCH</div>
   <div class="pill" id="dnBtn" onclick="toggleDN()" style="pointer-events:all;cursor:pointer">&#9790; NUIT</div>
 </div>
-<div id="zone" style="display:none">
-  <div class="pill" id="zoneTxt">&#127944; PLAGE</div>
-</div>
+<div id="zone"><div class="pill" id="zoneTxt">&#127944; PLAGE</div></div>
 <div id="joy"><div id="jnub"></div></div>
 <div id="btns">
   <div class="btn" style="border:2px solid #7de8ff;color:#7de8ff" ontouchstart="doJump(event)" onclick="doJump()">&#8679;<br>JUMP</div>
   <div class="btn" style="border:2px solid #ffd700;color:#ffd700" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">&#9889;<br>RUN</div>
 </div>
-<div id="mbar" style="display:none;flex"></div>
+<div id="mbar"></div>
 <div id="toast"></div>
-
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
-
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-
-<script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
-
 <script>
 (function(){
 'use strict';
-var B = BABYLON;
-var BASE = 'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
+var B=BABYLON;
+var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
 
-/* ── UI helpers ── */
-var bfEl = document.getElementById('bf');
-var stEl = document.getElementById('stepTxt');
-function step(p,t){ bfEl.style.width=p+'%'; if(t) stEl.textContent=t; }
-function toast(m){
-  var t=document.getElementById('toast'); t.textContent=m; t.className='show';
-  clearTimeout(toast._t); toast._t=setTimeout(function(){t.className='';},3200);
-}
+var bfEl=document.getElementById(‘bf’);
+var stEl=document.getElementById(‘stepTxt’);
+function step(p,t){bfEl.style.width=p+’%’;if(t)stEl.textContent=t;}
+function toast(m){var t=document.getElementById(‘toast’);t.textContent=m;t.className=‘show’;clearTimeout(toast._t);toast._t=setTimeout(function(){t.className=’’;},3200);}
 function showGame(){
-  document.getElementById('loading').style.display='none';
-  document.getElementById('hud').style.display='flex';
-  document.getElementById('zone').style.display='block';
-  document.getElementById('mbar').style.display='flex';
+document.getElementById(‘loading’).style.display=‘none’;
+document.getElementById(‘hud’).style.display=‘flex’;
+document.getElementById(‘zone’).style.display=‘block’;
+document.getElementById(‘mbar’).style.display=‘flex’;
 }
 
-/* ── Etat joueur ── */
 var P={x:0,y:0,z:0,vx:0,vy:0,vz:0,yaw:0,onGround:true};
-var pRoot=null, pYOff=0, pAnims={}, curAnim=null;
-var jLX=0,jLY=0, KY={};
-/* Caméra TPS — toujours derrière */
-var CAM={yaw:0,pitch:.32,dist:14,yawVel:0};
-var night=false;
+var pRoot=null,pYOff=0,pAnims={},curAnim=null;
+var jLX=0,jLY=0,KY={};
+var CAM={yaw:0,pitch:.32,dist:14};
+var night=false,sprint=false;
 var waveT=0,lastT=performance.now();
-var waveRings=[], colCircles=[];
+var waveRings=[],colCircles=[];
 var ISLAND_R=28;
-var sprint=false;
 
-/* ── Engine ── */
-var cv = document.getElementById('cv');
-var eng = new B.Engine(cv, true, {antialias:true,stencil:true,adaptToDeviceRatio:true}, true);
-var sc  = new B.Scene(eng);
-sc.clearColor = new B.Color4(.42,.72,.94,1);
-sc.fogMode    = B.Scene.FOGMODE_EXP2;
-sc.fogDensity = .0035;
-sc.fogColor   = new B.Color3(.50,.78,.96);
+var cv=document.getElementById(‘cv’);
+var eng=new B.Engine(cv,true,{antialias:true,stencil:true,adaptToDeviceRatio:true},true);
+var sc=new B.Scene(eng);
+sc.clearColor=new B.Color4(.42,.72,.94,1);
+sc.fogMode=B.Scene.FOGMODE_EXP2;
+sc.fogDensity=.0035;
+sc.fogColor=new B.Color3(.50,.78,.96);
 
-/* ── Caméra scène (contrôle manuel) ── */
-var cam = new B.FreeCamera('cam', new B.Vector3(0,14,20), sc);
-cam.minZ=.1; cam.maxZ=600; cam.fov=1.05;
+var cam=new B.FreeCamera(‘cam’,new B.Vector3(0,14,20),sc);
+cam.minZ=.1;cam.maxZ=600;cam.fov=1.05;
 cam.inputs.clear();
 
-step(8,'LUMIERES...');
+step(8,‘LUMIERES…’);
 
-/* ── LUMIERES ── */
-/* Soleil principal */
-var sun = new B.DirectionalLight('sun', new B.Vector3(-.6,-1,-.45), sc);
-sun.position = new B.Vector3(80,150,80);
-sun.intensity = 2.8;
-sun.diffuse   = new B.Color3(1.0,.95,.80);
-sun.specular  = new B.Color3(.3,.25,.15);
+var sun=new B.DirectionalLight(‘sun’,new B.Vector3(-.6,-1,-.45),sc);
+sun.position=new B.Vector3(80,150,80);
+sun.intensity=2.8;
+sun.diffuse=new B.Color3(1.0,.95,.80);
+sun.specular=new B.Color3(.3,.25,.15);
 
-/* Ombres douces */
-var shadows = null;
+var shadows=null;
 try{
-  shadows = new B.ShadowGenerator(2048, sun);
-  shadows.useBlurExponentialShadowMap = true;
-  shadows.blurKernel = 20;
-  shadows.darkness   = 0.28;
-  shadows.transparencyShadow = true;
+shadows=new B.ShadowGenerator(2048,sun);
+shadows.useBlurExponentialShadowMap=true;
+shadows.blurKernel=20;
+shadows.darkness=.28;
+shadows.transparencyShadow=true;
 }catch(e){}
 
-/* Lumière ambiante ciel */
-var sky = new B.HemisphericLight('sky', new B.Vector3(0,1,0), sc);
-sky.intensity   = 0.65;
-sky.diffuse     = new B.Color3(.80,.90,.98);
-sky.groundColor = new B.Color3(.40,.60,.25);
-sky.specular    = new B.Color3(0,0,0);
+var sky=new B.HemisphericLight(‘sky’,new B.Vector3(0,1,0),sc);
+sky.intensity=.65;
+sky.diffuse=new B.Color3(.80,.90,.98);
+sky.groundColor=new B.Color3(.40,.60,.25);
+sky.specular=new B.Color3(0,0,0);
 
-/* Fill lumière autour joueur */
-var fill = new B.PointLight('fill', new B.Vector3(0,5,0), sc);
-fill.intensity = 0.35;
-fill.range     = 12;
-fill.diffuse   = new B.Color3(1.0,.88,.55);
+var fill=new B.PointLight(‘fill’,new B.Vector3(0,5,0),sc);
+fill.intensity=.35;
+fill.range=12;
+fill.diffuse=new B.Color3(1.0,.88,.55);
 
-step(18,'TEXTURES...');
+step(18,‘TEXTURES…’);
 
-/* ── Textures canvas ── */
 function mkTex(w,h,fn){
-  var c=document.createElement('canvas'); c.width=w; c.height=h;
-  var ctx=c.getContext('2d'); fn(ctx,w,h);
-  var t=new B.DynamicTexture('t'+Math.random(),{width:w,height:h},sc,true);
-  t.getContext().drawImage(c,0,0); t.update(false); return t;
+var c=document.createElement(‘canvas’);c.width=w;c.height=h;
+var ctx=c.getContext(‘2d’);fn(ctx,w,h);
+var t=new B.DynamicTexture(‘t’+Math.random(),{width:w,height:h},sc,true);
+t.getContext().drawImage(c,0,0);t.update(false);return t;
 }
 
 var sandTex=mkTex(512,512,function(ctx,w,h){
-  var g=ctx.createLinearGradient(0,0,w,h);
-  g.addColorStop(0,'#eed858'); g.addColorStop(.5,'#d8bc4a'); g.addColorStop(1,'#c8a83a');
-  ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
-  for(var i=0;i<8000;i++){
-    var x=Math.random()*w,y=Math.random()*h,r=Math.random()*1.2;
-    var b=Math.floor(Math.random()*40-20);
-    ctx.fillStyle='rgba('+(185+b)+','+(165+b)+','+(55+b)+',.3)';
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
-  }
+var g=ctx.createLinearGradient(0,0,w,h);
+g.addColorStop(0,’#eed858’);g.addColorStop(.5,’#d8bc4a’);g.addColorStop(1,’#c8a83a’);
+ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+for(var i=0;i<8000;i++){var x=Math.random()*w,y=Math.random()*h,r=Math.random()*1.2,b=Math.floor(Math.random()*40-20);ctx.fillStyle=‘rgba(’+(185+b)+’,’+(165+b)+’,’+(55+b)+’,.3)’;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
 });
 var grassTex=mkTex(512,512,function(ctx,w,h){
-  ctx.fillStyle='#267016'; ctx.fillRect(0,0,w,h);
-  for(var i=0;i<10000;i++){
-    var x=Math.random()*w,y=Math.random()*h,b=Math.floor(Math.random()*55-28);
-    ctx.fillStyle='rgba('+(28+b)+','+(95+b)+','+(15+b)+',.45)';
-    ctx.fillRect(x,y,1+Math.random()*3,2+Math.random()*7);
-  }
+ctx.fillStyle=’#267016’;ctx.fillRect(0,0,w,h);
+for(var i=0;i<10000;i++){var x=Math.random()*w,y=Math.random()*h,b=Math.floor(Math.random()*55-28);ctx.fillStyle=‘rgba(’+(28+b)+’,’+(95+b)+’,’+(15+b)+’,.45)’;ctx.fillRect(x,y,1+Math.random()*3,2+Math.random()*7);}
 });
 var barkTex=mkTex(128,256,function(ctx,w,h){
-  ctx.fillStyle='#7a5530'; ctx.fillRect(0,0,w,h);
-  for(var i=0;i<h;i+=7){
-    ctx.fillStyle='rgba(0,0,0,.22)'; ctx.fillRect(0,i,w,2);
-    ctx.fillStyle='rgba(255,255,255,.04)'; ctx.fillRect(0,i+4,w,1);
-  }
+ctx.fillStyle=’#7a5530’;ctx.fillRect(0,0,w,h);
+for(var i=0;i<h;i+=7){ctx.fillStyle=‘rgba(0,0,0,.22)’;ctx.fillRect(0,i,w,2);ctx.fillStyle=‘rgba(255,255,255,.04)’;ctx.fillRect(0,i+4,w,1);}
 });
 var leafTex=mkTex(128,128,function(ctx,w,h){
-  var g=ctx.createRadialGradient(w/2,h/2,2,w/2,h/2,w/2);
-  g.addColorStop(0,'#55dd22'); g.addColorStop(1,'#1a7a0a');
-  ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle='rgba(0,80,0,.3)'; ctx.lineWidth=1.5;
-  ctx.beginPath(); ctx.moveTo(w/2,0); ctx.lineTo(w/2,h); ctx.stroke();
+var g=ctx.createRadialGradient(w/2,h/2,2,w/2,h/2,w/2);
+g.addColorStop(0,’#55dd22’);g.addColorStop(1,’#1a7a0a’);
+ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+ctx.strokeStyle=‘rgba(0,80,0,.3)’;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(w/2,0);ctx.lineTo(w/2,h);ctx.stroke();
 });
 var rockTex=mkTex(256,256,function(ctx,w,h){
-  ctx.fillStyle='#1c1a16'; ctx.fillRect(0,0,w,h);
-  for(var i=0;i<4000;i++){
-    var x=Math.random()*w,y=Math.random()*h,r=Math.random()*3;
-    var b=Math.floor(Math.random()*35-18);
-    ctx.fillStyle='rgba('+(30+b)+','+(28+b)+','+(22+b)+',.55)';
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
-  }
+ctx.fillStyle=’#1c1a16’;ctx.fillRect(0,0,w,h);
+for(var i=0;i<4000;i++){var x=Math.random()*w,y=Math.random()*h,r=Math.random()*3,b=Math.floor(Math.random()*35-18);ctx.fillStyle=‘rgba(’+(30+b)+’,’+(28+b)+’,’+(22+b)+’,.55)’;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+});
+var waterTexD=mkTex(512,512,function(ctx,w,h){
+var g=ctx.createLinearGradient(0,0,w,h);
+g.addColorStop(0,’#0e9fc8’);g.addColorStop(.4,’#0a82a8’);g.addColorStop(1,’#065e80’);
+ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+for(var i=0;i<130;i++){var x=Math.random()*w,y=Math.random()*h;ctx.strokeStyle=‘rgba(255,255,255,’+(Math.random()*.2+.04)+’)’;ctx.lineWidth=.8+Math.random()*2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+18+Math.random()*38,y+Math.random()*4-2);ctx.stroke();}
 });
 
-step(28,'OCEAN REALISTE...');
+step(28,‘OCEAN…’);
 
-/* ── OCEAN avec WaterMaterial ── */
-var oceanMesh=null, waterMat=null;
-try{
-  oceanMesh = B.MeshBuilder.CreateGround('ocean',{width:900,height:900,subdivisions:64},sc);
-  waterMat  = new B.WaterMaterial('water', sc, new B.Vector2(1024,1024));
-  waterMat.backFaceCulling  = true;
-  waterMat.windForce        = 8;
-  waterMat.waveHeight       = 0.12;
-  waterMat.windDirection    = new B.Vector2(1,.5);
-  waterMat.waterColor       = new B.Color3(.04,.22,.32);
-  waterMat.colorBlendFactor = .55;
-  waterMat.bumpHeight       = .22;
-  waterMat.waveSpeed        = 1.2;
-  waterMat.waveLength       = 0.08;
-  waterMat.waveCount        = 20;
-  waterMat.specularColor    = new B.Color3(1,1,1);
-  waterMat.specularPower    = 64;
-  oceanMesh.material = waterMat;
-  oceanMesh.position.y = -.45;
-}catch(e){
-  /* Fallback si WaterMaterial indispo */
-  oceanMesh = B.MeshBuilder.CreateGround('ocean',{width:900,height:900,subdivisions:4},sc);
-  var om2=new B.StandardMaterial('om2',sc);
-  om2.diffuseColor=new B.Color3(.15,.55,.72);
-  om2.specularColor=new B.Color3(1,1,1); om2.specularPower=48;
-  om2.alpha=.88; oceanMesh.material=om2; oceanMesh.position.y=-.45;
-}
+var oceanMesh=B.MeshBuilder.CreateGround(‘ocean’,{width:900,height:900,subdivisions:4},sc);
+var oceanMat=new B.StandardMaterial(‘oceanMat’,sc);
+oceanMat.diffuseTexture=waterTexD;
+oceanMat.diffuseTexture.uScale=40;oceanMat.diffuseTexture.vScale=40;
+oceanMat.diffuseColor=new B.Color3(.9,.98,1.0);
+oceanMat.specularColor=new B.Color3(1,1,1);
+oceanMat.specularPower=90;
+oceanMat.emissiveColor=new B.Color3(.01,.07,.16);
+oceanMesh.material=oceanMat;
+oceanMesh.position.y=-.45;
 
-/* Skybox simple (couleur + dome) */
-var skyDome=B.MeshBuilder.CreateSphere('skyDome',{diameter:550,segments:12},sc);
+var skyDome=B.MeshBuilder.CreateSphere(‘skyDome’,{diameter:550,segments:12},sc);
 skyDome.flipFaces(true);
-var skyMat=new B.StandardMaterial('skyMat',sc);
-skyMat.backFaceCulling=false; skyMat.disableLighting=true;
+var skyMat=new B.StandardMaterial(‘skyMat’,sc);
+skyMat.backFaceCulling=false;skyMat.disableLighting=true;
 skyMat.emissiveColor=new B.Color3(.42,.72,.94);
 skyDome.material=skyMat;
 
-step(38,'ILE...');
+step(38,‘ILE…’);
 
-/* ── ÎLE ── */
-var sandMesh=B.MeshBuilder.CreateCylinder('sand',{height:.9,diameter:62,tessellation:52},sc);
-var sandMat=new B.StandardMaterial('sandMat',sc);
-sandMat.diffuseTexture=sandTex; sandMat.diffuseTexture.uScale=7; sandMat.diffuseTexture.vScale=7;
+var sandMesh=B.MeshBuilder.CreateCylinder(‘sand’,{height:.9,diameter:62,tessellation:52},sc);
+var sandMat=new B.StandardMaterial(‘sandMat’,sc);
+sandMat.diffuseTexture=sandTex;sandMat.diffuseTexture.uScale=7;sandMat.diffuseTexture.vScale=7;
 sandMat.specularColor=new B.Color3(.06,.05,.03);
-sandMesh.material=sandMat; sandMesh.position.y=-.28; sandMesh.receiveShadows=true;
+sandMesh.material=sandMat;sandMesh.position.y=-.28;sandMesh.receiveShadows=true;
 
-var grassMesh=B.MeshBuilder.CreateCylinder('grass',{height:.65,diameter:46,tessellation:44},sc);
-var grassMat=new B.StandardMaterial('grassMat',sc);
-grassMat.diffuseTexture=grassTex; grassMat.diffuseTexture.uScale=6; grassMat.diffuseTexture.vScale=6;
+var grassMesh=B.MeshBuilder.CreateCylinder(‘grass’,{height:.65,diameter:46,tessellation:44},sc);
+var grassMat=new B.StandardMaterial(‘grassMat’,sc);
+grassMat.diffuseTexture=grassTex;grassMat.diffuseTexture.uScale=6;grassMat.diffuseTexture.vScale=6;
 grassMat.specularColor=new B.Color3(.03,.06,.01);
-grassMesh.material=grassMat; grassMesh.position.y=.1; grassMesh.receiveShadows=true;
+grassMesh.material=grassMat;grassMesh.position.y=.1;grassMesh.receiveShadows=true;
 
-/* Colline centrale */
-var hillMesh=B.MeshBuilder.CreateSphere('hill',{diameter:22,segments:16},sc);
-hillMesh.scaling.set(1.7,.19,1.5); hillMesh.position.set(-2,.9,2);
-var hillMat=new B.StandardMaterial('hillMat',sc);
-hillMat.diffuseTexture=grassTex; hillMat.diffuseTexture.uScale=5; hillMat.diffuseTexture.vScale=5;
+var hillMesh=B.MeshBuilder.CreateSphere(‘hill’,{diameter:22,segments:16},sc);
+hillMesh.scaling.set(1.7,.19,1.5);hillMesh.position.set(-2,.9,2);
+var hillMat=new B.StandardMaterial(‘hillMat’,sc);
+hillMat.diffuseTexture=grassTex;hillMat.diffuseTexture.uScale=5;hillMat.diffuseTexture.vScale=5;
 hillMat.specularColor=new B.Color3(.02,.05,.01);
-hillMesh.material=hillMat; hillMesh.receiveShadows=true;
+hillMesh.material=hillMat;hillMesh.receiveShadows=true;
 
-/* Lagon */
-var lagonMesh=B.MeshBuilder.CreateCylinder('lagon',{height:.18,diameter:74,tessellation:52},sc);
-var lagonMat=new B.StandardMaterial('lagonMat',sc);
-lagonMat.diffuseColor=new B.Color3(.3,.86,.88); lagonMat.alpha=.42;
-lagonMat.specularColor=new B.Color3(.9,1,1); lagonMat.specularPower=32;
-lagonMesh.material=lagonMat; lagonMesh.position.y=-.30;
+var lagonMesh=B.MeshBuilder.CreateCylinder(‘lagon’,{height:.18,diameter:74,tessellation:52},sc);
+var lagonMat=new B.StandardMaterial(‘lagonMat’,sc);
+lagonMat.diffuseColor=new B.Color3(.25,.82,.88);lagonMat.alpha=.45;
+lagonMat.specularColor=new B.Color3(.9,1,1);lagonMat.specularPower=36;
+lagonMesh.material=lagonMat;lagonMesh.position.y=-.30;
 
-/* Add reflections targets */
-if(waterMat){
-  waterMat.addToRenderList(sandMesh);
-  waterMat.addToRenderList(grassMesh);
-  waterMat.addToRenderList(hillMesh);
-}
+step(50,‘PALMIERS…’);
 
-step(50,'PALMIERS...');
-
-/* ── PALMIERS ── */
 function makePalm(x,z,h,rx,rz){
-  var trunk=B.MeshBuilder.CreateCylinder('tr',{height:h,diameterTop:.13,diameterBottom:.36,tessellation:9},sc);
-  var trMat=new B.StandardMaterial('trMat'+Math.random(),sc);
-  trMat.diffuseTexture=barkTex; trMat.diffuseTexture.uScale=1; trMat.diffuseTexture.vScale=3;
-  trMat.specularColor=new B.Color3(.04,.03,.01);
-  trunk.material=trMat; trunk.position.set(x,h/2,z);
-  trunk.rotation.x=rx; trunk.rotation.z=rz;
-  trunk.receiveShadows=true;
-  if(shadows) shadows.addShadowCaster(trunk);
-  if(waterMat) waterMat.addToRenderList(trunk);
-
-  var topX=x+Math.sin(rz)*h*.88, topZ=z+Math.sin(rx)*h*.88;
-  var lc=6+Math.floor(Math.random()*3);
-  for(var i=0;i<lc;i++){
-    var a=i/lc*Math.PI*2+Math.random()*.4, ll=1.7+Math.random()*.9;
-    var lf=B.MeshBuilder.CreateCylinder('lf',{height:ll,diameterTop:.02,diameterBottom:.22,tessellation:6},sc);
-    var lfMat=new B.StandardMaterial('lfm'+Math.random(),sc);
-    lfMat.diffuseTexture=leafTex; lfMat.backFaceCulling=false;
-    lfMat.specularColor=new B.Color3(.04,.06,.01);
-    lf.material=lfMat;
-    lf.position.set(topX+Math.sin(a)*.1,h-.1,topZ+Math.cos(a)*.1);
-    lf.rotation.z=Math.sin(a)*.95; lf.rotation.x=Math.cos(a)*.95;
-    if(shadows) shadows.addShadowCaster(lf);
-    if(waterMat) waterMat.addToRenderList(lf);
-  }
-  colCircles.push({x:x,z:z,r:.42});
+var trunk=B.MeshBuilder.CreateCylinder(‘tr’,{height:h,diameterTop:.13,diameterBottom:.36,tessellation:9},sc);
+var trMat=new B.StandardMaterial(‘trMat’+Math.random(),sc);
+trMat.diffuseTexture=barkTex;trMat.diffuseTexture.uScale=1;trMat.diffuseTexture.vScale=3;
+trMat.specularColor=new B.Color3(.04,.03,.01);
+trunk.material=trMat;trunk.position.set(x,h/2,z);trunk.rotation.x=rx;trunk.rotation.z=rz;
+trunk.receiveShadows=true;if(shadows)shadows.addShadowCaster(trunk);
+var topX=x+Math.sin(rz)*h*.88,topZ=z+Math.sin(rx)*h*.88;
+var lc=6+Math.floor(Math.random()*3);
+for(var i=0;i<lc;i++){
+var a=i/lc*Math.PI*2+Math.random()*.4,ll=1.7+Math.random()*.9;
+var lf=B.MeshBuilder.CreateCylinder(‘lf’,{height:ll,diameterTop:.02,diameterBottom:.22,tessellation:6},sc);
+var lfMat=new B.StandardMaterial(‘lfm’+Math.random(),sc);
+lfMat.diffuseTexture=leafTex;lfMat.backFaceCulling=false;lfMat.specularColor=new B.Color3(.04,.06,.01);
+lf.material=lfMat;lf.position.set(topX+Math.sin(a)*.1,h-.1,topZ+Math.cos(a)*.1);
+lf.rotation.z=Math.sin(a)*.95;lf.rotation.x=Math.cos(a)*.95;
+if(shadows)shadows.addShadowCaster(lf);
+}
+colCircles.push({x:x,z:z,r:.42});
 }
 [[11,9],[13,-5],[9,15],[-10,13],[-13,7],[-12,-8],[10,-13],[15,2],
- [4,8],[-5,10],[6,-6],[-4,-8],[7,4],[-7,3],[1,11],[3,-11],
- [-2,16],[5,19],[-6,17],[2,-16],[-4,-15],[8,22],[-9,20],
- [18,5],[-18,6],[14,-16],[-15,14],[0,22],[0,-20]
-].forEach(function(p){
-  makePalm(p[0],p[1],3.2+Math.random()*3.0,(Math.random()-.5)*.26,(Math.random()-.5)*.22);
-});
+[4,8],[-5,10],[6,-6],[-4,-8],[7,4],[-7,3],[1,11],[3,-11],
+[-2,16],[5,19],[-6,17],[2,-16],[-4,-15],[8,22],[-9,20],
+[18,5],[-18,6],[14,-16],[-15,14],[0,22],[0,-20]
+].forEach(function(p){makePalm(p[0],p[1],3.2+Math.random()*3.0,(Math.random()-.5)*.26,(Math.random()-.5)*.22);});
 
-step(62,'ROCHERS...');
+step(62,‘ROCHERS…’);
 
-/* ── ROCHERS ── */
 function makeRock(x,z,s,sy){
-  var rk=B.MeshBuilder.CreateSphere('rk',{diameter:s*2,segments:8},sc);
-  var rkMat=new B.StandardMaterial('rkMat'+Math.random(),sc);
-  rkMat.diffuseTexture=rockTex; rkMat.diffuseTexture.uScale=2; rkMat.diffuseTexture.vScale=2;
-  rkMat.specularColor=new B.Color3(.1,.09,.07); rkMat.specularPower=14;
-  rk.material=rkMat; rk.position.set(x,.08,z);
-  rk.scaling.set(1+Math.random()*.22,sy,1+Math.random()*.2);
-  rk.receiveShadows=true; if(shadows) shadows.addShadowCaster(rk);
-  if(waterMat) waterMat.addToRenderList(rk);
-  colCircles.push({x:x,z:z,r:s*.52});
+var rk=B.MeshBuilder.CreateSphere(‘rk’,{diameter:s*2,segments:8},sc);
+var rkMat=new B.StandardMaterial(‘rkMat’+Math.random(),sc);
+rkMat.diffuseTexture=rockTex;rkMat.diffuseTexture.uScale=2;rkMat.diffuseTexture.vScale=2;
+rkMat.specularColor=new B.Color3(.1,.09,.07);rkMat.specularPower=14;
+rk.material=rkMat;rk.position.set(x,.08,z);rk.scaling.set(1+Math.random()*.22,sy,1+Math.random()*.2);
+rk.receiveShadows=true;if(shadows)shadows.addShadowCaster(rk);
+colCircles.push({x:x,z:z,r:s*.52});
 }
 [[20,9,3.0,.42],[-22,7,2.7,.40],[18,-14,2.4,.48],[-19,-12,2.9,.40],
- [10,21,2.0,.38],[-12,22,2.4,.44],[22,-3,1.9,.52],[-23,4,2.2,.40],
- [8,-22,1.7,.46],[-9,-20,2.0,.42],[14,6,1.1,.62],[-15,-6,.9,.56],
- [4,14,1.2,.52],[-6,-14,1.0,.58],[10,-8,.6,.80],[-8,10,.58,.74]
+[10,21,2.0,.38],[-12,22,2.4,.44],[22,-3,1.9,.52],[-23,4,2.2,.40],
+[8,-22,1.7,.46],[-9,-20,2.0,.42],[14,6,1.1,.62],[-15,-6,.9,.56],
+[4,14,1.2,.52],[-6,-14,1.0,.58]
 ].forEach(function(r){makeRock(r[0],r[1],r[2],r[3]);});
 
-step(72,'FLEURS...');
+step(70,‘FLEURS…’);
 
-/* ── FLEURS ── */
-var fleurCols=[
-  new B.Color3(.92,.14,.08),new B.Color3(.95,.55,.08),
-  new B.Color3(.88,.12,.72),new B.Color3(.98,.82,.02),
-  new B.Color3(.12,.88,.22)];
-[[4,5],[3,-4],[-5,6],[-3,-7],[8,8],[-8,9],[5,-9],[-7,-5],
- [1,7],[3,12],[-4,14],[9,-11],[0,4],[-2,-4],[6,2],[-6,1]
+var fleurCols=[new B.Color3(.92,.14,.08),new B.Color3(.95,.55,.08),new B.Color3(.88,.12,.72),new B.Color3(.98,.82,.02),new B.Color3(.12,.88,.22)];
+[[4,5],[3,-4],[-5,6],[-3,-7],[8,8],[-8,9],[5,-9],[-7,-5],[1,7],[3,12],[-4,14],[9,-11],[0,4],[-2,-4],[6,2],[-6,1]
 ].forEach(function(p,i){
-  for(var j=0;j<2+Math.floor(Math.random()*3);j++){
-    var r=.28+Math.random()*.44;
-    var b=B.MeshBuilder.CreateSphere('bu',{diameter:r*2,segments:8},sc);
-    var bm=new B.StandardMaterial('bum'+Math.random(),sc);
-    if(Math.random()>.5){bm.diffuseColor=fleurCols[i%5];bm.emissiveColor=fleurCols[i%5].scale(.08);}
-    else{bm.diffuseTexture=leafTex;bm.diffuseColor=new B.Color3(.9,1.1,.8);}
-    bm.specularColor=new B.Color3(.03,.03,.03);
-    b.material=bm; b.position.set(p[0]+(Math.random()-.5)*.9,r*.46,p[1]+(Math.random()-.5)*.9);
-    b.scaling.y=.7; if(shadows) shadows.addShadowCaster(b);
-  }
+for(var j=0;j<2+Math.floor(Math.random()*3);j++){
+var r=.28+Math.random()*.44;
+var b=B.MeshBuilder.CreateSphere(‘bu’,{diameter:r*2,segments:8},sc);
+var bm=new B.StandardMaterial(‘bum’+Math.random(),sc);
+if(Math.random()>.5){bm.diffuseColor=fleurCols[i%5];bm.emissiveColor=fleurCols[i%5].scale(.08);}
+else{bm.diffuseTexture=leafTex;bm.diffuseColor=new B.Color3(.9,1.1,.8);}
+bm.specularColor=new B.Color3(.03,.03,.03);
+b.material=bm;b.position.set(p[0]+(Math.random()-.5)*.9,r*.46,p[1]+(Math.random()-.5)*.9);
+b.scaling.y=.7;if(shadows)shadows.addShadowCaster(b);
+}
 });
 
-step(80,'VAGUES...');
+step(78,‘VAGUES…’);
 
-/* ── VAGUES ANIMÉES ── */
 for(var wi=0;wi<7;wi++){
-  var wr=B.MeshBuilder.CreateTorus('wave'+wi,{diameter:(ISLAND_R+1+wi*2.0)*2,thickness:.22,tessellation:64},sc);
-  var wm=new B.StandardMaterial('wm'+wi,sc);
-  wm.diffuseColor=new B.Color3(.88,.97,1.0);
-  wm.emissiveColor=new B.Color3(.04,.18,.28);
-  wm.alpha=.52-wi*.06; wm.backFaceCulling=false;
-  wr.material=wm; wr.position.y=-.18; wr.rotation.x=Math.PI/2;
-  waveRings.push({m:wr,ph:wi/7*Math.PI*2});
+var wr=B.MeshBuilder.CreateTorus(‘wave’+wi,{diameter:(ISLAND_R+1+wi*2.0)*2,thickness:.22,tessellation:64},sc);
+var wm=new B.StandardMaterial(‘wm’+wi,sc);
+wm.diffuseColor=new B.Color3(.88,.97,1.0);wm.emissiveColor=new B.Color3(.04,.18,.28);
+wm.alpha=.52-wi*.06;wm.backFaceCulling=false;
+wr.material=wm;wr.position.y=-.18;wr.rotation.x=Math.PI/2;
+waveRings.push({m:wr,ph:wi/7*Math.PI*2});
 }
 
-step(88,'PERSONNAGE...');
+step(86,‘PERSONNAGE…’);
 
-/* ── STITCH ── */
-function setupPlayer(root, animGroups){
-  pRoot=root;
-  root.scaling.setAll(1); root.computeWorldMatrix(true);
-  var bb=root.getHierarchyBoundingVectors(),h=bb.max.y-bb.min.y;
-  if(h>.05) root.scaling.setAll(1.85/h);
-  root.computeWorldMatrix(true);
-  var bb2=root.getHierarchyBoundingVectors(); pYOff=-bb2.min.y+.05;
-  root.position.y=pYOff;
-  root.getChildMeshes().forEach(function(m){
-    m.receiveShadows=true;
-    if(shadows) shadows.addShadowCaster(m,true);
-    if(waterMat) waterMat.addToRenderList(m);
-  });
-  if(animGroups&&animGroups.length){
-    animGroups.forEach(function(ag){
-      ag.stop();
-      var n=ag.name.toLowerCase();
-      if(/idle/.test(n)) pAnims.idle=ag;
-      else if(/run/.test(n)) pAnims.run=ag;
-      else if(/walk/.test(n)) pAnims.walk=ag;
-      else if(/jump/.test(n)) pAnims.jump=ag;
-    });
-    if(!pAnims.idle) pAnims.idle=animGroups[0];
-    if(!pAnims.walk&&animGroups[1]) pAnims.walk=animGroups[1];
-    playAnim(pAnims.idle);
-  }
-  /* Caméra part de derrière Stitch */
-  CAM.yaw=P.yaw;
-  step(100,'');
-  showGame();
-  toast('Aloha ! Bienvenue sur l\'île !');
+function setupPlayer(root,animGroups){
+pRoot=root;
+root.scaling.setAll(1);root.computeWorldMatrix(true);
+var bb=root.getHierarchyBoundingVectors(),h=bb.max.y-bb.min.y;
+if(h>.05)root.scaling.setAll(1.85/h);
+root.computeWorldMatrix(true);
+var bb2=root.getHierarchyBoundingVectors();pYOff=-bb2.min.y+.05;
+root.position.y=pYOff;
+root.getChildMeshes().forEach(function(m){
+m.receiveShadows=true;if(shadows)shadows.addShadowCaster(m,true);
+});
+if(animGroups&&animGroups.length){
+animGroups.forEach(function(ag){
+ag.stop();var n=ag.name.toLowerCase();
+if(/idle/.test(n))pAnims.idle=ag;
+else if(/run/.test(n))pAnims.run=ag;
+else if(/walk/.test(n))pAnims.walk=ag;
+else if(/jump/.test(n))pAnims.jump=ag;
+});
+if(!pAnims.idle)pAnims.idle=animGroups[0];
+if(!pAnims.walk&&animGroups[1])pAnims.walk=animGroups[1];
+playAnim(pAnims.idle);
+}
+CAM.yaw=P.yaw;
+step(100,’’);showGame();
+toast(‘Aloha ! Bienvenue sur l'ile !’);
 }
 
-B.SceneLoader.ImportMesh('','',BASE+'stitch2.glb',sc,
-  function(meshes,ps,sk,animGroups){ setupPlayer(meshes[0],animGroups); },
-  null,
-  function(){
-    /* Fallback Stitch simplifié */
-    var g=new B.TransformNode('stitch',sc);
-    var mat=new B.StandardMaterial('sm',sc);
-    mat.diffuseColor=new B.Color3(.15,.55,.88); mat.specularColor=new B.Color3(.2,.3,.5); mat.specularPower=24;
-    var body=B.MeshBuilder.CreateSphere('bd',{diameter:.72,segments:14},sc);
-    body.material=mat; body.parent=g;
-    var head=B.MeshBuilder.CreateSphere('hd',{diameter:.56,segments=14},sc);
-    head.position.y=.7; head.material=mat; head.parent=g;
-    [[-1],[1]].forEach(function(e){
-      var ear=B.MeshBuilder.CreateCylinder('ear',{height:.55,diameterTop:.08,diameterBottom:.16,tessellation:7},sc);
-      ear.position.set(e[0]*.22,.95,0); ear.rotation.z=e[0]*.35; ear.material=mat; ear.parent=g;
-    });
-    var noseMat=new B.StandardMaterial('nm',sc); noseMat.diffuseColor=new B.Color3(.08,.25,.65);
-    var muz=B.MeshBuilder.CreateSphere('muz',{diameter:.3,segments:10},sc);
-    muz.scaling.set(1,.6,1); muz.position.set(0,.62,.28); muz.material=noseMat; muz.parent=g;
-    g.position.y=pYOff=.55;
-    setupPlayer(g,[]);
-  }
+B.SceneLoader.ImportMesh(’’,’’,BASE+‘stitch2.glb’,sc,
+function(meshes,ps,sk,ag){setupPlayer(meshes[0],ag);},
+null,
+function(){
+var g=new B.TransformNode(‘stitch’,sc);
+var mat=new B.StandardMaterial(‘sm’,sc);
+mat.diffuseColor=new B.Color3(.15,.55,.88);mat.specularColor=new B.Color3(.2,.3,.5);mat.specularPower=24;
+var body=B.MeshBuilder.CreateSphere(‘bd’,{diameter:.72,segments:14},sc);
+body.material=mat;body.parent=g;
+var head=B.MeshBuilder.CreateSphere(‘hd’,{diameter:.56,segments:14},sc);
+head.position.y=.7;head.material=mat;head.parent=g;
+[-1,1].forEach(function(e){
+var ear=B.MeshBuilder.CreateCylinder(‘ear’,{height:.55,diameterTop:.08,diameterBottom:.16,tessellation:7},sc);
+ear.position.set(e*.22,.95,0);ear.rotation.z=e*.35;ear.material=mat;ear.parent=g;
+});
+var nm=new B.StandardMaterial(‘nm’,sc);nm.diffuseColor=new B.Color3(.08,.25,.65);
+var muz=B.MeshBuilder.CreateSphere(‘muz’,{diameter:.3,segments:10},sc);
+muz.scaling.set(1,.6,1);muz.position.set(0,.62,.28);muz.material=nm;muz.parent=g;
+g.position.y=pYOff=.55;
+setupPlayer(g,[]);
+}
 );
 
-/* ── BOUCLE PRINCIPALE ── */
 eng.runRenderLoop(function(){
-  var now=performance.now(), dt=Math.min((now-lastT)/1000,.05); lastT=now;
+var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;
 
-  /* ── INPUT ── */
-  var fwd=0,lat=0;
-  if(KY['KeyW']||KY['KeyZ']||KY['ArrowUp']) fwd+=1;
-  if(KY['KeyS']||KY['ArrowDown']) fwd-=1;
-  if(KY['KeyD']||KY['ArrowRight']) lat+=1;
-  if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft']) lat-=1;
-  fwd+=jLY; lat+=jLX;
+var fwd=0,lat=0;
+if(KY[‘KeyW’]||KY[‘KeyZ’]||KY[‘ArrowUp’])fwd+=1;
+if(KY[‘KeyS’]||KY[‘ArrowDown’])fwd-=1;
+if(KY[‘KeyD’]||KY[‘ArrowRight’])lat+=1;
+if(KY[‘KeyA’]||KY[‘KeyQ’]||KY[‘ArrowLeft’])lat-=1;
+fwd+=jLY;lat+=jLX;
 
-  /* Direction dans l'espace monde selon caméra */
-  var moveX = fwd*(-Math.sin(CAM.yaw)) + lat*Math.cos(CAM.yaw);
-  var moveZ = fwd*(-Math.cos(CAM.yaw)) + lat*(-Math.sin(CAM.yaw));
-  var moveMag = Math.sqrt(moveX*moveX+moveZ*moveZ);
-  var spd = sprint&&moveMag>.05 ? 7.8 : 4.8;
+var moveX=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);
+var moveZ=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));
+var moveMag=Math.sqrt(moveX*moveX+moveZ*moveZ);
+var spd=sprint&&moveMag>.05?7.8:4.8;
 
-  if(moveMag>.05){
-    var nx=moveX/moveMag, nz=moveZ/moveMag;
-    P.vx += (nx*spd - P.vx)*Math.min(1,dt*10);
-    P.vz += (nz*spd - P.vz)*Math.min(1,dt*10);
-    /* Stitch tourne vers sa direction de déplacement */
-    var ty=Math.atan2(nx,nz), dya=ty-P.yaw;
-    while(dya>Math.PI) dya-=Math.PI*2;
-    while(dya<-Math.PI) dya+=Math.PI*2;
-    P.yaw += dya*Math.min(1,dt*12);
-    playAnim(sprint&&pAnims.run ? pAnims.run : (pAnims.walk||pAnims.idle||null));
-  } else {
-    P.vx *= Math.pow(.03,dt); P.vz *= Math.pow(.03,dt);
-    if(Math.abs(P.vx)<.01) P.vx=0;
-    if(Math.abs(P.vz)<.01) P.vz=0;
-    if(pAnims.idle) playAnim(pAnims.idle);
-  }
+if(moveMag>.05){
+var nx=moveX/moveMag,nz=moveZ/moveMag;
+P.vx+=(nx*spd-P.vx)*Math.min(1,dt*10);
+P.vz+=(nz*spd-P.vz)*Math.min(1,dt*10);
+var ty=Math.atan2(nx,nz),dya=ty-P.yaw;
+while(dya>Math.PI)dya-=Math.PI*2;while(dya<-Math.PI)dya+=Math.PI*2;
+P.yaw+=dya*Math.min(1,dt*12);
+playAnim(sprint&&pAnims.run?pAnims.run:(pAnims.walk||pAnims.idle||null));
+}else{
+P.vx*=Math.pow(.03,dt);P.vz*=Math.pow(.03,dt);
+if(Math.abs(P.vx)<.01)P.vx=0;if(Math.abs(P.vz)<.01)P.vz=0;
+if(pAnims.idle)playAnim(pAnims.idle);
+}
 
-  /* Gravité */
-  if(!P.onGround){ P.vy-=24*dt; if(P.vy<-22)P.vy=-22; }
-  P.x+=P.vx*dt; P.z+=P.vz*dt; P.y+=P.vy*dt;
-  var groundY=pYOff;
-  if(P.y<=groundY&&P.vy<=0){ P.y=groundY; P.vy=0; P.onGround=true; }
-  else P.onGround=false;
+if(!P.onGround){P.vy-=24*dt;if(P.vy<-22)P.vy=-22;}
+P.x+=P.vx*dt;P.z+=P.vz*dt;P.y+=P.vy*dt;
+if(P.y<=pYOff&&P.vy<=0){P.y=pYOff;P.vy=0;P.onGround=true;}else P.onGround=false;
 
-  /* Collisions obstacles */
-  for(var ci=0;ci<colCircles.length;ci++){
-    var ob=colCircles[ci], ddx=P.x-ob.x, ddz=P.z-ob.z;
-    var d2=ddx*ddx+ddz*ddz, mn=.5+ob.r;
-    if(d2<mn*mn&&d2>.001){
-      var dd=Math.sqrt(d2), nnx=ddx/dd, nnz=ddz/dd;
-      P.x=ob.x+nnx*mn; P.z=ob.z+nnz*mn;
-      var dot=P.vx*nnx+P.vz*nnz; if(dot<0){P.vx-=dot*nnx;P.vz-=dot*nnz;}
-    }
-  }
-  /* Limite île */
-  var pd=Math.sqrt(P.x*P.x+P.z*P.z);
-  if(pd>ISLAND_R){ var pa=Math.atan2(P.x,P.z); P.x=Math.sin(pa)*ISLAND_R; P.z=Math.cos(pa)*ISLAND_R; P.vx*=.1; P.vz*=.1; }
-  if(P.y<-30){ P.x=0; P.y=pYOff; P.z=0; P.vx=0; P.vy=0; P.vz=0; P.onGround=true; toast('Revenu sur l\'île !'); }
+for(var ci=0;ci<colCircles.length;ci++){
+var ob=colCircles[ci],ddx=P.x-ob.x,ddz=P.z-ob.z;
+var d2=ddx*ddx+ddz*ddz,mn=.5+ob.r;
+if(d2<mn*mn&&d2>.001){
+var dd=Math.sqrt(d2),nnx=ddx/dd,nnz=ddz/dd;
+P.x=ob.x+nnx*mn;P.z=ob.z+nnz*mn;
+var dot=P.vx*nnx+P.vz*nnz;if(dot<0){P.vx-=dot*nnx;P.vz-=dot*nnz;}
+}
+}
+var pd=Math.sqrt(P.x*P.x+P.z*P.z);
+if(pd>ISLAND_R){var pa=Math.atan2(P.x,P.z);P.x=Math.sin(pa)*ISLAND_R;P.z=Math.cos(pa)*ISLAND_R;P.vx*=.1;P.vz*=.1;}
+if(P.y<-30){P.x=0;P.y=pYOff;P.z=0;P.vx=0;P.vy=0;P.vz=0;P.onGround=true;toast(‘Revenu sur l'ile !’);}
 
-  /* Mesh joueur */
-  if(pRoot){
-    pRoot.position.x=P.x; pRoot.position.y=P.y; pRoot.position.z=P.z;
-    var rd=P.yaw-pRoot.rotation.y;
-    while(rd>Math.PI) rd-=Math.PI*2; while(rd<-Math.PI) rd+=Math.PI*2;
-    pRoot.rotation.y += rd*Math.min(1,dt*14);
-  }
-  if(fill) fill.position.set(P.x,P.y+5,P.z);
+if(pRoot){
+pRoot.position.x=P.x;pRoot.position.y=P.y;pRoot.position.z=P.z;
+var rd=P.yaw-pRoot.rotation.y;
+while(rd>Math.PI)rd-=Math.PI*2;while(rd<-Math.PI)rd+=Math.PI*2;
+pRoot.rotation.y+=rd*Math.min(1,dt*14);
+}
+if(fill)fill.position.set(P.x,P.y+5,P.z);
 
-  /* ── CAMÉRA TPS — toujours derrière Stitch ── */
-  /* La caméra suit progressivement le yaw de Stitch */
-  var yawDiff = P.yaw - CAM.yaw;
-  while(yawDiff>Math.PI) yawDiff-=Math.PI*2;
-  while(yawDiff<-Math.PI) yawDiff+=Math.PI*2;
-  /* Vitesse de suivi caméra : douce mais réactive */
-  CAM.yaw += yawDiff * Math.min(1, dt * 4.5);
+/* CAMERA TPS — suit Stitch par derriere */
+var yawDiff=P.yaw-CAM.yaw;
+while(yawDiff>Math.PI)yawDiff-=Math.PI*2;while(yawDiff<-Math.PI)yawDiff+=Math.PI*2;
+CAM.yaw+=yawDiff*Math.min(1,dt*4.5);
 
-  var camRadius = CAM.dist * Math.cos(CAM.pitch);
-  var camOffX   = Math.sin(CAM.yaw) * camRadius;
-  var camOffZ   = Math.cos(CAM.yaw) * camRadius;
-  var camOffY   = CAM.dist * Math.sin(CAM.pitch);
+var cr=CAM.dist*Math.cos(CAM.pitch);
+var tgtX=P.x,tgtY=P.y+1.6,tgtZ=P.z;
+var desiredX=tgtX+Math.sin(CAM.yaw)*cr;
+var desiredY=tgtY+CAM.dist*Math.sin(CAM.pitch);
+var desiredZ=tgtZ+Math.cos(CAM.yaw)*cr;
+cam.position.x+=(desiredX-cam.position.x)*Math.min(1,dt*10);
+cam.position.y+=(desiredY-cam.position.y)*Math.min(1,dt*8);
+cam.position.z+=(desiredZ-cam.position.z)*Math.min(1,dt*10);
+cam.setTarget(new B.Vector3(tgtX,tgtY,tgtZ));
 
-  /* Cible fluide légèrement au dessus de Stitch */
-  var tgtX=P.x, tgtY=P.y+1.6, tgtZ=P.z;
+/* Vagues */
+waveT+=dt;
+waveRings.forEach(function(w){
+var p=Math.sin(waveT*1.8+w.ph);
+w.m.scaling.x=1+p*.045;w.m.scaling.z=1+p*.045;
+w.m.position.y=-.18+Math.sin(waveT*2.4+w.ph)*.038;
+w.m.material.alpha=.42+Math.sin(waveT*2.1+w.ph)*.12;
+});
+/* Eau scroll UV */
+oceanMesh.material.diffuseTexture.uOffset+=.00018;
+oceanMesh.material.diffuseTexture.vOffset+=.00008;
+if(lagonMesh)lagonMesh.position.y=-.30+Math.sin(waveT*.9)*.014;
 
-  /* Position caméra derrière */
-  var desiredX=tgtX+camOffX, desiredY=tgtY+camOffY, desiredZ=tgtZ+camOffZ;
+var dz2=Math.sqrt(P.x*P.x+P.z*P.z);
+document.getElementById(‘zoneTxt’).innerHTML=dz2<5?’🏔 VILLAGE’:dz2<12?’🌿 JUNGLE’:dz2<20?’🏈 PLAGE’:’🌊 BORD DE MER’;
 
-  cam.position.x += (desiredX-cam.position.x)*Math.min(1,dt*10);
-  cam.position.y += (desiredY-cam.position.y)*Math.min(1,dt*8);
-  cam.position.z += (desiredZ-cam.position.z)*Math.min(1,dt*10);
-  cam.setTarget(new B.Vector3(tgtX,tgtY,tgtZ));
-
-  /* ── VAGUES ── */
-  waveT+=dt;
-  waveRings.forEach(function(w){
-    var p=Math.sin(waveT*1.8+w.ph);
-    w.m.scaling.x=1+p*.045; w.m.scaling.z=1+p*.045;
-    w.m.position.y=-.18+Math.sin(waveT*2.4+w.ph)*.038;
-    w.m.material.alpha=.42+Math.sin(waveT*2.1+w.ph)*.12;
-  });
-
-  /* Lagon scintille */
-  if(lagonMesh) lagonMesh.position.y=-.30+Math.sin(waveT*.9)*.014;
-
-  /* Eau WaterMaterial texture scroll */
-  if(waterMat){
-    waterMat.windForce=night?3:8;
-    waterMat.waveHeight=night?.06:.12;
-  }
-
-  /* Zone */
-  var dz2=Math.sqrt(P.x*P.x+P.z*P.z);
-  document.getElementById('zoneTxt').innerHTML=
-    dz2<5?'&#127956; VILLAGE':dz2<12?'&#127807; JUNGLE':dz2<20?'&#127944; PLAGE':'&#127754; BORD DE MER';
-
-  sc.render();
+sc.render();
 });
 
-window.addEventListener('resize',function(){ if(eng) eng.resize(); });
+window.addEventListener(‘resize’,function(){if(eng)eng.resize();});
 
-/* ── Fonctions ── */
-function playAnim(a){
-  if(!a||a===curAnim) return;
-  if(curAnim) curAnim.stop();
-  a.start(true); curAnim=a;
+function playAnim(a){if(!a||a===curAnim)return;if(curAnim)curAnim.stop();a.start(true);curAnim=a;}
+function doJump(e){if(e&&e.preventDefault)e.preventDefault();if(P.onGround){P.vy=8;P.onGround=false;if(pAnims.jump)playAnim(pAnims.jump);}}
+function setSprint(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;}
+window.toggleDN=function(){
+night=!night;
+if(night){
+sc.clearColor=new B.Color4(.01,.02,.08,1);sc.fogColor=new B.Color3(.01,.02,.06);sc.fogDensity=.009;
+sky.intensity=.10;sky.diffuse=new B.Color3(.08,.12,.35);sun.intensity=.15;sun.diffuse=new B.Color3(.25,.30,.68);
+skyMat.emissiveColor=new B.Color3(.02,.04,.12);document.getElementById(‘dnBtn’).innerHTML=’☀ JOUR’;toast(‘Nuit a Hawaii…’);
+}else{
+sc.clearColor=new B.Color4(.42,.72,.94,1);sc.fogColor=new B.Color3(.50,.78,.96);sc.fogDensity=.0035;
+sky.intensity=.65;sky.diffuse=new B.Color3(.80,.90,.98);sun.intensity=2.8;sun.diffuse=new B.Color3(1.0,.95,.80);
+skyMat.emissiveColor=new B.Color3(.42,.72,.94);document.getElementById(‘dnBtn’).innerHTML=’☾ NUIT’;toast(‘Belle journee sur l'ile !’);
 }
+};
 
-function doJump(e){
-  if(e&&e.preventDefault) e.preventDefault();
-  if(P.onGround){ P.vy=8; P.onGround=false; if(pAnims.jump) playAnim(pAnims.jump); }
-}
-function setSprint(v,e){ if(e&&e.preventDefault) e.preventDefault(); sprint=!!v; }
+var jBase=document.getElementById(‘joy’),jNub=document.getElementById(‘jnub’),jid=-1,JMAX=36;
+function jUp(cx,cy){var r=jBase.getBoundingClientRect(),dx=cx-(r.left+r.width/2),dy=cy-(r.top+r.height/2),d=Math.sqrt(dx*dx+dy*dy);if(d>JMAX){dx=dx/d*JMAX;dy=dy/d*JMAX;}jNub.style.transform=’translate(calc(-50% + ’+dx+’px),calc(-50% + ’+dy+‘px))’;jLX=d>5?dx/JMAX:0;jLY=d>5?-dy/JMAX:0;}
+function jRst(){jNub.style.transform=‘translate(-50%,-50%)’;jLX=0;jLY=0;jid=-1;}
+jBase.addEventListener(‘touchstart’,function(e){e.preventDefault();jid=e.touches[0].identifier;jUp(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
+jBase.addEventListener(‘touchmove’,function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jid)jUp(e.changedTouches[i].clientX,e.changedTouches[i].clientY);},{passive:false});
+jBase.addEventListener(‘touchend’,jRst,{passive:true});
+jBase.addEventListener(‘mousedown’,function(e){jUp(e.clientX,e.clientY);});
+window.addEventListener(‘mouseup’,jRst);
 
-function toggleDN(){
-  night=!night;
-  if(night){
-    sc.clearColor=new B.Color4(.01,.02,.08,1); sc.fogColor=new B.Color3(.01,.02,.06); sc.fogDensity=.009;
-    sky.intensity=.10; sky.diffuse=new B.Color3(.08,.12,.35);
-    sun.intensity=.15; sun.diffuse=new B.Color3(.25,.30,.68);
-    skyMat.emissiveColor=new B.Color3(.02,.04,.12);
-    document.getElementById('dnBtn').innerHTML='&#9728; JOUR';
-    toast('Nuit à Hawaï...');
-  }else{
-    sc.clearColor=new B.Color4(.42,.72,.94,1); sc.fogColor=new B.Color3(.50,.78,.96); sc.fogDensity=.0035;
-    sky.intensity=.65; sky.diffuse=new B.Color3(.80,.90,.98);
-    sun.intensity=2.8; sun.diffuse=new B.Color3(1.0,.95,.80);
-    skyMat.emissiveColor=new B.Color3(.42,.72,.94);
-    document.getElementById('dnBtn').innerHTML='&#9790; NUIT';
-    toast('Belle journée sur l\'île !');
-  }
-}
+window.addEventListener(‘keydown’,function(e){KY[e.code]=1;if(e.code===‘Space’){e.preventDefault();doJump();}if(e.code===‘ShiftLeft’||e.code===‘ShiftRight’)sprint=true;});
+window.addEventListener(‘keyup’,function(e){KY[e.code]=0;if(e.code===‘ShiftLeft’||e.code===‘ShiftRight’)sprint=false;});
 
-/* ── Joystick ── */
-var jBase=document.getElementById('joy'),jNub=document.getElementById('jnub'),jid=-1,JMAX=36;
-function jUp(cx,cy){
-  var r=jBase.getBoundingClientRect(), dx=cx-(r.left+r.width/2), dy=cy-(r.top+r.height/2);
-  var d=Math.sqrt(dx*dx+dy*dy); if(d>JMAX){dx=dx/d*JMAX;dy=dy/d*JMAX;}
-  jNub.style.transform='translate(calc(-50% + '+dx+'px),calc(-50% + '+dy+'px))';
-  jLX=d>5?dx/JMAX:0; jLY=d>5?-dy/JMAX:0;
-}
-function jRst(){ jNub.style.transform='translate(-50%,-50%)'; jLX=0; jLY=0; jid=-1; }
-jBase.addEventListener('touchstart',function(e){e.preventDefault();jid=e.touches[0].identifier;jUp(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
-jBase.addEventListener('touchmove',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jid)jUp(e.changedTouches[i].clientX,e.changedTouches[i].clientY);},{passive:false});
-jBase.addEventListener('touchend',jRst,{passive:true});
-jBase.addEventListener('mousedown',function(e){jUp(e.clientX,e.clientY);});
-window.addEventListener('mouseup',jRst);
+window.addEventListener(‘wheel’,function(e){CAM.dist=Math.max(6,Math.min(24,CAM.dist+e.deltaY*.012));},{passive:true});
 
-/* ── Clavier ── */
-window.addEventListener('keydown',function(e){
-  KY[e.code]=1;
-  if(e.code==='Space'){e.preventDefault();doJump();}
-  if(e.code==='ShiftLeft'||e.code==='ShiftRight') sprint=true;
-});
-window.addEventListener('keyup',function(e){
-  KY[e.code]=0;
-  if(e.code==='ShiftLeft'||e.code==='ShiftRight') sprint=false;
-});
-
-/* ── Zoom souris ── */
-window.addEventListener('wheel',function(e){
-  CAM.dist=Math.max(6,Math.min(24,CAM.dist+e.deltaY*.012));
-},{passive:true});
-
-/* ── Rotation caméra souris droite ── */
 var mDn=false,mLx=0,mLy=0;
-cv.addEventListener('mousedown',function(e){if(e.button===2){mDn=true;mLx=e.clientX;mLy=e.clientY;}});
-window.addEventListener('mousemove',function(e){
-  if(!mDn) return;
-  CAM.yaw  -= (e.clientX-mLx)*.004;
-  CAM.pitch = Math.max(.08,Math.min(.78,CAM.pitch+(e.clientY-mLy)*.003));
-  mLx=e.clientX; mLy=e.clientY;
-});
-window.addEventListener('mouseup',function(e){if(e.button===2)mDn=false;});
-cv.addEventListener('contextmenu',function(e){e.preventDefault();});
+cv.addEventListener(‘mousedown’,function(e){if(e.button===2){mDn=true;mLx=e.clientX;mLy=e.clientY;}});
+window.addEventListener(‘mousemove’,function(e){if(!mDn)return;CAM.yaw-=(e.clientX-mLx)*.004;CAM.pitch=Math.max(.08,Math.min(.78,CAM.pitch+(e.clientY-mLy)*.003));mLx=e.clientX;mLy=e.clientY;});
+window.addEventListener(‘mouseup’,function(e){if(e.button===2)mDn=false;});
+cv.addEventListener(‘contextmenu’,function(e){e.preventDefault();});
 
-/* ── Pinch zoom mobile ── */
 var p0t=null,iDt=0,iCDt=0;
-cv.addEventListener('touchstart',function(e){
-  if(e.touches.length===2){p0t=e.touches[0];var p1=e.touches[1];
-    iDt=Math.hypot(p1.clientX-p0t.clientX,p1.clientY-p0t.clientY);iCDt=CAM.dist;}
-},{passive:true});
-cv.addEventListener('touchmove',function(e){
-  if(e.touches.length===2&&iDt>0){
-    var d=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);
-    CAM.dist=Math.max(6,Math.min(24,iCDt*(iDt/d)));
-  }
-},{passive:true});
+cv.addEventListener(‘touchstart’,function(e){if(e.touches.length===2){p0t=e.touches[0];var p1=e.touches[1];iDt=Math.hypot(p1.clientX-p0t.clientX,p1.clientY-p0t.clientY);iCDt=CAM.dist;}},{passive:true});
+cv.addEventListener(‘touchmove’,function(e){if(e.touches.length===2&&iDt>0){var d=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);CAM.dist=Math.max(6,Math.min(24,iCDt*(iDt/d)));}},{passive:true});
 
 })();
 </script>
