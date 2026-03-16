@@ -546,13 +546,31 @@ mmCtx.restore();mmCtx.restore();
 setInterval(function(){if(eng){gold+=50;document.getElementById(‘goldVal’).textContent=gold.toLocaleString(‘fr-FR’);}},30000);
 function toast(msg){var t=document.getElementById(‘toast’);t.textContent=msg;t.className=‘show’;if(toastT)clearTimeout(toastT);toastT=setTimeout(function(){t.className=’’;},3000);}
 
-window.addEventListener(‘load’,function(){
-var pct=0;var anim=setInterval(function(){pct=Math.min(pct+3,90);document.getElementById(‘barFill’).style.width=pct+’%’;},60);
-window.onerror=function(msg){var el=document.getElementById(‘stepTxt’);if(el)el.textContent=’ERR: ’+msg.substring(0,60);};
-function tryInit(){clearInterval(anim);document.getElementById(‘barFill’).style.width=‘100%’;setTimeout(initCharSelect,200);}
-if(typeof BABYLON!==‘undefined’)setTimeout(tryInit,300);
-else{var ck=setInterval(function(){if(typeof BABYLON!==‘undefined’){clearInterval(ck);tryInit();}},100);setTimeout(function(){clearInterval(ck);tryInit();},12000);}
-});
+// Boot robuste — fonctionne que load soit déjà passé ou non
+window.onerror=function(msg,src,line){
+var el=document.getElementById(‘stepTxt’);
+if(el)el.textContent=‘ERR L’+line+’: ‘+String(msg).substring(0,55);
+};
+(function boot(){
+var pct=0;
+var bar=document.getElementById(‘barFill’);
+var anim=setInterval(function(){pct=Math.min(pct+4,90);if(bar)bar.style.width=pct+’%’;},50);
+function tryInit(){
+clearInterval(anim);
+if(bar)bar.style.width=‘100%’;
+setTimeout(initCharSelect,100);
+}
+// Babylon.js est chargé de façon synchrone — disponible immédiatement
+if(typeof BABYLON!==‘undefined’){
+setTimeout(tryInit,200);
+} else {
+// Fallback: attendre
+var ck=setInterval(function(){
+if(typeof BABYLON!==‘undefined’){clearInterval(ck);tryInit();}
+},50);
+setTimeout(function(){clearInterval(ck);tryInit();},8000);
+}
+})();
 
 </script>
 </body>
