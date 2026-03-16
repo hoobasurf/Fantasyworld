@@ -256,8 +256,8 @@ async function initWorld(){
   cam=new B.FreeCamera('c',new B.Vector3(0,8,14),sc);
   cam.minZ=.1;cam.maxZ=600;cam.fov=.95;
   cam.setTarget(new B.Vector3(0,1,0));
-  // Empêcher BabylonJS de capturer les inputs — on gère tout manuellement
-  // cam.inputs.clear(); // pas besoin, on écrase position directement
+  // CRUCIAL : désactiver tous les inputs Babylon pour contrôle 100% manuel
+  cam.inputs.clear();
 
   setStep(15,'LUMIERES...');initLights();
   setStep(25,'OCEAN...');buildOcean();buildIslands();buildPlots();
@@ -439,86 +439,79 @@ function gameLoop(){
 // PHYSIQUE — copie exacte Kirby physicsStep
 // ═══════════════════════════════════════════════════
 function physicsStep(dt){
-  // ── Sol de l'île (y=0 partout pour l'instant)
-  var groundY=0;
-  var footY=groundY+pYOff;  // Kirby : footY = fy + 13 (hauteur des pieds)
+  // ── Sol de l'île
+  var footY=pYOff; // y=0 + hauteur du pied du modèle
 
-  // ── Inputs — copie exacte Kirby
-  // fwd = avant/arrière (jLY négatif = avant comme Kirby jLY)
-  var fwd=0, lat=0;
+  // ── Inputs direction
+  var fwd=0,lat=0;
   if(KY['KeyW']||KY['KeyZ'])fwd+=1;
   if(KY['KeyS'])fwd-=1;
   if(KY['ArrowRight']||KY['KeyD'])lat+=1;
   if(KY['ArrowLeft']||KY['KeyA']||KY['KeyQ'])lat-=1;
-  // Joystick : jLY vers le bas = avant dans Kirby
-  fwd-=jLY;   // -jLY car joystick bas = y négatif = avancer
-  lat+=jLX;   // jLX droit = lat positif
+  fwd+=jLY;  // joystick: haut (jLY>0) = avancer
+  lat+=jLX;  // joystick: droite (jLX>0) = aller à droite
 
-  // ── Calcul direction (exactement Kirby)
-  // moveX = -sin(yaw)*fwd + cos(yaw)*lat
-  // moveZ = -cos(yaw)*fwd - sin(yaw)*lat
+  // ── Direction relative à la caméra (exactement Kirby)
   var moveX=-Math.sin(CAM.yaw)*fwd+Math.cos(CAM.yaw)*lat;
   var moveZ=-Math.cos(CAM.yaw)*fwd-Math.sin(CAM.yaw)*lat;
   var moveMag=Math.sqrt(moveX*moveX+moveZ*moveZ);
 
-  // ── Vitesse (Kirby : spd = 5.5 normal, 7.0 sprint)
+  // ── Vitesse cible en unités/seconde
   var spd=sprint&&stamina>2?7.0:5.5;
-  spd*=dt*60; // normaliser pour dt (Kirby tourne à ~60fps)
 
   if(moveMag>.05){
-    var nx=moveX/moveMag, nz=moveZ/moveMag;
-    // Kirby : P.vx += (nx*spd - P.vx) * .15
-    P.vx+=(nx*spd-P.vx)*.15;
-    P.vz+=(nz*spd-P.vz)*.15;
-    // Rotation du personnage — copie Kirby
+    var nx=moveX/moveMag,nz=moveZ/moveMag;
+    // Lerp vélocité vers cible (Kirby: .15 par frame @60fps → .15*dt*60 par seconde)
+    var lerpF=1.0-Math.pow(1.0-.15,dt*60);
+    P.vx+=(nx*spd-P.vx)*lerpF;
+    P.vz+=(nz*spd-P.vz)*lerpF;
+    // Rotation smooth du personnage
     var targ=Math.atan2(-nx,-nz);
     var dya=targ-P.yaw;
     while(dya>Math.PI)dya-=Math.PI*2;
     while(dya<-Math.PI)dya+=Math.PI*2;
-    P.yaw+=dya*.15;
-    // Stamina
+    P.yaw+=dya*Math.min(1,dt*9);
     if(sprint)stamina=Math.max(0,stamina-dt*22);
     else stamina=Math.min(100,stamina+dt*10);
     P.walk+=.11;
   } else {
-    // Friction — copie Kirby
-    P.vx*=.72;P.vz*=.72;
-    if(Math.abs(P.vx)<.05)P.vx=0;
-    if(Math.abs(P.vz)<.05)P.vz=0;
+    // Friction
+    var fricF=1.0-Math.pow(1.0-.72,dt*60);
+    P.vx-=P.vx*fricF;
+    P.vz-=P.vz*fricF;
+    if(Math.abs(P.vx)<.02)P.vx=0;
+    if(Math.abs(P.vz)<.02)P.vz=0;
     stamina=Math.min(100,stamina+dt*16);
   }
 
-  // ── Gravité — copie Kirby (hors eau)
-  if(P.flying){
-    P.vy-=0.06;if(P.vy<-3.5)P.vy=-3.5;
-  } else {
-    P.vy-=0.45;if(P.vy<-18)P.vy=-18;
-  }
-  P.vx*=.88;P.vz*=.88;
+  // ── Gravité (Kirby: -0.45/frame → -0.45*60/s = -27/s)
+  var grav=P.flying?(-0.06*60):(-0.45*60);
+  P.vy+=grav*dt;
+  if(P.flying&&P.vy<-3.5)P.vy=-3.5;
+  if(!P.flying&&P.vy<-18)P.vy=-18;
 
-  // ── Appliquer mouvement D'ABORD (ordre exact Kirby)
-  P.y+=P.vy;
-  P.x+=P.vx;
-  P.z+=P.vz;
+  // ── Déplacement (P.x += P.vx * dt — comme Kirby mais normalisé)
+  P.x+=P.vx*dt;
+  P.z+=P.vz*dt;
+  P.y+=P.vy*dt;
 
-  // ── PUIS vérifier le sol (après déplacement, seulement si on descend)
+  // ── Sol : si on touche le plancher et qu'on descend
   if(P.y<=footY&&P.vy<=0){
     P.y=footY;P.vy=0;P.onGround=true;P.flying=false;
   } else {
     P.onGround=false;
   }
 
-  // ── Limites de la carte
+  // ── Limites carte
   P.x=Math.max(-120,Math.min(120,P.x));
   P.z=Math.max(-120,Math.min(120,P.z));
 
-  // ── Chute dans le vide → respawn
-  if(P.y<-30){P.x=0;P.y=3;P.z=0;P.vx=0;P.vy=0;P.vz=0;P.onGround=true;}
+  // ── Respawn
+  if(P.y<-30){P.x=0;P.y=pYOff;P.z=0;P.vx=0;P.vy=0;P.vz=0;P.onGround=true;}
 
   // ── Animation
   playAnim(moveMag>.05?(sprint&&pAnims.run?pAnims.run:pAnims.walk||pAnims.idle):pAnims.idle);
 
-  // ── Light follow
   if(fillLight)fillLight.position.set(P.x,P.y+4,P.z);
   updateZone();
 }
@@ -562,7 +555,9 @@ function updateCam(){
 
   // ── LookAt — copie exacte Kirby
   // camera.lookAt(camTX, camTY+9, camTZ)
-  cam.setTarget(new B.Vector3(camTX,camTY+2,camTZ));
+  // setTarget recréé chaque frame (Babylon ne met pas à jour si même objet)
+  var tgt=new B.Vector3(camTX,camTY+2,camTZ);
+  cam.setTarget(tgt);
 }
 
 // ═══════════════════════════════════════════════════
@@ -571,13 +566,15 @@ function updateCam(){
 function applyPlayerMesh(){
   if(!pRoot)return;
   pRoot.position.x=P.x;
-  pRoot.position.y=P.y+pYOff;
+  pRoot.position.y=P.y; // pYOff déjà dans footY
   pRoot.position.z=P.z;
-  // Rotation smooth — copie Kirby
-  var diff=(P.yaw+Math.PI)-pRoot.rotation.y;
+  // Rotation smooth vers P.yaw (face dans la direction du mouvement)
+  // +Math.PI car les modèles GLB font souvent face à Z-
+  var targetRot=P.yaw+Math.PI;
+  var diff=targetRot-pRoot.rotation.y;
   while(diff>Math.PI)diff-=Math.PI*2;
   while(diff<-Math.PI)diff+=Math.PI*2;
-  pRoot.rotation.y+=diff*Math.min(1,0.016*15);
+  pRoot.rotation.y+=diff*Math.min(1,0.016*12);
 }
 
 // ═══════════════════════════════════════════════════
@@ -682,9 +679,10 @@ function setupKeys(){
 function doJump(e){
   if(e&&e.preventDefault)e.preventDefault();
   if(P.onGround){
-    P.vy=8;   // Kirby : pVY=8
+    P.vy=8; // 8 unités/seconde à la verticale
     P.onGround=false;
     if(pAnims.jump)playAnim(pAnims.jump);
+    else if(pAnims.idle)playAnim(pAnims.idle);
   }
 }
 function setSprint(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;}
