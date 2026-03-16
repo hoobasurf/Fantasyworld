@@ -91,6 +91,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#001830;font-family:
 </div>
 
 <div id="joy"><div id="jnub"></div></div>
+<div id="joyR" style="position:fixed;right:80px;bottom:80px;z-index:30;width:90px;height:90px;border-radius:50%;background:rgba(125,232,255,.06);border:2px solid rgba(125,232,255,.2);touch-action:none;pointer-events:all"><div id="jnubR" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,200,125,.4),rgba(120,80,0,.8));border:1.5px solid rgba(255,200,125,.4);pointer-events:none"></div></div>
 <div id="btns">
   <div class="btn" style="border:2px solid #7de8ff;color:#7de8ff" ontouchstart="doJump(event)" onclick="doJump()">&#8679;<br>JUMP</div>
   <div class="btn" style="border:2px solid #ffd700;color:#ffd700" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">&#9889;<br>RUN</div>
@@ -666,19 +667,14 @@ function movePlayer(dt){
 // CAMERA — copie exacte Kirby
 // ═══════════════════════════════════════════════════════
 function updateCam(){
-  // Lerp cible vers Stitch — copie Kirby
+  // Lerp cible vers Stitch
   camTX+=(pPos.x-camTX)*.12;
   camTY+=(pPos.y-camTY)*.10;
   camTZ+=(pPos.z-camTZ)*.12;
-
-  // Si Stitch bouge, caméra suit derrière lui — copie Kirby
-  var moveMag=Math.sqrt(jX*jX+jY*jY);
-  if(moveMag>.05){
-    var tcy=pAngle;
-    var cdiff=tcy-CAM.yaw;
-    while(cdiff>Math.PI)cdiff-=Math.PI*2;
-    while(cdiff<-Math.PI)cdiff+=Math.PI*2;
-    CAM.yaw+=cdiff*.025;
+  // Joystick droit = tourne la caméra (exactement comme Kirby jR)
+  if(Math.abs(jRX)>.12||Math.abs(jRY)>.12){
+    CAM.yaw-=jRX*.018;
+    CAM.pitch=Math.max(.08,Math.min(.92,CAM.pitch+jRY*.012));
   }
 
   // Position orbitale — copie exacte Kirby
@@ -753,6 +749,30 @@ function setupJoystick(){
   base.addEventListener('mousedown',function(e){updateJoy(e.clientX,e.clientY);});
   window.addEventListener('mouseup',reset);
 }
+
+// Joystick droit — tourne la caméra (comme Kirby jR)
+var jRX=0,jRY=0;
+(function(){
+  var base=document.getElementById('joyR');
+  if(!base) return;
+  var nub=document.getElementById('jnubR');
+  var jid=-1;
+  function updateJoy(cx,cy){
+    var r=base.getBoundingClientRect();
+    var dx=cx-(r.left+r.width/2),dy=cy-(r.top+r.height/2);
+    var dist=Math.sqrt(dx*dx+dy*dy),max=32;
+    if(dist>max){dx=dx/dist*max;dy=dy/dist*max;}
+    nub.style.transform='translate(calc(-50% + '+dx+'px),calc(-50% + '+dy+'px))';
+    jRX=Math.abs(dist)>6?dx/max:0;
+    jRY=Math.abs(dist)>6?dy/max:0;
+  }
+  function reset(){nub.style.transform='translate(-50%,-50%)';jRX=0;jRY=0;jid=-1;}
+  base.addEventListener('touchstart',function(e){e.preventDefault();e.stopPropagation();jid=e.touches[0].identifier;updateJoy(e.touches[0].clientX,e.touches[0].clientY);},{passive:false,capture:true});
+  base.addEventListener('touchmove',function(e){e.preventDefault();e.stopPropagation();for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jid)updateJoy(e.changedTouches[i].clientX,e.changedTouches[i].clientY);},{passive:false,capture:true});
+  base.addEventListener('touchend',function(e){e.stopPropagation();reset();},{passive:true,capture:true});
+  base.addEventListener('mousedown',function(e){updateJoy(e.clientX,e.clientY);});
+  window.addEventListener('mouseup',reset);
+})();
 
 // - CAMERA DRAG — copie Kirby (glisser = tourner caméra) -
 function setupCamDrag(cv){
