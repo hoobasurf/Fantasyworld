@@ -487,21 +487,32 @@ function movePlayer(dt){
   updateZone();
 }
 
-// SEUL CHANGEMENT : camYaw suit pAngle avec lerp (caméra derrière Stitch)
+// CAMERA — copie exacte Kirby
+var _camTX=0,_camTY=13,_camTZ=0;
+var _CAMyaw=0,_CAMpitch=.28,_CAMdist=12;
 function updateCam(){
-  var diff=pAngle-camYaw;
-  while(diff> Math.PI)diff-=Math.PI*2;
-  while(diff<-Math.PI)diff+=Math.PI*2;
-  camYaw+=diff*0.08;
-  var tx=pPos.x-Math.sin(camYaw)*CAM_D;
-  var ty=pPos.y+CAM_H;
-  var tz=pPos.z-Math.cos(camYaw)*CAM_D;
-  cam.position.x=tx;
-  cam.position.z=tz;
-  cam.position.y+=(ty-cam.position.y)*0.15;
-  cam.target.x=pPos.x;
-  cam.target.z=pPos.z;
-  cam.target.y+=(pPos.y+1.4-cam.target.y)*0.15;
+  // Lerp cible — copie Kirby : camTX += (P.x - camTX)*.12
+  _camTX+=( pPos.x - _camTX)*.12;
+  _camTY+=( pPos.y - _camTY)*.10;
+  _camTZ+=( pPos.z - _camTZ)*.12;
+  // Suit derrière Stitch quand il bouge — copie Kirby : CAM.yaw += cdiff*.032
+  var moveMag=Math.sqrt(jX*jX+jY*jY);
+  if(moveMag>.05){
+    var cdiff=pAngle-_CAMyaw;
+    while(cdiff> Math.PI)cdiff-=Math.PI*2;
+    while(cdiff<-Math.PI)cdiff+=Math.PI*2;
+    _CAMyaw+=cdiff*.032;
+  }
+  // Position caméra — copie Kirby :
+  // camera.position.set(camTX+sin(yaw)*cr, camTY+dist*sin(pitch), camTZ+cos(yaw)*cr)
+  var cr=_CAMdist*Math.cos(_CAMpitch);
+  cam.position.x=_camTX+Math.sin(_CAMyaw)*cr;
+  cam.position.y=_camTY+_CAMdist*Math.sin(_CAMpitch);
+  cam.position.z=_camTZ+Math.cos(_CAMyaw)*cr;
+  // lookAt — copie Kirby : camera.lookAt(camTX, camTY+9, camTZ)
+  cam.target.x=_camTX;
+  cam.target.y=_camTY+9;
+  cam.target.z=_camTZ;
 }
 
 function moveNPCs(dt){
