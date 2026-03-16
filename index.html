@@ -317,7 +317,7 @@ var pathMat=new B.StandardMaterial('pMat',sc);
 pathMat.diffuseColor=new B.Color3(.94,.70,.28);pathMat.ambientColor=new B.Color3(.40,.26,.08);pathMat.specularColor=new B.Color3(0,0,0);
 
 function makeSandPath(x0,z0,x1,z1,w){
-  w=w||3.5;
+  w=w||2.2;
   var dx=x1-x0,dz=z1-z0,len=Math.sqrt(dx*dx+dz*dz);
   var steps=Math.max(3,Math.floor(len/2.5));
   for(var si=0;si<=steps;si++){
@@ -329,21 +329,21 @@ function makeSandPath(x0,z0,x1,z1,w){
 }
 
 // Chemin principal: départ → carrefours → sortie
-makeSandPath(0,4, 0,-16, 3.5);        // départ → C1
-makeSandPath(0,-16, 0,-20, 3.5);
-makeSandPath(0,-20, 0,-34, 3.5);      // C1 → C2
-makeSandPath(0,-34, 0,-38, 3.5);
-makeSandPath(0,-38, 12,-38, 3.5);     // C2 → droite → C3
-makeSandPath(12,-38, 16,-38, 3.5);
-makeSandPath(16,-38, 26,-38, 3.5);    // C3 → C4
-makeSandPath(26,-38, 30,-38, 3.5);
-makeSandPath(30,-38, 30,-48, 3.5);    // C4 → C5
-makeSandPath(30,-48, 30,-52, 3.5);
-makeSandPath(30,-52, 30,-62, 3.5);    // C5 → C6
-makeSandPath(30,-62, 30,-66, 3.5);
-makeSandPath(30,-66, 16,-66, 3.5);    // C6 → sortie (gauche)
-makeSandPath(16,-66, 0,-72, 3.5);     // vers plage
-makeSandPath(0,-72, 0,-90, 4);        // ouverture plage
+makeSandPath(0,4, 0,-16, 2.2);        // départ → C1
+makeSandPath(0,-16, 0,-20, 2.2);
+makeSandPath(0,-20, 0,-34, 2.2);      // C1 → C2
+makeSandPath(0,-34, 0,-38, 2.2);
+makeSandPath(0,-38, 12,-38, 2.2);     // C2 → droite → C3
+makeSandPath(12,-38, 16,-38, 2.2);
+makeSandPath(16,-38, 26,-38, 2.2);    // C3 → C4
+makeSandPath(26,-38, 30,-38, 2.2);
+makeSandPath(30,-38, 30,-48, 2.2);    // C4 → C5
+makeSandPath(30,-48, 30,-52, 2.2);
+makeSandPath(30,-52, 30,-62, 2.2);    // C5 → C6
+makeSandPath(30,-62, 30,-66, 2.2);
+makeSandPath(30,-66, 16,-66, 2.2);    // C6 → sortie (gauche)
+makeSandPath(16,-66, 0,-72, 2.2);     // vers plage
+makeSandPath(0,-72, 0,-90, 2.5);        // ouverture plage
 
 // Petites pierres sur le chemin (décoratif, pas de collision)
 var stoneMat=new B.StandardMaterial('stMat',sc);
@@ -434,31 +434,64 @@ function makeTree(x,z,h,r,addWall){
   });
 }
 
-// Palmier avec collision
+// Palmier réaliste — tronc très fin courbé + grandes feuilles planes retombantes
 function makePalm(x,z,h,lx,lz){
-  walls.push({x1:x-.45,z1:z-.45,x2:x+.45,z2:z+.45});
-  var NS=8,pts=[new B.Vector3(x,0,z)],cx2=x,cy=0,cz2=z;
-  for(var i=1;i<=NS;i++){var t=i/NS,bend=Math.pow(t,1.6)*1.5;cx2+=lx/NS*bend;cy+=h/NS;cz2+=lz/NS*bend;pts.push(new B.Vector3(cx2,cy,cz2));}
+  walls.push({x1:x-.38,z1:z-.38,x2:x+.38,z2:z+.38});
+  var NS=10,pts=[new B.Vector3(x,0,z)],cx2=x,cy=0,cz2=z;
+  for(var i=1;i<=NS;i++){
+    var t=i/NS,bend=Math.pow(t,2.0)*2.2;
+    cx2+=lx/NS*bend;cy+=h/NS;cz2+=lz/NS*bend;
+    pts.push(new B.Vector3(cx2,cy,cz2));
+  }
+  // Tronc très fin style Lilo & Stitch
   for(var i=0;i<NS;i++){
-    var p0=pts[i],p1=pts[i+1],d=(.28-.022*i);
-    var seg=B.MeshBuilder.CreateCylinder('ts',{height:p0.subtract(p1).length()*1.05,diameterTop:Math.max(.04,d-.03),diameterBottom:d,tessellation:7},sc);
-    seg.material=trunkMat;var mid=B.Vector3.Lerp(p0,p1,.5);seg.position=mid.clone();
+    var p0=pts[i],p1=pts[i+1];
+    var dBot=Math.max(.05,.20-.015*i);
+    var dTop=Math.max(.03,.16-.015*i);
+    var seg=B.MeshBuilder.CreateCylinder('ts',{
+      height:p0.subtract(p1).length()*1.04,
+      diameterTop:dTop,diameterBottom:dBot,tessellation:7
+    },sc);
+    var tM=new B.StandardMaterial('tM',sc);
+    tM.diffuseColor=new B.Color3(.62+i*.01,.50+i*.008,.32+i*.005);
+    tM.specularColor=new B.Color3(0,0,0);
+    seg.material=tM;
+    var mid=B.Vector3.Lerp(p0,p1,.5);seg.position=mid.clone();
     var dir=p1.subtract(p0).normalize(),up=new B.Vector3(0,1,0),axis=B.Vector3.Cross(up,dir);
     if(axis.length()>.001){axis.normalize();seg.rotate(axis,Math.acos(Math.min(1,B.Vector3.Dot(up,dir))),B.Space.WORLD);}
-    seg.outlineColor=new B.Color3(.15,.1,.05);seg.outlineWidth=.03;seg.renderOutline=true;
+    seg.outlineColor=new B.Color3(.12,.08,.04);seg.outlineWidth=.025;seg.renderOutline=true;
     if(shadows)shadows.addShadowCaster(seg);
   }
   var top=pts[NS];
-  for(var i=0;i<9+Math.floor(Math.random()*4);i++){
-    var ang=i/9*Math.PI*2+(Math.random()-.5)*.3,ll=3+Math.random()*2;
-    var lf=B.MeshBuilder.CreateCylinder('lf',{height:ll,diameterTop:.03,diameterBottom:.24,tessellation:5},sc);
-    var lm=new B.StandardMaterial('lm',sc);lm.diffuseColor=new B.Color3(.18+Math.random()*.12,.70+Math.random()*.2,.12);lm.specularColor=new B.Color3(0,0,0);
-    lf.material=lm;var droop=.62+Math.random()*.4;
-    lf.position.set(top.x+Math.sin(ang)*ll*.44,top.y-droop,top.z+Math.cos(ang)*ll*.44);
-    lf.rotation.set(-droop*.8,ang,(Math.random()-.5)*.1);
-    lf.outlineColor=new B.Color3(0,.12,0);lf.outlineWidth=.02;lf.renderOutline=true;
+  // Grandes feuilles planes retombantes — style Lilo & Stitch
+  var NL=10+Math.floor(Math.random()*4);
+  for(var i=0;i<NL;i++){
+    var ang=i/NL*Math.PI*2+(Math.random()-.5)*.28;
+    var ll=4.5+Math.random()*3.0; // feuilles très longues
+    var lw=0.55+Math.random()*0.35; // largeur feuille
+    // Feuille = plan rectangulaire incliné vers le bas
+    var lf=B.MeshBuilder.CreatePlane('lf',{width:ll,height:lw},sc);
+    var lm=new B.StandardMaterial('lm',sc);
+    lm.diffuseColor=new B.Color3(.18+Math.random()*.14,.72+Math.random()*.22,.10+Math.random()*.1);
+    lm.backFaceCulling=false;lm.specularColor=new B.Color3(0,0,0);
+    lf.material=lm;
+    var droop=0.55+Math.random()*.45;
+    // Position: part du sommet, s'étend dans la direction ang
+    lf.position.set(
+      top.x+Math.sin(ang)*ll*.48,
+      top.y-droop*1.2,
+      top.z+Math.cos(ang)*ll*.48
+    );
+    lf.rotation.set(-droop*.9+(Math.random()-.5)*.1, ang+Math.PI/2, (Math.random()-.5)*.08);
+    lf.outlineColor=new B.Color3(0,.12,0);lf.outlineWidth=.018;lf.renderOutline=true;
     if(shadows)shadows.addShadowCaster(lf);
   }
+  // Boule de feuillage dense au sommet pour silhouette reconnaissable
+  var crown=B.MeshBuilder.CreateSphere('cr',{diameter:h*.22,segments:6},sc);
+  var crM=new B.StandardMaterial('crM',sc);
+  crM.diffuseColor=new B.Color3(.20,.75,.14);crM.specularColor=new B.Color3(0,0,0);
+  crown.material=crM;crown.position.set(top.x,top.y-.2,top.z);
+  crown.outlineColor=new B.Color3(0,.15,0);crown.outlineWidth=.03;crown.renderOutline=true;
 }
 
 // Buisson mur
@@ -474,29 +507,35 @@ function makeBush(x,z,s,wall){
 }
 
 // ── PLACEMENT VEGETATION ──
-// Les plantes bordent le chemin — murs naturels des 2 côtés
-// Chemin principal axe Z (x=0, de z=4 à z=-18)
+// Végétation très dense, haute, bouche le ciel
+// Chemin étroit — arbres à 2.5m du centre max
 var vegX,vegZ;
-for(var i=0;i<12;i++){
-  vegZ=-i*1.5+3;
-  // Gauche du chemin
-  makePalm(-4+Math.random()*.5,vegZ,5+Math.random()*3,(Math.random()-.5)*.8,(Math.random()-.5)*.5);
-  makeTree(-7+Math.random(),vegZ,6+Math.random()*4,2,true);
-  makeBush(-5.5+Math.random()*.5,vegZ-.5,.6+Math.random()*.4,true);
-  // Droite
-  makePalm(4+Math.random()*.5,vegZ,5+Math.random()*3,(Math.random()-.5)*.8,(Math.random()-.5)*.5);
-  makeTree(7+Math.random(),vegZ,6+Math.random()*4,2,true);
-  makeBush(5.5+Math.random()*.5,vegZ-.5,.6+Math.random()*.4,true);
+for(var i=0;i<14;i++){
+  vegZ=-i*1.3+3;
+  // Gauche — première rangée près du chemin
+  makePalm(-3.2+Math.random()*.3,vegZ,8+Math.random()*5,(-1.2+Math.random()*.4),(Math.random()-.5)*.3);
+  makePalm(-5.5+Math.random()*.4,vegZ+.5,7+Math.random()*4,(-1.0+Math.random()*.3),(Math.random()-.5)*.3);
+  makeTree(-4.5+Math.random()*.3,vegZ,10+Math.random()*5,3,true);
+  makeTree(-8+Math.random(),vegZ,12+Math.random()*5,3.5,true);
+  makeBush(-3.8+Math.random()*.3,vegZ,.8+Math.random()*.5,true);
+  makeBush(-6+Math.random()*.4,vegZ-.6,.9+Math.random()*.5,true);
+  // Droite — première rangée
+  makePalm(3.2+Math.random()*.3,vegZ,8+Math.random()*5,(1.2+Math.random()*.4),(Math.random()-.5)*.3);
+  makePalm(5.5+Math.random()*.4,vegZ+.5,7+Math.random()*4,(1.0+Math.random()*.3),(Math.random()-.5)*.3);
+  makeTree(4.5+Math.random()*.3,vegZ,10+Math.random()*5,3,true);
+  makeTree(8+Math.random(),vegZ,12+Math.random()*5,3.5,true);
+  makeBush(3.8+Math.random()*.3,vegZ,.8+Math.random()*.5,true);
+  makeBush(6+Math.random()*.4,vegZ-.6,.9+Math.random()*.5,true);
 }
 
 // C1→C2 (x=0, z=-20 à -36)
 for(var i=0;i<9;i++){
   vegZ=-20-i*1.8;
   makePalm(-4.5+Math.random()*.4,vegZ,5.5+Math.random()*3,(Math.random()-.5)*.7,(Math.random()-.5)*.4);
-  makeTree(-8+Math.random(),vegZ,7+Math.random()*4,2.2,true);
+  makeTree(-8+Math.random(),vegZ,11+Math.random()*5,3.2,true);
   makeBush(-5.5+Math.random()*.4,vegZ,.7+Math.random()*.4,true);
   makePalm(4.5+Math.random()*.4,vegZ,5.5+Math.random()*3,(Math.random()-.5)*.7,(Math.random()-.5)*.4);
-  makeTree(8+Math.random(),vegZ,7+Math.random()*4,2.2,true);
+  makeTree(8+Math.random(),vegZ,11+Math.random()*5,3.2,true);
   makeBush(5.5+Math.random()*.4,vegZ,.7+Math.random()*.4,true);
 }
 
@@ -504,10 +543,10 @@ for(var i=0;i<9;i++){
 for(var i=0;i<9;i++){
   vegX=i*1.8;
   makePalm(vegX,-41.5+Math.random()*.4,5+Math.random()*3,(Math.random()-.5)*.5,(Math.random()-.5)*.8);
-  makeTree(vegX,-44+Math.random(),6.5+Math.random()*4,2,true);
+  makeTree(vegX,-44+Math.random(),10+Math.random()*5,3,true);
   makeBush(vegX+.3,-42+Math.random()*.4,.65+Math.random()*.35,true);
   makePalm(vegX,-34.5+Math.random()*.4,5+Math.random()*3,(Math.random()-.5)*.5,(Math.random()-.5)*.8);
-  makeTree(vegX,-32+Math.random(),6+Math.random()*3.5,2,true);
+  makeTree(vegX,-32+Math.random(),10+Math.random()*4,3,true);
   makeBush(vegX+.3,-35+Math.random()*.4,.65+Math.random()*.35,true);
 }
 
@@ -515,19 +554,19 @@ for(var i=0;i<9;i++){
 for(var i=0;i<8;i++){
   vegX=16+i*1.8;
   makePalm(vegX,-41.5,5+Math.random()*3,(Math.random()-.5)*.5,-.6+Math.random()*.3);
-  makeTree(vegX,-45,7+Math.random()*4,2,true);
+  makeTree(vegX,-45,11+Math.random()*5,3,true);
   makePalm(vegX,-34.5,5+Math.random()*3,(Math.random()-.5)*.5,.6+Math.random()*.3);
-  makeTree(vegX,-31,6+Math.random()*3.5,2,true);
+  makeTree(vegX,-31,10+Math.random()*4,3,true);
 }
 
 // C4→C5 vertical (x=30, z=-38 à -50)
 for(var i=0;i<7;i++){
   vegZ=-38-i*1.8;
   makePalm(26.5,vegZ,5.5+Math.random()*3,-.7+Math.random()*.3,(Math.random()-.5)*.4);
-  makeTree(23,vegZ,7+Math.random()*4,2,true);
+  makeTree(23,vegZ,11+Math.random()*5,3,true);
   makeBush(25.5,vegZ+.3,.7+Math.random()*.4,true);
   makePalm(33.5,vegZ,5.5+Math.random()*3,.7+Math.random()*.3,(Math.random()-.5)*.4);
-  makeTree(36.5,vegZ,6.5+Math.random()*4,2,true);
+  makeTree(36.5,vegZ,10+Math.random()*5,3,true);
   makeBush(34.5,vegZ+.3,.65+Math.random()*.35,true);
 }
 
@@ -535,18 +574,18 @@ for(var i=0;i<7;i++){
 for(var i=0;i<7;i++){
   vegZ=-52-i*1.8;
   makePalm(26.5,vegZ,5.5+Math.random()*3,-.7,(Math.random()-.5)*.3);
-  makeTree(23,vegZ,7+Math.random()*4,2.2,true);
+  makeTree(23,vegZ,11+Math.random()*5,3.2,true);
   makePalm(33.5,vegZ,5.5+Math.random()*3,.7,(Math.random()-.5)*.3);
-  makeTree(37,vegZ,7+Math.random()*4,2.2,true);
+  makeTree(37,vegZ,11+Math.random()*5,3.2,true);
 }
 
 // C6→sortie horizontal (z=-66, x=30 à 0) + vers plage
 for(var i=0;i<10;i++){
   vegX=28-i*3;
   makePalm(vegX,-69.5,5.5+Math.random()*3,(Math.random()-.5)*.4,-.7+Math.random()*.2);
-  makeTree(vegX,-73,7+Math.random()*4,2,true);
+  makeTree(vegX,-73,11+Math.random()*5,3,true);
   makePalm(vegX,-62.5,5.5+Math.random()*3,(Math.random()-.5)*.4,.7+Math.random()*.2);
-  makeTree(vegX,-59,6.5+Math.random()*3.5,2,true);
+  makeTree(vegX,-59,10+Math.random()*4,3,true);
 }
 // Vers plage
 for(var i=0;i<8;i++){
@@ -694,14 +733,15 @@ eng.runRenderLoop(function(){
 
   P.yaw+=turn*dt*2.5;
 
-  var moveMag=Math.abs(fwd);
+  var moveMag=Math.abs(fwd)>.05?Math.abs(fwd):0;
   if(moveMag>.05){
-    P.vx+=(-Math.sin(P.yaw)*fwd*spd-P.vx)*Math.min(1,dt*12);
-    P.vz+=(-Math.cos(P.yaw)*fwd*spd-P.vz)*Math.min(1,dt*12);
-    playAnim(pAnims.walk||pAnims.idle);
+    // Mouvement direct et réactif — pas de lerp lent
+    P.vx=-Math.sin(P.yaw)*fwd*spd;
+    P.vz=-Math.cos(P.yaw)*fwd*spd;
+    playAnim(sprint&&pAnims.run?pAnims.run:(pAnims.walk||pAnims.idle));
   } else {
-    P.vx*=Math.pow(.01,dt);P.vz*=Math.pow(.01,dt);
-    if(Math.abs(P.vx)<.02)P.vx=0;if(Math.abs(P.vz)<.02)P.vz=0;
+    // Arrêt immédiat
+    P.vx=0;P.vz=0;
     if(pAnims.idle)playAnim(pAnims.idle);
   }
 
@@ -735,15 +775,21 @@ eng.runRenderLoop(function(){
   }
   if(fill)fill.position.set(P.x,P.y+3,P.z);
 
-  // ── CAMERA strictement derrière Stitch ──
+  // ── CAMERA derrière Stitch avec léger offset lateral quand tourne ──
   var camYaw=P.yaw+Math.PI;
-  var cX=P.x+Math.sin(camYaw)*5.5;
-  var cZ=P.z+Math.cos(camYaw)*5.5;
-  var cY=P.y+pYOff+2.1;
-  cam.position.x+=(cX-cam.position.x)*Math.min(1,dt*20);
-  cam.position.y+=(cY-cam.position.y)*Math.min(1,dt*14);
-  cam.position.z+=(cZ-cam.position.z)*Math.min(1,dt*20);
-  cam.setTarget(new B.Vector3(P.x,P.y+pYOff+.85,P.z));
+  // Ajoute un léger décalage latéral proportionnel à la vitesse de rotation
+  // pour qu'on voit un peu le côté de Stitch quand il tourne
+  var lateralOffset=turn*0.8;
+  var perpYaw=camYaw+Math.PI/2;
+  var CAM_DIST=5.0;
+  var cX=P.x+Math.sin(camYaw)*CAM_DIST+Math.sin(perpYaw)*lateralOffset;
+  var cZ=P.z+Math.cos(camYaw)*CAM_DIST+Math.cos(perpYaw)*lateralOffset;
+  var cY=P.y+pYOff+2.0;
+  // Lerp rapide pour suivre sans traîner
+  cam.position.x+=(cX-cam.position.x)*Math.min(1,dt*22);
+  cam.position.y+=(cY-cam.position.y)*Math.min(1,dt*16);
+  cam.position.z+=(cZ-cam.position.z)*Math.min(1,dt*22);
+  cam.setTarget(new B.Vector3(P.x,P.y+pYOff+.80,P.z));
 
   // ── ZONES INTERACTION ──
   gameState.nearCarrefour=null;
