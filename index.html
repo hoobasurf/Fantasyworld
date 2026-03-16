@@ -79,7 +79,7 @@ function showGame(){document.getElementById('loading').style.display='none';docu
 var P={x:0,y:0,z:0,vx:0,vy:0,vz:0,yaw:0,onGround:true,inWater:false};
 var pRoot=null,pYOff=0,pAnims={},curAnim=null;
 var jLX=0,jLY=0,KY={};
-var CAM={yaw:Math.PI,pitch:.28,dist:12};
+var CAM={yaw:Math.PI,pitch:.12,dist:6}; // caméra basse derrière Stitch
 var night=false,sprint=false;
 var waveT=0,lastT=performance.now();
 var waveRings=[],colCircles=[];
@@ -451,6 +451,44 @@ for(var i=0;i<300;i++){
   makeFlowerBush(Math.sin(a)*r2,Math.cos(a)*r2,flColors[Math.floor(Math.random()*flColors.length)]);
 }
 
+// ── CHEMINS DE SABLE DANS LA JUNGLE ──
+// Plusieurs sentiers sinueux en sable orangé entre les arbres
+var sandPathMat=new B.StandardMaterial('pathMat',sc);
+sandPathMat.diffuseColor=new B.Color3(.96,.72,.30);
+sandPathMat.ambientColor=new B.Color3(.42,.28,.10);
+sandPathMat.specularColor=new B.Color3(0,0,0);
+
+function makePath(x0,z0,x1,z1,w){
+  // Chemin = série de disques plats le long d'une ligne
+  var dx=x1-x0,dz=z1-z0,len=Math.sqrt(dx*dx+dz*dz);
+  var steps=Math.floor(len/(w*.7));
+  for(var si=0;si<=steps;si++){
+    var t=si/steps;
+    // Légère sinuosité
+    var sway=Math.sin(t*Math.PI*3)*(w*.6);
+    var px=x0+dx*t+sway*(-(dz/len));
+    var pz=z0+dz*t+sway*(dx/len);
+    var gh=terrH(px,pz);
+    var disc=B.MeshBuilder.CreateCylinder('path'+Math.random(),{height:.08,diameter:w*1.6,tessellation:8},sc);
+    disc.material=sandPathMat;
+    disc.position.set(px,gh+.04,pz);
+    disc.receiveShadows=true;
+  }
+}
+
+// Sentiers principaux qui traversent la jungle
+makePath(0,0, 18,22, 2.2);      // centre → plage nord-est
+makePath(0,0, -20,18, 2.0);     // centre → plage nord-ouest
+makePath(0,0, 20,-15, 2.2);     // centre → plage sud-est
+makePath(0,0, -18,-20, 2.0);    // centre → cascade
+makePath(0,0, -5,28, 1.8);      // centre → plage nord
+makePath(0,0, 8,-28, 1.8);      // centre → plage sud
+// Intersections intérieures
+makePath(5,8, -5,10, 1.6);
+makePath(-8,-5, 8,-6, 1.6);
+makePath(10,5, 10,-10, 1.5);
+makePath(-10,5, -10,-10, 1.5);
+
 step(70,'ROCHERS VOLCANIQUES...');
 
 function makeRock(x,z,s,sy){
@@ -543,7 +581,7 @@ function setupPlayer(root,anims,isGLB){
       if(!pAnims.walk&&anims[1])pAnims.walk=anims[1];
       playAnim(pAnims.idle);
     }
-  } else {pYOff=.60;}
+  } else {pYOff=.55;}
   root.position.set(P.x,P.y+pYOff,P.z);
   CAM.yaw=P.yaw+Math.PI;
 }
@@ -640,7 +678,7 @@ eng.runRenderLoop(function(){
     CAM.yaw+=cyDiff*Math.min(1,dt*4.5);
   }
   var cr=CAM.dist*Math.cos(CAM.pitch);
-  var tX=P.x,tY=P.y+pYOff+1.4,tZ=P.z;
+  var tX=P.x,tY=P.y+pYOff+0.75,tZ=P.z;
   var dX=tX+Math.sin(CAM.yaw)*cr,dY=tY+CAM.dist*Math.sin(CAM.pitch),dZ=tZ+Math.cos(CAM.yaw)*cr;
   var cGH=terrH(dX,dZ);if(dY<cGH+1.5)dY=cGH+1.5;
   cam.position.x+=(dX-cam.position.x)*Math.min(1,dt*14);
@@ -733,7 +771,7 @@ cv.addEventListener('touchmove',function(e){
     var t=e.changedTouches[i];
     if(t.identifier===camDrag.tid){
       CAM.yaw-=(t.clientX-camDrag.lx)*.006;
-      CAM.pitch=Math.max(.06,Math.min(.75,CAM.pitch+(t.clientY-camDrag.ly)*.004));
+      CAM.pitch=Math.max(.04,Math.min(.55,CAM.pitch+(t.clientY-camDrag.ly)*.004));
       camDrag.lx=t.clientX;camDrag.ly=t.clientY;
     }
   }
@@ -747,7 +785,7 @@ cv.addEventListener('mousedown',function(e){mDn=true;mLx=e.clientX;mLy=e.clientY
 window.addEventListener('mousemove',function(e){
   if(!mDn)return;
   CAM.yaw-=(e.clientX-mLx)*.005;
-  CAM.pitch=Math.max(.06,Math.min(.75,CAM.pitch+(e.clientY-mLy)*.003));
+  CAM.pitch=Math.max(.04,Math.min(.55,CAM.pitch+(e.clientY-mLy)*.003));
   mLx=e.clientX;mLy=e.clientY;
 });
 window.addEventListener('mouseup',function(){mDn=false;});
