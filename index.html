@@ -128,6 +128,9 @@ var pPos={x:0,y:0,z:0},pAngle=0,pVY=0,onGround=true;
 var jX=0,jY=0,sprint=false,stamina=100;
 // ORIGINAL — ces variables sont gardées exactement
 var camYaw=0,CAM_D=12,CAM_H=5;
+// Caméra style Kirby — copie exacte
+var CAM={yaw:0,pitch:.28,dist:12};
+var camTX=0,camTY=13,camTZ=0;
 var gold=5000,props=0,mode='explore';
 var toastT=null;
 var pRoot=null,pYOff=0,pAnims={},curAnim=null;
@@ -601,29 +604,36 @@ function gameLoop(){
 }
 
 // ═══════════════════════════════════════════════════════
-// MOUVEMENT — style Kirby (SEUL CHANGEMENT)
-// Joystick haut = avance dans la direction que la caméra regarde
-// Stitch se tourne automatiquement vers où il marche
+// MOUVEMENT — copie exacte Kirby
 // ═══════════════════════════════════════════════════════
 function movePlayer(dt){
   var spd=(sprint&&stamina>2?8:4.5)*dt;
   var moved=false;
   var mx=0,mz=0,walking=false;
 
-  // Joystick relatif à la caméra
-  if(Math.abs(jX)>.04||Math.abs(jY)>.04){
-    var moveX=-Math.sin(camYaw)*(-jY)+Math.cos(camYaw)*jX;
-    var moveZ=-Math.cos(camYaw)*(-jY)-Math.sin(camYaw)*jX;
-    var mag=Math.sqrt(moveX*moveX+moveZ*moveZ);
-    if(mag>.001){mx=moveX/mag*spd;mz=moveZ/mag*spd;}
+  // Joystick — direction relative à la caméra (copie Kirby)
+  var fwd=-jY;  // joystick haut = avancer
+  var lat=jX;   // joystick droite = aller à droite
+  var moveX=-Math.sin(CAM.yaw)*fwd+Math.cos(CAM.yaw)*lat;
+  var moveZ=-Math.cos(CAM.yaw)*fwd-Math.sin(CAM.yaw)*lat;
+  var moveMag=Math.sqrt(moveX*moveX+moveZ*moveZ);
+  if(moveMag>.05){
+    var nx=moveX/moveMag, nz=moveZ/moveMag;
+    mx=nx*spd; mz=nz*spd;
     moved=true; walking=true;
+    // Stitch se tourne vers la direction de marche (copie Kirby)
+    var tya=Math.atan2(-nx,-nz);
+    var dya=tya-pAngle;
+    while(dya>Math.PI)dya-=Math.PI*2;
+    while(dya<-Math.PI)dya+=Math.PI*2;
+    pAngle+=dya*.15;
   }
 
-  // Clavier relatif à la caméra
-  if(_k.u){mx+=-Math.sin(camYaw)*spd;mz+=-Math.cos(camYaw)*spd;moved=true;walking=true;}
-  if(_k.d){mx+= Math.sin(camYaw)*spd;mz+= Math.cos(camYaw)*spd;moved=true;walking=true;}
-  if(_k.l){mx+=-Math.cos(camYaw)*spd;mz+= Math.sin(camYaw)*spd;moved=true;walking=true;}
-  if(_k.r){mx+= Math.cos(camYaw)*spd;mz+=-Math.sin(camYaw)*spd;moved=true;walking=true;}
+  // Clavier — relatif caméra
+  if(_k.u){mx+=-Math.sin(CAM.yaw)*spd;mz+=-Math.cos(CAM.yaw)*spd;moved=true;walking=true;}
+  if(_k.d){mx+= Math.sin(CAM.yaw)*spd;mz+= Math.cos(CAM.yaw)*spd;moved=true;walking=true;}
+  if(_k.l){mx+=-Math.cos(CAM.yaw)*spd;mz+= Math.sin(CAM.yaw)*spd;moved=true;walking=true;}
+  if(_k.r){mx+= Math.cos(CAM.yaw)*spd;mz+=-Math.sin(CAM.yaw)*spd;moved=true;walking=true;}
 
   if(moved) sprint?stamina=Math.max(0,stamina-dt*22):stamina=Math.min(100,stamina+dt*10);
   else stamina=Math.min(100,stamina+dt*16);
@@ -634,15 +644,6 @@ function movePlayer(dt){
   pPos.z=Math.max(-120,Math.min(120,pPos.z+mz));
   pVY-=20*dt; pPos.y+=pVY*dt;
   if(pPos.y<0){pPos.y=0;pVY=0;onGround=true;}else onGround=false;
-
-  // Stitch se tourne vers la direction de marche
-  if(walking&&(mx!==0||mz!==0)){
-    var tgt=Math.atan2(mx,mz);
-    var dd=tgt-pAngle;
-    while(dd>Math.PI)dd-=Math.PI*2;
-    while(dd<-Math.PI)dd+=Math.PI*2;
-    pAngle+=dd*Math.min(1,dt*10);
-  }
 
   if(pRoot){
     pRoot.position.x=pPos.x;
@@ -660,29 +661,34 @@ function movePlayer(dt){
   updateZone();
 }
 
+
 // ═══════════════════════════════════════════════════════
-// CAMERA — style Kirby (SEUL CHANGEMENT)
-// Suit Stitch, se repositionne derrière quand il marche
+// CAMERA — copie exacte Kirby
 // ═══════════════════════════════════════════════════════
 function updateCam(){
-  // Lerp de la cible vers Stitch
-  var tx=pPos.x,ty=pPos.y+1.4,tz=pPos.z;
-  // Si Stitch bouge, caméra suit doucement derrière
+  // Lerp cible vers Stitch — copie Kirby
+  camTX+=(pPos.x-camTX)*.12;
+  camTY+=(pPos.y-camTY)*.10;
+  camTZ+=(pPos.z-camTZ)*.12;
+
+  // Si Stitch bouge, caméra suit derrière lui — copie Kirby
   var moveMag=Math.sqrt(jX*jX+jY*jY);
   if(moveMag>.05){
-    var cdiff=pAngle-camYaw;
+    var tcy=pAngle;
+    var cdiff=tcy-CAM.yaw;
     while(cdiff>Math.PI)cdiff-=Math.PI*2;
     while(cdiff<-Math.PI)cdiff+=Math.PI*2;
-    camYaw+=cdiff*.025;
+    CAM.yaw+=cdiff*.025;
   }
-  // Position orbitale avec CAM_D original
-  var cr=CAM_D*Math.cos(camPitch);
-  cam.position.x=tx+Math.sin(camYaw)*cr;
-  cam.position.y=ty+CAM_D*Math.sin(camPitch);
-  cam.position.z=tz+Math.cos(camYaw)*cr;
-  cam.target.x=tx;
-  cam.target.y=ty;
-  cam.target.z=tz;
+
+  // Position orbitale — copie exacte Kirby
+  var cr=CAM.dist*Math.cos(CAM.pitch);
+  cam.position.x=camTX+Math.sin(CAM.yaw)*cr;
+  cam.position.y=camTY+CAM.dist*Math.sin(CAM.pitch);
+  cam.position.z=camTZ+Math.cos(CAM.yaw)*cr;
+  cam.target.x=camTX;
+  cam.target.y=camTY+9;
+  cam.target.z=camTZ;
 }
 
 function moveNPCs(dt){
@@ -748,13 +754,27 @@ function setupJoystick(){
   window.addEventListener('mouseup',reset);
 }
 
-// - CAMERA DRAG - (ORIGINAL inchangé + glisser pour tourner)
+// - CAMERA DRAG — copie Kirby (glisser = tourner caméra) -
 function setupCamDrag(cv){
+  // Souris — copie Kirby
+  var mDn=false,mLx=0,mLy=0;
+  cv.addEventListener('mousedown',function(e){mDn=true;mLx=e.clientX;mLy=e.clientY;});
+  window.addEventListener('mouseup',function(){mDn=false;});
+  window.addEventListener('mousemove',function(e){
+    if(!mDn)return;
+    CAM.yaw-=(e.clientX-mLx)*.004;
+    CAM.pitch=Math.max(.08,Math.min(.92,CAM.pitch+(e.clientY-mLy)*.003));
+    mLx=e.clientX;mLy=e.clientY;
+  });
+  // Zoom molette
+  cv.addEventListener('wheel',function(e){CAM.dist=Math.max(4,Math.min(22,CAM.dist+e.deltaY*.02));},{passive:true});
+  cv.addEventListener('contextmenu',function(e){e.preventDefault();});
+
+  // Touch — glisser zone centrale pour tourner caméra
   var drag=false,lastX=0,lastY=0,dragId=-1;
   var joyEl=document.getElementById('joy');
   var btnsEl=document.getElementById('btns');
   function inEl(el,x,y){var r=el.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;}
-
   document.addEventListener('touchstart',function(e){
     if(dragId!==-1)return;
     for(var i=0;i<e.changedTouches.length;i++){
@@ -769,8 +789,8 @@ function setupCamDrag(cv){
     for(var i=0;i<e.changedTouches.length;i++){
       var t=e.changedTouches[i];
       if(t.identifier===dragId){
-        camYaw-=(t.clientX-lastX)*.004;
-        camPitch=Math.max(.05,Math.min(.8,camPitch+(t.clientY-lastY)*.003));
+        CAM.yaw-=(t.clientX-lastX)*.004;
+        CAM.pitch=Math.max(.08,Math.min(.92,CAM.pitch+(t.clientY-lastY)*.003));
         lastX=t.clientX;lastY=t.clientY;break;
       }
     }
@@ -779,19 +799,6 @@ function setupCamDrag(cv){
     for(var i=0;i<e.changedTouches.length;i++)
       if(e.changedTouches[i].identifier===dragId){drag=false;dragId=-1;break;}
   },{passive:true});
-
-  // Souris
-  var mDn=false,mLx=0,mLy=0;
-  cv.addEventListener('mousedown',function(e){mDn=true;mLx=e.clientX;mLy=e.clientY;});
-  window.addEventListener('mouseup',function(){mDn=false;});
-  window.addEventListener('mousemove',function(e){
-    if(!mDn)return;
-    camYaw-=(e.clientX-mLx)*.004;
-    camPitch=Math.max(.05,Math.min(.8,camPitch+(e.clientY-mLy)*.003));
-    mLx=e.clientX;mLy=e.clientY;
-  });
-  window.addEventListener('wheel',function(e){CAM_D=Math.max(4,Math.min(22,CAM_D+e.deltaY*.02));},{passive:true});
-  cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 }
 
 function setupKeys(){
