@@ -604,49 +604,44 @@ toast('Aloha ! Bienvenue sur l\'île !');
 eng.runRenderLoop(function(){
   var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;
 
-  var fwd=0,lat=0;
+  var fwd=0,turn=0;
   if(KY['KeyW']||KY['KeyZ']||KY['ArrowUp'])fwd=1;
+  // JOYSTICK: haut/bas = avancer/reculer, gauche/droite = tourner Stitch
   if(KY['KeyS']||KY['ArrowDown'])fwd=-1;
-  if(KY['KeyD']||KY['ArrowRight'])lat=1;
-  if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft'])lat=-1;
-  fwd+=jLY;lat+=jLX;
-  var il=Math.sqrt(fwd*fwd+lat*lat);if(il>1){fwd/=il;lat/=il;}
-
-  var moveX=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);
-  var moveZ=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));
-  var moveMag=Math.sqrt(moveX*moveX+moveZ*moveZ);
+  if(KY['KeyD']||KY['ArrowRight'])turn=1;
+  if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft'])turn=-1;
+  fwd+=jLY; turn-=jLX;
   var spd=sprint?9:5.2;
 
-  if(moveMag>.05){
-    var nx=moveX/moveMag,nz=moveZ/moveMag;
-    P.vx+=(nx*spd-P.vx)*Math.min(1,dt*12);P.vz+=(nz*spd-P.vz)*Math.min(1,dt*12);
-    var tYaw=Math.atan2(nx,nz),dy=tYaw-P.yaw;
-    while(dy>Math.PI)dy-=Math.PI*2;while(dy<-Math.PI)dy+=Math.PI*2;
-    P.yaw+=dy*Math.min(1,dt*16);
+  // Stitch tourne sur lui-meme (gauche/droite joystick)
+  P.yaw+=turn*dt*2.6;
+
+  // Stitch avance dans la direction ou il regarde
+  var moveMag=Math.abs(fwd)>0.05?Math.abs(fwd):0;
+  if(moveMag>0.05){
+    P.vx+=((-Math.sin(P.yaw))*fwd*spd-P.vx)*Math.min(1,dt*12);
+    P.vz+=((-Math.cos(P.yaw))*fwd*spd-P.vz)*Math.min(1,dt*12);
     playAnim(sprint&&pAnims.run?pAnims.run:(pAnims.walk||pAnims.idle));
   } else {
-    P.vx*=Math.pow(.01,dt);P.vz*=Math.pow(.01,dt);
-    if(Math.abs(P.vx)<.02)P.vx=0;if(Math.abs(P.vz)<.02)P.vz=0;
+    P.vx*=Math.pow(.01,dt); P.vz*=Math.pow(.01,dt);
+    if(Math.abs(P.vx)<.02)P.vx=0; if(Math.abs(P.vz)<.02)P.vz=0;
     if(pAnims.idle)playAnim(pAnims.idle);
   }
 
-  // Gravité + eau
+  // Gravite + eau
   P.inWater=(P.y<WATER_Y+.1);
   if(P.inWater){
-    // Dans l'eau — ralenti, flotte un peu
     if(!P.onGround){P.vy-=12*dt;if(P.vy<-4)P.vy=-4;}
     P.vx*=Math.pow(.3,dt);P.vz*=Math.pow(.3,dt);
   } else {
     if(!P.onGround){P.vy-=28*dt;if(P.vy<-26)P.vy=-26;}
   }
 
-  P.x+=P.vx*dt;P.z+=P.vz*dt;
-  var gh=Math.max(terrH(P.x,P.z), P.inWater?WATER_Y:0);
-  P.y+=P.vy*dt;
+  P.x+=P.vx*dt; P.z+=P.vz*dt; P.y+=P.vy*dt;
   var floorY=P.inWater?Math.max(WATER_Y,terrH(P.x,P.z)):terrH(P.x,P.z);
   if(P.y<=floorY&&P.vy<=0){P.y=floorY;P.vy=0;P.onGround=true;}else P.onGround=false;
 
-  // Collisions
+  // Collisions obstacles
   for(var ci=0;ci<colCircles.length;ci++){
     var ob=colCircles[ci],ddx=P.x-ob.x,ddz=P.z-ob.z;
     var d2=ddx*ddx+ddz*ddz,mn=.6+ob.r;
@@ -659,38 +654,38 @@ eng.runRenderLoop(function(){
   var pd=Math.sqrt(P.x*P.x+P.z*P.z);
   if(pd>ISLAND_R){var pa=Math.atan2(P.x,P.z);P.x=Math.sin(pa)*ISLAND_R;P.z=Math.cos(pa)*ISLAND_R;P.vx*=.04;P.vz*=.04;}
 
+  // Mesh joueur
   if(pRoot){
     pRoot.position.x=P.x;
-    // Dans l'eau — Stitch descend un peu (effet marche dans l'eau)
-    pRoot.position.y=P.y+pYOff+(P.inWater?-0.22:0);
+    pRoot.position.y=P.y+pYOff+(P.inWater?-0.18:0);
     pRoot.position.z=P.z;
-    var rd=P.yaw-pRoot.rotation.y;
-    while(rd>Math.PI)rd-=Math.PI*2;while(rd<-Math.PI)rd+=Math.PI*2;
-    pRoot.rotation.y+=rd*Math.min(1,dt*18);
+    pRoot.rotation.y=P.yaw; // rotation directe sans lerp
   }
   if(fill)fill.position.set(P.x,P.y+4,P.z);
 
-  // Caméra TPS derrière Stitch — glisser = tourner
-  var tCamYaw=P.yaw+Math.PI;
-  if(!camDrag.active&&moveMag>.08){
-    var cyDiff=tCamYaw-CAM.yaw;
-    while(cyDiff>Math.PI)cyDiff-=Math.PI*2;while(cyDiff<-Math.PI)cyDiff+=Math.PI*2;
-    CAM.yaw+=cyDiff*Math.min(1,dt*4.5);
-  }
-  var cr=CAM.dist*Math.cos(CAM.pitch);
-  var tX=P.x,tY=P.y+pYOff+0.75,tZ=P.z;
-  var dX=tX+Math.sin(CAM.yaw)*cr,dY=tY+CAM.dist*Math.sin(CAM.pitch),dZ=tZ+Math.cos(CAM.yaw)*cr;
-  var cGH=terrH(dX,dZ);if(dY<cGH+1.5)dY=cGH+1.5;
-  cam.position.x+=(dX-cam.position.x)*Math.min(1,dt*14);
-  cam.position.y+=(dY-cam.position.y)*Math.min(1,dt*10);
-  cam.position.z+=(dZ-cam.position.z)*Math.min(1,dt*14);
-  cam.setTarget(new B.Vector3(tX,tY,tZ));
+  // CAMERA — STRICTEMENT DERRIERE STITCH, TOURNE AVEC LUI
+  // La camera suit P.yaw instantanement, jamais independante
+  var camYaw=P.yaw+Math.PI; // exactement derriere
+  var CAM_DIST=6.0;
+  var CAM_H=2.0;   // hauteur camera
+  var CAM_TH=0.85; // hauteur point vise sur Stitch
 
-  // Brouillard adaptatif — jungle très dense
+  var camX=P.x+Math.sin(camYaw)*CAM_DIST;
+  var camZ=P.z+Math.cos(camYaw)*CAM_DIST;
+  var camY=P.y+pYOff+CAM_H;
+  var cGH=terrH(camX,camZ);
+  if(camY<cGH+1.0)camY=cGH+1.0;
+
+  cam.position.x+=(camX-cam.position.x)*Math.min(1,dt*20);
+  cam.position.y+=(camY-cam.position.y)*Math.min(1,dt*14);
+  cam.position.z+=(camZ-cam.position.z)*Math.min(1,dt*20);
+  cam.setTarget(new B.Vector3(P.x, P.y+pYOff+CAM_TH, P.z));
+
+  // Brouillard jungle dense
   var distCenter=Math.sqrt(P.x*P.x+P.z*P.z);
   var inJungle=distCenter<28;
-  sc.fogStart+=(( inJungle?20:55)-sc.fogStart)*dt*2;
-  sc.fogEnd+=(( inJungle?70:130)-sc.fogEnd)*dt*2;
+  sc.fogStart+=((inJungle?18:55)-sc.fogStart)*dt*2;
+  sc.fogEnd+=((inJungle?60:130)-sc.fogEnd)*dt*2;
 
   // Animations
   waveT+=dt;
@@ -755,40 +750,8 @@ window.addEventListener('keydown',function(e){KY[e.code]=1;if(e.code==='Space'){
 window.addEventListener('keyup',function(e){KY[e.code]=0;if(e.code==='ShiftLeft'||e.code==='ShiftRight')sprint=false;});
 window.addEventListener('wheel',function(e){CAM.dist=Math.max(4,Math.min(22,CAM.dist+e.deltaY*.01));},{passive:true});
 
-// GLISSER partout sur l'écran (sauf joystick) = tourner la caméra
-var camDrag={active:false,lx:0,ly:0,tid:-1};
-cv.addEventListener('touchstart',function(e){
-  for(var i=0;i<e.changedTouches.length;i++){
-    var t=e.changedTouches[i];
-    if(t.identifier!==jid&&!camDrag.active){
-      camDrag.active=true;camDrag.lx=t.clientX;camDrag.ly=t.clientY;camDrag.tid=t.identifier;
-    }
-  }
-},{passive:true});
-cv.addEventListener('touchmove',function(e){
-  if(!camDrag.active)return;
-  for(var i=0;i<e.changedTouches.length;i++){
-    var t=e.changedTouches[i];
-    if(t.identifier===camDrag.tid){
-      CAM.yaw-=(t.clientX-camDrag.lx)*.006;
-      CAM.pitch=Math.max(.04,Math.min(.55,CAM.pitch+(t.clientY-camDrag.ly)*.004));
-      camDrag.lx=t.clientX;camDrag.ly=t.clientY;
-    }
-  }
-},{passive:true});
-cv.addEventListener('touchend',function(e){
-  for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===camDrag.tid){camDrag.active=false;camDrag.tid=-1;}
-},{passive:true});
-
-var mDn=false,mLx=0,mLy=0;
-cv.addEventListener('mousedown',function(e){mDn=true;mLx=e.clientX;mLy=e.clientY;});
-window.addEventListener('mousemove',function(e){
-  if(!mDn)return;
-  CAM.yaw-=(e.clientX-mLx)*.005;
-  CAM.pitch=Math.max(.04,Math.min(.55,CAM.pitch+(e.clientY-mLy)*.003));
-  mLx=e.clientX;mLy=e.clientY;
-});
-window.addEventListener('mouseup',function(){mDn=false;});
+// Camera locked behind Stitch — no manual rotation
+var camDrag={active:false,lx:0,ly:0,tid:-1}; // kept for compatibility
 cv.addEventListener('contextmenu',function(e){e.preventDefault();});
 var p0t=null,iDt=0,iCDt=0;
 cv.addEventListener('touchstart',function(e){if(e.touches.length===2){p0t=e.touches[0];var p1=e.touches[1];iDt=Math.hypot(p1.clientX-p0t.clientX,p1.clientY-p0t.clientY);iCDt=CAM.dist;}},{passive:true});
