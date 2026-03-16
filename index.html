@@ -1,525 +1,1102 @@
-<!DOCTYPE html><html lang="fr">
+<!DOCTYPE html>
 
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Lilo & Stitch Island</title>
+<title>FantasyWorld</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Barlow+Condensed:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:#001020}
-#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
-#loading{position:fixed;inset:0;background:linear-gradient(180deg,#001830,#003060);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-#loading h1{font-family:Georgia,serif;font-size:24px;color:#7de8ff;letter-spacing:6px;text-shadow:0 0 30px rgba(125,232,255,.6)}
-#loading p{font-size:10px;color:rgba(125,232,255,.45);letter-spacing:3px}
-.bw{width:220px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
-.bf{height:100%;background:linear-gradient(90deg,#7de8ff,#6affb0);border-radius:2px;transition:width .3s}
-#stepTxt{font-size:9px;color:rgba(255,255,255,.28);letter-spacing:2px}
-#hud{position:fixed;top:12px;left:0;right:0;display:none;justify-content:space-between;align-items:flex-start;padding:0 14px;pointer-events:none;z-index:20}
-.pill{background:rgba(0,8,20,.82);border-radius:20px;padding:5px 13px;font-family:Georgia,serif;font-size:10px;backdrop-filter:blur(8px);color:#7de8ff;border:1px solid rgba(125,232,255,.2)}
-#zone{position:fixed;bottom:78px;left:130px;pointer-events:none;z-index:20;display:none}
-#joy{position:fixed;left:16px;bottom:78px;z-index:30;width:108px;height:108px;border-radius:50%;background:rgba(255,255,255,.04);border:2px solid rgba(125,232,255,.2);touch-action:none}
-#jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 38% 32%,rgba(125,232,255,.55),rgba(0,60,100,.95));border:2px solid rgba(125,232,255,.5)}
-#btns{position:fixed;right:14px;bottom:78px;z-index:30;display:flex;flex-direction:column;gap:7px}
-.btn{width:52px;height:52px;border-radius:50%;background:rgba(0,8,22,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-family:Georgia,serif;font-size:8px;cursor:pointer;touch-action:manipulation;backdrop-filter:blur(6px)}
-#toast{position:fixed;top:54px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;z-index:80;background:rgba(0,8,22,.95);border:1.5px solid #7de8ff;border-radius:20px;padding:7px 18px;color:#7de8ff;font-size:11px;font-family:Georgia,serif;white-space:nowrap;pointer-events:none;transition:all .18s;backdrop-filter:blur(10px)}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Barlow Condensed',sans-serif}
+#renderCanvas{width:100%;height:100%;touch-action:none;display:none}
+
+/* ── LOADING ── */
+#loadScreen{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:100}
+.ld-title{font-family:‘Cinzel’,serif;font-size:28px;color:#f0c060;letter-spacing:8px;text-shadow:0 0 40px rgba(240,180,60,.6)}
+.ld-bar{width:260px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;background:linear-gradient(90deg,#f0c060,#ff8c00);border-radius:2px;transition:width .3s}
+.ld-sub{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:3px;min-height:14px}
+
+/* ── HUD ── */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:20;display:none}
+#hud-tl{position:absolute;top:10px;left:12px}
+#hud-tr{position:absolute;top:10px;right:12px;text-align:right}
+#hud-bl{position:absolute;bottom:74px;left:14px}
+#hud-br{position:absolute;bottom:74px;right:14px}
+.hc{display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,.75);border-radius:2px;padding:5px 10px;margin-bottom:3px;font-family:‘Cinzel’,serif;font-size:11px}
+.hc-gold{border-left:3px solid #f0c060;color:#f0c060}
+.hc-cyan{border-left:3px solid #4af;color:#4af}
+.hc-zone{border-left:3px solid rgba(255,255,255,.5);color:#fff;font-family:‘Barlow Condensed’,sans-serif;font-size:10px;font-weight:700}
+.hc-title{border-left:3px solid rgba(240,180,60,.5);color:#f0c060;font-size:12px;letter-spacing:3px}
+.br-row{display:flex;align-items:center;gap:5px;background:rgba(0,0,0,.7);padding:3px 8px;border-radius:2px;margin-bottom:3px}
+.br-lbl{font-size:8px;color:#666;font-family:‘Cinzel’,serif;width:40px;letter-spacing:.5px}
+.br-out{width:62px;height:5px;background:rgba(255,255,255,.07);border-radius:1px;overflow:hidden}
+.br-in{height:100%;border-radius:1px;transition:width .3s}
+
+/* ── MINIMAP ── */
+#minimap{position:absolute;bottom:74px;right:14px;width:110px;height:110px;border-radius:50%;overflow:hidden;border:2px solid rgba(240,180,60,.4);box-shadow:0 4px 20px rgba(0,0,0,.7)}
+#mmCanvas{width:110px;height:110px}
+
+/* ── JOYSTICK ── */
+#joy{position:fixed;left:16px;bottom:74px;z-index:30;width:86px;height:86px;border-radius:50%;background:rgba(0,0,0,.3);border:1.5px solid rgba(255,255,255,.12);touch-action:none;pointer-events:all}
+#jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#555,#1a1a1a);border:1.5px solid rgba(255,255,255,.2);pointer-events:none}
+
+/* ── ACTION BUTTONS ── */
+#act-btns{position:fixed;right:14px;bottom:74px;z-index:30;display:flex;flex-direction:column;gap:5px;align-items:flex-end;pointer-events:all}
+.abt{width:52px;height:52px;border-radius:6px;background:rgba(0,0,0,.75);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;touch-action:manipulation;font-family:‘Cinzel’,serif;font-size:8px;letter-spacing:.5px}
+#jmpBtn{border:2px solid #22cc44;color:#22cc44}
+#runBtn{border:2px solid #f0c060;color:#f0c060}
+#camBtn{border:2px solid #4af;color:#4af}
+#avtBtn{border:2px solid #cc44ff;color:#cc44ff}
+
+/* ── MODEBAR ── */
+#modebar{position:fixed;bottom:0;left:0;right:0;height:64px;background:rgba(0,0,0,.95);border-top:1px solid rgba(240,180,60,.1);z-index:30;display:none;align-items:center;justify-content:center;gap:4px;padding:0 6px;pointer-events:all}
+.mb{padding:7px 10px;border-radius:2px;font-size:9px;border:1.5px solid rgba(255,255,255,.06);color:rgba(255,255,255,.25);cursor:pointer;touch-action:manipulation;letter-spacing:.8px;font-family:‘Cinzel’,serif;background:transparent}
+.mb.on{background:rgba(240,180,60,.1);border-color:#f0c060;color:#f0c060}
+
+/* ── TOAST ── */
+#toast{position:fixed;top:58px;left:50%;transform:translateX(-50%) scale(0);font-size:11px;color:#f0c060;z-index:90;opacity:0;transition:transform .15s,opacity .15s;background:rgba(0,0,0,.95);border:1.5px solid #f0c060;border-radius:2px;padding:6px 16px;white-space:nowrap;font-family:‘Barlow Condensed’,sans-serif;letter-spacing:.5px;pointer-events:none}
 #toast.show{transform:translateX(-50%) scale(1);opacity:1}
+
+/* ── AVATAR EDITOR ── */
+#avScreen{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;background:#06050e}
+.av-tab{flex:1;display:flex;align-items:center;justify-content:center;font-family:‘Cinzel’,serif;font-size:9px;letter-spacing:1.5px;color:rgba(255,255,255,.3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.av-tab.on{color:#f0c060;border-bottom-color:#f0c060}
+.av-plbl{font-size:8px;letter-spacing:3px;color:rgba(240,180,60,.7);margin-bottom:8px;font-family:‘Cinzel’,serif}
+.av-swatch{width:36px;height:36px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.av-swatch.on{border-color:#fff;transform:scale(1.15);box-shadow:0 0 8px rgba(255,255,255,.4)}
+.av-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.av-gitem{aspect-ratio:1;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all .15s;font-size:20px}
+.av-gitem span{font-size:7px;color:rgba(255,255,255,.3);letter-spacing:.5px;font-family:‘Barlow Condensed’,sans-serif}
+.av-gitem.on{border-color:#f0c060;background:rgba(240,180,60,.08)}
+
+/* ── TPANEL ── */
+#tpanel{position:fixed;bottom:72px;left:50%;transform:translateX(-50%);z-index:45;background:rgba(0,0,0,.96);border:1.5px solid #f0c060;border-radius:3px;padding:14px 18px;display:none;text-align:center;min-width:200px;pointer-events:all}
+#tpanel h4{font-family:‘Cinzel’,serif;font-size:12px;color:#f0c060;margin-bottom:3px;letter-spacing:2px}
+#tpanel p{font-size:9px;color:rgba(255,255,255,.4);margin-bottom:10px;font-family:‘Barlow Condensed’,sans-serif}
+.tb{padding:7px 16px;border-radius:2px;font-size:9px;background:transparent;cursor:pointer;font-family:‘Cinzel’,serif;letter-spacing:.8px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 </style>
+
 </head>
 <body>
-<div id="loading">
-  <h1>LILO &amp; STITCH ISLAND</h1>
-  <p>HAWAII — PARADISE</p>
-  <div class="bw"><div class="bf" id="bf" style="width:3%"></div></div>
-  <div id="stepTxt">CHARGEMENT MOTEUR...</div>
+
+<!-- LOADING -->
+
+<div id="loadScreen">
+  <div class="ld-title">FANTASYWORLD</div>
+  <div class="ld-bar"><div class="ld-fill" id="ldFill" style="width:0%"></div></div>
+  <div class="ld-sub" id="ldSub">INITIALISATION...</div>
 </div>
-<canvas id="cv"></canvas>
+
+<!-- CANVAS BABYLON -->
+
+<canvas id="renderCanvas"></canvas>
+
+<!-- HUD -->
+
 <div id="hud">
-  <div class="pill">&#9728; HAWAII</div>
-  <div class="pill">&#128100; STITCH</div>
-  <div class="pill" id="dnBtn" onclick="toggleDN()" style="pointer-events:all;cursor:pointer">&#9790; NUIT</div>
+  <div id="hud-tl">
+    <div class="hc hc-gold">💰 <span id="goldVal">5 000</span> $</div><br>
+    <div class="hc hc-cyan">🏠 <span id="plotVal">0</span>/5</div>
+  </div>
+  <div id="hud-tr">
+    <div class="hc hc-title">FANTASYWORLD</div>
+  </div>
+  <div id="hud-bl">
+    <div class="hc hc-zone" id="zoneTag">CENTRE-VILLE</div><br>
+    <div class="hc" style="border-left:3px solid #f0c060;color:#f0c060;font-size:9px;font-family:'Barlow Condensed',sans-serif" id="timeTag">☀ 14:00</div>
+  </div>
+  <div style="position:absolute;bottom:180px;left:14px;pointer-events:none">
+    <div class="br-row"><span class="br-lbl">HP</span><div class="br-out"><div class="br-in" id="hpBar" style="background:#22cc44;width:100%"></div></div></div>
+    <div class="br-row"><span class="br-lbl">SPRINT</span><div class="br-out"><div class="br-in" id="stBar" style="background:#f0c060;width:100%"></div></div></div>
+  </div>
+  <div id="minimap"><canvas id="mmCanvas" width="110" height="110"></canvas></div>
 </div>
-<div id="zone"><div class="pill" id="zoneTxt">&#127944; PLAGE</div></div>
+
+<!-- JOYSTICK -->
+
 <div id="joy"><div id="jnub"></div></div>
-<div id="btns">
-  <div class="btn" style="border:2px solid #7de8ff;color:#7de8ff" ontouchstart="doJump(event)" onclick="doJump()">&#8679;<br>JUMP</div>
-  <div class="btn" style="border:2px solid #ffd700;color:#ffd700" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">&#9889;<br>RUN</div>
+
+<!-- ACTION BUTTONS -->
+
+<div id="act-btns">
+  <div id="jmpBtn" class="abt" ontouchstart="doJump(event)" onclick="doJump()">↑<br>JUMP</div>
+  <div id="runBtn" class="abt" ontouchstart="setSprint(true,event)" ontouchend="setSprint(false)" onmousedown="setSprint(true)" onmouseup="setSprint(false)">⚡<br>RUN</div>
+  <div id="camBtn" class="abt" onclick="toggleDayNight()" id="dayNightBtn">🌙<br>NUIT</div>
+  <div id="avtBtn" class="abt" onclick="openAvScreen()">👤<br>AVATAR</div>
 </div>
+
+<!-- MODEBAR -->
+
+<div id="modebar">
+  <div class="mb on" onclick="setMode('explore',this)">◈ EXPLORER</div>
+  <div class="mb" onclick="setMode('buy',this)">$ ACHETER</div>
+  <div class="mb" onclick="setMode('build',this)">⊞ CONSTRUIRE</div>
+  <div class="mb" id="dnBtn" onclick="toggleDayNight()">🌙 NUIT</div>
+  <div class="mb" onclick="openAvScreen()">👤 AVATAR</div>
+</div>
+
+<!-- TERRAIN PANEL -->
+
+<div id="tpanel">
+  <h4 id="tpTitle">PROPRIÉTÉ</h4>
+  <p id="tpDesc">Description</p>
+  <button id="tbuy" class="tb" onclick="confirmBuy()" style="border:1.5px solid #22cc44;color:#22cc44">ACHETER — <span id="tpPrice">0</span>$</button>
+  <button class="tb" onclick="cancelBuy()" style="border:1.5px solid #cc2222;color:#cc2222;margin-left:5px">ANNULER</button>
+</div>
+
+<!-- AVATAR SCREEN -->
+
+<div id="avScreen">
+  <div style="height:52px;background:rgba(0,0,0,.95);border-bottom:1px solid rgba(240,180,60,.15);display:flex;align-items:center;justify-content:space-between;padding:0 14px;flex-shrink:0">
+    <span onclick="closeAvScreen()" style="font-size:10px;color:rgba(255,255,255,.35);cursor:pointer;letter-spacing:2px;padding:5px 10px;border:1px solid rgba(255,255,255,.1);border-radius:2px">← RETOUR</span>
+    <span style="font-family:'Cinzel',serif;font-size:14px;color:#f0c060;letter-spacing:4px">MON AVATAR</span>
+    <button onclick="saveAvatarAndClose()" style="padding:8px 16px;background:#f0c060;border:none;color:#0a0608;font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;cursor:pointer;border-radius:2px">✓ SAUVER</button>
+  </div>
+  <canvas id="avCanvas" style="width:100%;height:40%;touch-action:none;flex-shrink:0;display:block"></canvas>
+  <div style="height:36px;background:rgba(0,0,0,.9);display:flex;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0">
+    <div class="av-tab on" onclick="avTab(0,this)">PEAU</div>
+    <div class="av-tab" onclick="avTab(1,this)">COIFFURE</div>
+    <div class="av-tab" onclick="avTab(2,this)">TENUE</div>
+    <div class="av-tab" onclick="avTab(3,this)">EXTRAS</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:14px">
+    <div id="avP0">
+      <div class="av-plbl">TEINT</div><div class="av-swatches" id="skinSw" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div>
+      <div class="av-plbl">YEUX</div><div class="av-swatches" id="eyeSw" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div>
+      <div class="av-plbl">LÈVRES</div><div class="av-swatches" id="lipSw" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div id="avP1" style="display:none">
+      <div class="av-plbl">STYLE</div><div class="av-grid4" id="hairStyleG" style="margin-bottom:12px"></div>
+      <div class="av-plbl">COULEUR</div><div class="av-swatches" id="hairColSw" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+    <div id="avP2" style="display:none">
+      <div class="av-plbl">HAUT</div><div class="av-grid4" id="topG" style="margin-bottom:12px"></div>
+      <div class="av-plbl">COULEUR HAUT</div><div class="av-swatches" id="topColSw" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div>
+      <div class="av-plbl">BAS</div><div class="av-grid4" id="botG"></div>
+    </div>
+    <div id="avP3" style="display:none">
+      <div class="av-plbl">LUNETTES</div><div class="av-grid4" id="glassG" style="margin-bottom:12px"></div>
+      <div class="av-plbl">CHAPEAU</div><div class="av-grid4" id="hatG" style="margin-bottom:12px"></div>
+      <div class="av-plbl">BARBE</div><div class="av-grid4" id="beardG"></div>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
-<script>
-// ── Chargement Babylon avec fallback CDN ──
-(function(){
-  var stEl=document.getElementById('stepTxt');
-  var cdns=[
-    {bab:'https://cdn.babylonjs.com/babylon.js',             ldr:'https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js'},
-    {bab:'https://unpkg.com/babylonjs@6.26.0/babylon.js',    ldr:'https://unpkg.com/babylonjs-loaders@6.26.0/babylonjs.loaders.min.js'},
-    {bab:'https://cdnjs.cloudflare.com/ajax/libs/babylonjs/6.26.0/babylon.js', ldr:'https://cdnjs.cloudflare.com/ajax/libs/babylonjs-loaders/6.26.0/babylonjs.loaders.min.js'}
-  ];
-  var idx=0;
+<!-- BABYLON.JS -->
 
-  function tryNext(){
-    if(idx>=cdns.length){
-      stEl.textContent='ERREUR: AUCUN CDN DISPONIBLE';
-      return;
-    }
-    var pair=cdns[idx++];
-    stEl.textContent='CDN '+(idx)+'/'+cdns.length+'...';
-    loadScript(pair.bab,function(){
-      loadScript(pair.ldr,function(){
-        window.babylonReady=true;
-        if(window.startGame) window.startGame();
-      },tryNext);
-    },tryNext);
-  }
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
 
-  function loadScript(url,ok,fail){
-    var s=document.createElement('script');
-    s.src=url;
-    s.onload=ok;
-    s.onerror=function(){document.head.removeChild(s);fail();};
-    s.async=true;
-    document.head.appendChild(s);
-  }
-
-  tryNext();
-})();
-</script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 
 <script>
-window.startGame=function(){
 'use strict';
-var B=BABYLON;
-var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
 
-var bfEl=document.getElementById('bf');
-var stEl=document.getElementById('stepTxt');
-function step(p,t){bfEl.style.width=p+'%';if(t)stEl.textContent=t;}
-function toast(m){var t=document.getElementById('toast');t.textContent=m;t.className='show';clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='';},3200);}
-function showGame(){
-  document.getElementById('loading').style.display='none';
-  document.getElementById('hud').style.display='flex';
-  document.getElementById('zone').style.display='block';
+// ═══════════════════════════════
+// CONFIG
+// ═══════════════════════════════
+var BASE_URL = 'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
+var SB_URL = 'https://mphxvgjntazdgsvdlhni.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1waHh2Z2pudGF6ZGdzdmRsaG5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0OTE5NjEsImV4cCI6MjA4OTA2Nzk2MX0.Nuawg8faE2czpI1DSAAKoOkz6cNgJHcAYev6O6WIG48';
+
+// ═══════════════════════════════
+// USER ID ANONYME
+// ═══════════════════════════════
+function getUserId(){
+  var id=localStorage.getItem('fw_uid');
+  if(!id){id='u_'+Math.random().toString(36).substr(2,12)+'_'+Date.now();localStorage.setItem('fw_uid',id);}
+  return id;
 }
-
-var P={x:0,y:0,z:0,vx:0,vy:0,vz:0,yaw:0,onGround:true};
-var pRoot=null,pYOff=0,pAnims={},curAnim=null;
-var jLX=0,jLY=0,KY={};
-var CAM={yaw:0,pitch:.32,dist:14};
-var night=false,sprint=false;
-var waveT=0,lastT=performance.now();
-var waveRings=[],colCircles=[];
-var ISLAND_R=28;
-
-var cv=document.getElementById('cv');
-var eng=new B.Engine(cv,true,{antialias:true,stencil:true,adaptToDeviceRatio:true},true);
-var sc=new B.Scene(eng);
-sc.clearColor=new B.Color4(.42,.72,.94,1);
-sc.fogMode=B.Scene.FOGMODE_EXP2;
-sc.fogDensity=.0035;
-sc.fogColor=new B.Color3(.50,.78,.96);
-
-var cam=new B.FreeCamera('cam',new B.Vector3(0,14,20),sc);
-cam.minZ=.1;cam.maxZ=600;cam.fov=1.05;
-cam.inputs.clear();
-
-step(8,'LUMIERES...');
-
-var sun=new B.DirectionalLight('sun',new B.Vector3(-.6,-1,-.45),sc);
-sun.position=new B.Vector3(80,150,80);
-sun.intensity=2.8;
-sun.diffuse=new B.Color3(1.0,.95,.80);
-sun.specular=new B.Color3(.3,.25,.15);
-
-var shadows=null;
-try{
-  shadows=new B.ShadowGenerator(2048,sun);
-  shadows.useBlurExponentialShadowMap=true;
-  shadows.blurKernel=20;
-  shadows.darkness=.28;
-  shadows.transparencyShadow=true;
-}catch(e){}
-
-var sky=new B.HemisphericLight('sky',new B.Vector3(0,1,0),sc);
-sky.intensity=.65;
-sky.diffuse=new B.Color3(.80,.90,.98);
-sky.groundColor=new B.Color3(.40,.60,.25);
-sky.specular=new B.Color3(0,0,0);
-
-var fill=new B.PointLight('fill',new B.Vector3(0,5,0),sc);
-fill.intensity=.35;fill.range=12;
-fill.diffuse=new B.Color3(1.0,.88,.55);
-
-step(18,'TEXTURES...');
-
-function mkTex(w,h,fn){
-  var c=document.createElement('canvas');c.width=w;c.height=h;
-  var ctx=c.getContext('2d');fn(ctx,w,h);
-  var t=new B.DynamicTexture('t'+Math.random(),{width:w,height:h},sc,true);
-  t.getContext().drawImage(c,0,0);t.update(false);return t;
-}
-var sandTex=mkTex(512,512,function(ctx,w,h){
-  var g=ctx.createLinearGradient(0,0,w,h);
-  g.addColorStop(0,'#eed858');g.addColorStop(.5,'#d8bc4a');g.addColorStop(1,'#c8a83a');
-  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
-  for(var i=0;i<8000;i++){var x=Math.random()*w,y=Math.random()*h,r=Math.random()*1.2,b=Math.floor(Math.random()*40-20);
-    ctx.fillStyle='rgba('+(185+b)+','+(165+b)+','+(55+b)+',.3)';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
-});
-var grassTex=mkTex(512,512,function(ctx,w,h){
-  ctx.fillStyle='#267016';ctx.fillRect(0,0,w,h);
-  for(var i=0;i<10000;i++){var x=Math.random()*w,y=Math.random()*h,b=Math.floor(Math.random()*55-28);
-    ctx.fillStyle='rgba('+(28+b)+','+(95+b)+','+(15+b)+',.45)';ctx.fillRect(x,y,1+Math.random()*3,2+Math.random()*7);}
-});
-var barkTex=mkTex(128,256,function(ctx,w,h){
-  ctx.fillStyle='#7a5530';ctx.fillRect(0,0,w,h);
-  for(var i=0;i<h;i+=7){ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(0,i,w,2);ctx.fillStyle='rgba(255,255,255,.04)';ctx.fillRect(0,i+4,w,1);}
-});
-var leafTex=mkTex(128,128,function(ctx,w,h){
-  var g=ctx.createRadialGradient(w/2,h/2,2,w/2,h/2,w/2);
-  g.addColorStop(0,'#55dd22');g.addColorStop(1,'#1a7a0a');
-  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle='rgba(0,80,0,.3)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(w/2,0);ctx.lineTo(w/2,h);ctx.stroke();
-});
-var rockTex=mkTex(256,256,function(ctx,w,h){
-  ctx.fillStyle='#1c1a16';ctx.fillRect(0,0,w,h);
-  for(var i=0;i<4000;i++){var x=Math.random()*w,y=Math.random()*h,r=Math.random()*3,b=Math.floor(Math.random()*35-18);
-    ctx.fillStyle='rgba('+(30+b)+','+(28+b)+','+(22+b)+',.55)';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
-});
-var waterTexD=mkTex(512,512,function(ctx,w,h){
-  var g=ctx.createLinearGradient(0,0,w,h);
-  g.addColorStop(0,'#0e9fc8');g.addColorStop(.4,'#0a82a8');g.addColorStop(1,'#065e80');
-  ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
-  for(var i=0;i<130;i++){var x=Math.random()*w,y=Math.random()*h;
-    ctx.strokeStyle='rgba(255,255,255,'+(Math.random()*.2+.04)+')';ctx.lineWidth=.8+Math.random()*2;
-    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+18+Math.random()*38,y+Math.random()*4-2);ctx.stroke();}
-});
-
-step(28,'OCEAN...');
-
-var oceanMesh=B.MeshBuilder.CreateGround('ocean',{width:900,height:900,subdivisions:4},sc);
-var oceanMat=new B.StandardMaterial('oceanMat',sc);
-oceanMat.diffuseTexture=waterTexD;
-oceanMat.diffuseTexture.uScale=40;oceanMat.diffuseTexture.vScale=40;
-oceanMat.diffuseColor=new B.Color3(.9,.98,1.0);
-oceanMat.specularColor=new B.Color3(1,1,1);oceanMat.specularPower=90;
-oceanMat.emissiveColor=new B.Color3(.01,.07,.16);
-oceanMesh.material=oceanMat;oceanMesh.position.y=-.45;
-
-var skyDome=B.MeshBuilder.CreateSphere('skyDome',{diameter:550,segments:12},sc);
-skyDome.flipFaces(true);
-var skyMat=new B.StandardMaterial('skyMat',sc);
-skyMat.backFaceCulling=false;skyMat.disableLighting=true;
-skyMat.emissiveColor=new B.Color3(.42,.72,.94);
-skyDome.material=skyMat;
-
-step(38,'ILE...');
-
-var sandMesh=B.MeshBuilder.CreateCylinder('sand',{height:.9,diameter:62,tessellation:52},sc);
-var sandMat=new B.StandardMaterial('sandMat',sc);
-sandMat.diffuseTexture=sandTex;sandMat.diffuseTexture.uScale=7;sandMat.diffuseTexture.vScale=7;
-sandMat.specularColor=new B.Color3(.06,.05,.03);
-sandMesh.material=sandMat;sandMesh.position.y=-.28;sandMesh.receiveShadows=true;
-
-var grassMesh=B.MeshBuilder.CreateCylinder('grass',{height:.65,diameter:46,tessellation:44},sc);
-var grassMat=new B.StandardMaterial('grassMat',sc);
-grassMat.diffuseTexture=grassTex;grassMat.diffuseTexture.uScale=6;grassMat.diffuseTexture.vScale=6;
-grassMat.specularColor=new B.Color3(.03,.06,.01);
-grassMesh.material=grassMat;grassMesh.position.y=.1;grassMesh.receiveShadows=true;
-
-var hillMesh=B.MeshBuilder.CreateSphere('hill',{diameter:22,segments:16},sc);
-hillMesh.scaling.set(1.7,.19,1.5);hillMesh.position.set(-2,.9,2);
-var hillMat=new B.StandardMaterial('hillMat',sc);
-hillMat.diffuseTexture=grassTex;hillMat.diffuseTexture.uScale=5;hillMat.diffuseTexture.vScale=5;
-hillMat.specularColor=new B.Color3(.02,.05,.01);
-hillMesh.material=hillMat;hillMesh.receiveShadows=true;
-
-var lagonMesh=B.MeshBuilder.CreateCylinder('lagon',{height:.18,diameter:74,tessellation:52},sc);
-var lagonMat=new B.StandardMaterial('lagonMat',sc);
-lagonMat.diffuseColor=new B.Color3(.25,.82,.88);lagonMat.alpha=.45;
-lagonMat.specularColor=new B.Color3(.9,1,1);lagonMat.specularPower=36;
-lagonMesh.material=lagonMat;lagonMesh.position.y=-.30;
-
-step(50,'PALMIERS...');
-
-function makePalm(x,z,h,rx,rz){
-  var trunk=B.MeshBuilder.CreateCylinder('tr',{height:h,diameterTop:.13,diameterBottom:.36,tessellation:9},sc);
-  var trMat=new B.StandardMaterial('trM'+Math.random(),sc);
-  trMat.diffuseTexture=barkTex;trMat.diffuseTexture.uScale=1;trMat.diffuseTexture.vScale=3;
-  trMat.specularColor=new B.Color3(.04,.03,.01);
-  trunk.material=trMat;trunk.position.set(x,h/2,z);trunk.rotation.x=rx;trunk.rotation.z=rz;
-  trunk.receiveShadows=true;if(shadows)shadows.addShadowCaster(trunk);
-  var topX=x+Math.sin(rz)*h*.88,topZ=z+Math.sin(rx)*h*.88;
-  var lc=6+Math.floor(Math.random()*3);
-  for(var i=0;i<lc;i++){
-    var a=i/lc*Math.PI*2+Math.random()*.4,ll=1.7+Math.random()*.9;
-    var lf=B.MeshBuilder.CreateCylinder('lf',{height:ll,diameterTop:.02,diameterBottom:.22,tessellation:6},sc);
-    var lfMat=new B.StandardMaterial('lfM'+Math.random(),sc);
-    lfMat.diffuseTexture=leafTex;lfMat.backFaceCulling=false;lfMat.specularColor=new B.Color3(.04,.06,.01);
-    lf.material=lfMat;lf.position.set(topX+Math.sin(a)*.1,h-.1,topZ+Math.cos(a)*.1);
-    lf.rotation.z=Math.sin(a)*.95;lf.rotation.x=Math.cos(a)*.95;
-    if(shadows)shadows.addShadowCaster(lf);
-  }
-  colCircles.push({x:x,z:z,r:.42});
-}
-[[11,9],[13,-5],[9,15],[-10,13],[-13,7],[-12,-8],[10,-13],[15,2],
- [4,8],[-5,10],[6,-6],[-4,-8],[7,4],[-7,3],[1,11],[3,-11],
- [-2,16],[5,19],[-6,17],[2,-16],[-4,-15],[8,22],[-9,20],
- [18,5],[-18,6],[14,-16],[-15,14],[0,22],[0,-20]
-].forEach(function(p){
-  makePalm(p[0],p[1],3.2+Math.random()*3.0,(Math.random()-.5)*.26,(Math.random()-.5)*.22);
-});
-
-step(62,'ROCHERS...');
-
-function makeRock(x,z,s,sy){
-  var rk=B.MeshBuilder.CreateSphere('rk',{diameter:s*2,segments:8},sc);
-  var rkMat=new B.StandardMaterial('rkM'+Math.random(),sc);
-  rkMat.diffuseTexture=rockTex;rkMat.diffuseTexture.uScale=2;rkMat.diffuseTexture.vScale=2;
-  rkMat.specularColor=new B.Color3(.1,.09,.07);rkMat.specularPower=14;
-  rk.material=rkMat;rk.position.set(x,.08,z);rk.scaling.set(1+Math.random()*.22,sy,1+Math.random()*.2);
-  rk.receiveShadows=true;if(shadows)shadows.addShadowCaster(rk);
-  colCircles.push({x:x,z:z,r:s*.52});
-}
-[[20,9,3.0,.42],[-22,7,2.7,.40],[18,-14,2.4,.48],[-19,-12,2.9,.40],
- [10,21,2.0,.38],[-12,22,2.4,.44],[22,-3,1.9,.52],[-23,4,2.2,.40],
- [8,-22,1.7,.46],[-9,-20,2.0,.42]
-].forEach(function(r){makeRock(r[0],r[1],r[2],r[3]);});
-
-step(70,'FLEURS...');
-
-var fleurCols=[new B.Color3(.92,.14,.08),new B.Color3(.95,.55,.08),new B.Color3(.88,.12,.72),new B.Color3(.98,.82,.02),new B.Color3(.12,.88,.22)];
-[[4,5],[3,-4],[-5,6],[-3,-7],[8,8],[-8,9],[5,-9],[-7,-5],[1,7],[3,12]
-].forEach(function(p,i){
-  for(var j=0;j<3;j++){
-    var r=.28+Math.random()*.44;
-    var b=B.MeshBuilder.CreateSphere('bu',{diameter:r*2,segments:6},sc);
-    var bm=new B.StandardMaterial('bM'+Math.random(),sc);
-    if(Math.random()>.5){bm.diffuseColor=fleurCols[i%5];bm.emissiveColor=fleurCols[i%5].scale(.08);}
-    else{bm.diffuseTexture=leafTex;bm.diffuseColor=new B.Color3(.9,1.1,.8);}
-    bm.specularColor=new B.Color3(.03,.03,.03);
-    b.material=bm;b.position.set(p[0]+(Math.random()-.5)*.9,r*.46,p[1]+(Math.random()-.5)*.9);
-    b.scaling.y=.7;if(shadows)shadows.addShadowCaster(b);
-  }
-});
-
-step(78,'VAGUES...');
-
-for(var wi=0;wi<7;wi++){
-  var wr=B.MeshBuilder.CreateTorus('wave'+wi,{diameter:(ISLAND_R+1+wi*2.0)*2,thickness:.22,tessellation:64},sc);
-  var wm=new B.StandardMaterial('wm'+wi,sc);
-  wm.diffuseColor=new B.Color3(.88,.97,1.0);wm.emissiveColor=new B.Color3(.04,.18,.28);
-  wm.alpha=.52-wi*.06;wm.backFaceCulling=false;
-  wr.material=wm;wr.position.y=-.18;wr.rotation.x=Math.PI/2;
-  waveRings.push({m:wr,ph:wi/7*Math.PI*2});
-}
-
-step(86,'PERSONNAGE...');
-
-function buildFallbackStitch(){
-  var g=new B.TransformNode('stitch',sc);
-  var mat=new B.StandardMaterial('sm',sc);
-  mat.diffuseColor=new B.Color3(.15,.55,.88);mat.specularColor=new B.Color3(.2,.3,.5);mat.specularPower=24;
-  var body=B.MeshBuilder.CreateSphere('bd',{diameter:.72,segments:14},sc);
-  body.material=mat;body.parent=g;
-  var head=B.MeshBuilder.CreateSphere('hd',{diameter:.56,segments:14},sc);
-  head.position.y=.7;head.material=mat;head.parent=g;
-  [-1,1].forEach(function(e){
-    var ear=B.MeshBuilder.CreateCylinder('ear',{height:.55,diameterTop:.08,diameterBottom:.16,tessellation:7},sc);
-    ear.position.set(e*.22,.95,0);ear.rotation.z=e*.35;ear.material=mat;ear.parent=g;
-  });
-  var nm=new B.StandardMaterial('nm',sc);nm.diffuseColor=new B.Color3(.08,.25,.65);
-  var muz=B.MeshBuilder.CreateSphere('muz',{diameter:.3,segments:8},sc);
-  muz.scaling.set(1,.6,1);muz.position.set(0,.62,.28);muz.material=nm;muz.parent=g;
-  [-1,1].forEach(function(e){
-    var leg=B.MeshBuilder.CreateCylinder('leg',{height:.38,diameterTop:.12,diameterBottom:.1,tessellation:7},sc);
-    leg.position.set(e*.18,-.18,0);leg.material=mat;leg.parent=g;
-    var foot=B.MeshBuilder.CreateSphere('ft',{diameter:.16,segments:7},sc);
-    foot.scaling.set(1.3,.7,1.6);foot.position.set(e*.18,-.4,.06);foot.material=mat;foot.parent=g;
-  });
-  var eyeM=new B.StandardMaterial('em',sc);eyeM.diffuseColor=new B.Color3(.05,.05,.05);
-  [-1,1].forEach(function(e){
-    var eye=B.MeshBuilder.CreateSphere('ey',{diameter:.1,segments:7},sc);
-    eye.position.set(e*.14,.72,.24);eye.material=eyeM;eye.parent=g;
-  });
-  g.position.y=.55;
-  g.getChildMeshes().forEach(function(m){m.receiveShadows=true;if(shadows)shadows.addShadowCaster(m);});
-  return g;
-}
-
-function setupPlayer(root,animGroups,isGLB){
-  pRoot=root;
-  if(isGLB){
-    root.scaling.setAll(1);root.computeWorldMatrix(true);
-    var bb=root.getHierarchyBoundingVectors(),h=bb.max.y-bb.min.y;
-    if(h>.05)root.scaling.setAll(1.85/h);
-    root.computeWorldMatrix(true);
-    var bb2=root.getHierarchyBoundingVectors();
-    pYOff=-bb2.min.y+.05;
-    root.position.y=pYOff;
-    root.getChildMeshes().forEach(function(m){m.receiveShadows=true;if(shadows)shadows.addShadowCaster(m,true);});
-  }else{
-    pYOff=.55;
-  }
-  if(animGroups&&animGroups.length){
-    animGroups.forEach(function(ag){
-      ag.stop();var n=ag.name.toLowerCase();
-      if(/idle/.test(n))pAnims.idle=ag;
-      else if(/run/.test(n))pAnims.run=ag;
-      else if(/walk/.test(n))pAnims.walk=ag;
-      else if(/jump/.test(n))pAnims.jump=ag;
+async function sbSave(data){
+  try{
+    await fetch(SB_URL+'/rest/v1/avatars',{method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({user_id:getUserId(),avatar_data:data,updated_at:new Date().toISOString()})
     });
-    if(!pAnims.idle)pAnims.idle=animGroups[0];
-    if(!pAnims.walk&&animGroups[1])pAnims.walk=animGroups[1];
-    playAnim(pAnims.idle);
-  }
-  CAM.yaw=P.yaw;
+  }catch(e){}
+}
+async function sbLoad(){
+  try{
+    var r=await fetch(SB_URL+'/rest/v1/avatars?user_id=eq.'+getUserId()+'&select=avatar_data',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    var a=await r.json();
+    return a&&a[0]?a[0].avatar_data:null;
+  }catch(e){return null;}
 }
 
-// Démarrer immédiatement avec fallback
-var fallback=buildFallbackStitch();
-setupPlayer(fallback,[],false);
-step(100,'');
-showGame();
-toast('Aloha ! Bienvenue sur l\'ile !');
+// ═══════════════════════════════
+// LOADING
+// ═══════════════════════════════
+var STEPS=['INITIALISATION...','CHARGEMENT DU MOTEUR...','GÉNÉRATION DU TERRAIN...','CHARGEMENT DES BÂTIMENTS...','CHARGEMENT DES ROUTES...','PLACEMENT DES ARBRES...','FINALISATION...','PRÊT !'];
+var _si=0;
+function stepLoad(msg){
+  _si++;
+  document.getElementById('ldFill').style.width=(_si/STEPS.length*100)+'%';
+  document.getElementById('ldSub').textContent=msg||STEPS[Math.min(_si,STEPS.length-1)];
+}
 
-// GLB en arrière-plan
-B.SceneLoader.ImportMesh('','',BASE+'stitch2.glb',sc,
-  function(meshes,ps,sk,ag){
-    fallback.getChildMeshes().forEach(function(m){m.dispose();});
-    fallback.dispose();
-    setupPlayer(meshes[0],ag,true);
-    toast('Stitch arrive ! Aloha !');
-  },null,function(){}
-);
+// ═══════════════════════════════
+// BABYLON ENGINE
+// ═══════════════════════════════
+var engine,bScene,camera;
+var _isNight=false;
+var _sun,_ambLight,_hemi;
 
-eng.runRenderLoop(function(){
-  var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;
+// État joueur
+var playerPos={x:0,y:0,z:0};
+var playerAngle=0,playerVelY=0,isOnGround=true;
+var jAx=0,jAy=0,isSprint=false,stamina=100;
+var camYaw=Math.PI,CAM_DIST=14,CAM_H=6;
+var gold=5000,ownedCount=0,ownedPlots=[];
+var curMode='explore',pendingPlot=null;
+var _toastT=null;
 
-  var fwd=0,lat=0;
-  if(KY['KeyW']||KY['KeyZ']||KY['ArrowUp'])fwd+=1;
-  if(KY['KeyS']||KY['ArrowDown'])fwd-=1;
-  if(KY['KeyD']||KY['ArrowRight'])lat+=1;
-  if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft'])lat-=1;
-  fwd+=jLY;lat+=jLX;
+// Assets chargés
+var _loadedMeshes={};
+var _playerMesh=null;
 
-  var moveX=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);
-  var moveZ=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));
-  var moveMag=Math.sqrt(moveX*moveX+moveZ*moveZ);
-  var spd=sprint&&moveMag>.05?7.8:4.8;
+// Noms de fichiers réels basés sur ce qu'on a vu
+var ASSET_FILES = {
+  // Bâtiments — on teste avec les vrais noms vus dans le repo
+  buildings: [
+    'building_A.glb','building_B.glb','building_C.glb','building_D.glb',
+    'building_E.glb','building_F.glb','building_G.glb','building_H.glb',
+    'skyscraper_A.glb','skyscraper_B.glb'
+  ],
+  roads: [
+    'road-straight.glb','road-corner.glb','road-intersection.glb',
+    'road-t-intersection.glb','road-end.glb'
+  ],
+  nature: [
+    'tree_A.glb','tree_B.glb','tree_C.glb','tree_D.glb',
+    'bush_A.glb','bush_B.glb','rock_A.glb'
+  ],
+  cars: ['Taxi.glb'],
+  bridges: [
+    'bridge-pillar.glb','bridge-pillar-wide.glb',
+    'bridge_center_stone.glb','bridge_side_stone.glb'
+  ]
+};
 
-  if(moveMag>.05){
-    var nx=moveX/moveMag,nz=moveZ/moveMag;
-    P.vx+=(nx*spd-P.vx)*Math.min(1,dt*10);
-    P.vz+=(nz*spd-P.vz)*Math.min(1,dt*10);
-    var ty=Math.atan2(nx,nz),dya=ty-P.yaw;
-    while(dya>Math.PI)dya-=Math.PI*2;while(dya<-Math.PI)dya+=Math.PI*2;
-    P.yaw+=dya*Math.min(1,dt*12);
-    playAnim(sprint&&pAnims.run?pAnims.run:(pAnims.walk||pAnims.idle||null));
-  }else{
-    P.vx*=Math.pow(.03,dt);P.vz*=Math.pow(.03,dt);
-    if(Math.abs(P.vx)<.01)P.vx=0;if(Math.abs(P.vz)<.01)P.vz=0;
-    if(pAnims.idle)playAnim(pAnims.idle);
+// ═══════════════════════════════
+// INIT
+// ═══════════════════════════════
+async function initGame(){
+  var canvas=document.getElementById('renderCanvas');
+  canvas.style.display='block';
+  engine=new BABYLON.Engine(canvas,true,{preserveDrawingBuffer:true,stencil:true,antialias:true});
+  bScene=new BABYLON.Scene(engine);
+
+  stepLoad('CHARGEMENT DU MOTEUR...');
+
+  // Couleur de fond — nuit sombre cinématique
+  bScene.clearColor=new BABYLON.Color4(0.04,0.04,0.08,1);
+
+  // ── Caméra libre ──
+  camera=new BABYLON.FreeCamera('cam',new BABYLON.Vector3(0,10,20),bScene);
+  camera.minZ=0.1;camera.maxZ=800;
+
+  // ── Lumières ──
+  setupLights();
+
+  // ── Fog volumétrique ──
+  bScene.fogMode=BABYLON.Scene.FOGMODE_EXP2;
+  bScene.fogDensity=0.008;
+  bScene.fogColor=new BABYLON.Color3(0.06,0.06,0.12);
+
+  stepLoad('GÉNÉRATION DU TERRAIN...');
+  buildTerrain();
+
+  stepLoad('CHARGEMENT DES ROUTES...');
+  await buildRoads();
+
+  stepLoad('CHARGEMENT DES BÂTIMENTS...');
+  await buildCity();
+
+  stepLoad('PLACEMENT DES ARBRES...');
+  await buildNature();
+
+  stepLoad('FINALISATION...');
+  buildPlots();
+  buildPlayerProxy();
+  setupJoystick();
+  setupPointerLock(canvas);
+  setupKeys();
+  engine.runRenderLoop(gameLoop);
+  window.addEventListener('resize',function(){engine.resize();});
+
+  // Charger avatar sauvegardé
+  var saved=await sbLoad();
+  if(saved&&typeof saved==='object')Object.assign(AV,saved);
+
+  stepLoad('PRÊT !');
+  await new Promise(r=>setTimeout(r,600));
+
+  document.getElementById('loadScreen').style.display='none';
+  document.getElementById('hud').style.display='block';
+  document.getElementById('modebar').style.display='flex';
+  pop('✦ BIENVENUE DANS FANTASYWORLD ✦');
+}
+
+// ── Lumières réalistes ──
+function setupLights(){
+  // Ambiance nuit urbaine
+  _ambLight=new BABYLON.HemisphericLight('amb',new BABYLON.Vector3(0,1,0),bScene);
+  _ambLight.intensity=0.25;
+  _ambLight.groundColor=new BABYLON.Color3(0.05,0.05,0.1);
+  _ambLight.diffuse=new BABYLON.Color3(0.15,0.18,0.35);
+
+  // Lune / soleil
+  _sun=new BABYLON.DirectionalLight('sun',new BABYLON.Vector3(-0.5,-1,-0.3),bScene);
+  _sun.position=new BABYLON.Vector3(50,100,50);
+  _sun.intensity=0.3;
+  _sun.diffuse=new BABYLON.Color3(0.5,0.55,0.9);
+
+  // Ombres
+  if(!BABYLON.ShadowGenerator)return;
+  var sg=new BABYLON.ShadowGenerator(2048,_sun);
+  sg.useBlurExponentialShadowMap=true;
+  sg.blurKernel=32;
+  window._shadows=sg;
+}
+
+// ── Terrain ──
+function buildTerrain(){
+  // Sol principal — asphalte mouillé
+  var ground=BABYLON.MeshBuilder.CreateGround('ground',{width:400,height:400,subdivisions:8},bScene);
+  var groundMat=new BABYLON.StandardMaterial('gm',bScene);
+  groundMat.diffuseColor=new BABYLON.Color3(0.08,0.08,0.1);
+  groundMat.specularColor=new BABYLON.Color3(0.3,0.3,0.35);
+  groundMat.specularPower=64;
+  ground.material=groundMat;
+  ground.receiveShadows=true;
+
+  // Lignes de route peintes
+  for(var i=-10;i<=10;i++){
+    var line=BABYLON.MeshBuilder.CreateGround('line'+i,{width:0.15,height:400},bScene);
+    line.position.x=i*8;line.position.y=0.01;
+    var lm=new BABYLON.StandardMaterial('lm'+i,bScene);
+    lm.diffuseColor=new BABYLON.Color3(0.9,0.75,0.1);lm.emissiveColor=new BABYLON.Color3(0.2,0.16,0.02);
+    line.material=lm;
+  }
+  for(var i=-10;i<=10;i++){
+    var line2=BABYLON.MeshBuilder.CreateGround('line2_'+i,{width:400,height:0.15},bScene);
+    line2.position.z=i*8;line2.position.y=0.01;
+    var lm2=new BABYLON.StandardMaterial('lm2_'+i,bScene);
+    lm2.diffuseColor=new BABYLON.Color3(0.9,0.75,0.1);lm2.emissiveColor=new BABYLON.Color3(0.2,0.16,0.02);
+    line2.material=lm2;
   }
 
-  if(!P.onGround){P.vy-=24*dt;if(P.vy<-22)P.vy=-22;}
-  P.x+=P.vx*dt;P.z+=P.vz*dt;P.y+=P.vy*dt;
-  if(P.y<=pYOff&&P.vy<=0){P.y=pYOff;P.vy=0;P.onGround=true;}else P.onGround=false;
-
-  for(var ci=0;ci<colCircles.length;ci++){
-    var ob=colCircles[ci],ddx=P.x-ob.x,ddz=P.z-ob.z;
-    var d2=ddx*ddx+ddz*ddz,mn=.5+ob.r;
-    if(d2<mn*mn&&d2>.001){
-      var dd=Math.sqrt(d2),nnx=ddx/dd,nnz=ddz/dd;
-      P.x=ob.x+nnx*mn;P.z=ob.z+nnz*mn;
-      var dot=P.vx*nnx+P.vz*nnz;if(dot<0){P.vx-=dot*nnx;P.vz-=dot*nnz;}
+  // Trottoirs
+  var swMat=new BABYLON.StandardMaterial('sw',bScene);
+  swMat.diffuseColor=new BABYLON.Color3(0.22,0.22,0.24);
+  for(var i=-8;i<=8;i++){
+    for(var j=-8;j<=8;j++){
+      if(Math.abs(i)%4===3||Math.abs(j)%4===3){
+        var sw=BABYLON.MeshBuilder.CreateGround('sw'+i+'_'+j,{width:2,height:2},bScene);
+        sw.position.set(i*8,0.06,j*8);sw.material=swMat;
+      }
     }
   }
-  var pd=Math.sqrt(P.x*P.x+P.z*P.z);
-  if(pd>ISLAND_R){var pa=Math.atan2(P.x,P.z);P.x=Math.sin(pa)*ISLAND_R;P.z=Math.cos(pa)*ISLAND_R;P.vx*=.1;P.vz*=.1;}
-  if(P.y<-30){P.x=0;P.y=pYOff;P.z=0;P.vx=0;P.vy=0;P.vz=0;P.onGround=true;}
-
-  if(pRoot){
-    pRoot.position.x=P.x;pRoot.position.y=P.y;pRoot.position.z=P.z;
-    var rd=P.yaw-pRoot.rotation.y;
-    while(rd>Math.PI)rd-=Math.PI*2;while(rd<-Math.PI)rd+=Math.PI*2;
-    pRoot.rotation.y+=rd*Math.min(1,dt*14);
-  }
-  if(fill)fill.position.set(P.x,P.y+5,P.z);
-
-  var yawDiff=P.yaw-CAM.yaw;
-  while(yawDiff>Math.PI)yawDiff-=Math.PI*2;while(yawDiff<-Math.PI)yawDiff+=Math.PI*2;
-  CAM.yaw+=yawDiff*Math.min(1,dt*4.5);
-  var cr=CAM.dist*Math.cos(CAM.pitch);
-  var tgtX=P.x,tgtY=P.y+1.6,tgtZ=P.z;
-  var desX=tgtX+Math.sin(CAM.yaw)*cr;
-  var desY=tgtY+CAM.dist*Math.sin(CAM.pitch);
-  var desZ=tgtZ+Math.cos(CAM.yaw)*cr;
-  cam.position.x+=(desX-cam.position.x)*Math.min(1,dt*10);
-  cam.position.y+=(desY-cam.position.y)*Math.min(1,dt*8);
-  cam.position.z+=(desZ-cam.position.z)*Math.min(1,dt*10);
-  cam.setTarget(new B.Vector3(tgtX,tgtY,tgtZ));
-
-  waveT+=dt;
-  waveRings.forEach(function(w){
-    var p=Math.sin(waveT*1.8+w.ph);
-    w.m.scaling.x=1+p*.045;w.m.scaling.z=1+p*.045;
-    w.m.position.y=-.18+Math.sin(waveT*2.4+w.ph)*.038;
-    w.m.material.alpha=.42+Math.sin(waveT*2.1+w.ph)*.12;
-  });
-  oceanMesh.material.diffuseTexture.uOffset+=.00018;
-  oceanMesh.material.diffuseTexture.vOffset+=.00008;
-  if(lagonMesh)lagonMesh.position.y=-.30+Math.sin(waveT*.9)*.014;
-
-  var dz2=Math.sqrt(P.x*P.x+P.z*P.z);
-  document.getElementById('zoneTxt').innerHTML=dz2<5?'&#127956; VILLAGE':dz2<12?'&#127807; JUNGLE':dz2<20?'&#127944; PLAGE':'&#127754; BORD DE MER';
-  sc.render();
-});
-
-window.addEventListener('resize',function(){if(eng)eng.resize();});
-
-function playAnim(a){if(!a||a===curAnim)return;if(curAnim)curAnim.stop();a.start(true);curAnim=a;}
-function doJump(e){if(e&&e.preventDefault)e.preventDefault();if(P.onGround){P.vy=8;P.onGround=false;if(pAnims.jump)playAnim(pAnims.jump);}}
-function setSprint(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;}
-
-window.toggleDN=function(){
-  night=!night;
-  if(night){
-    sc.clearColor=new B.Color4(.01,.02,.08,1);sc.fogColor=new B.Color3(.01,.02,.06);sc.fogDensity=.009;
-    sky.intensity=.10;sky.diffuse=new B.Color3(.08,.12,.35);sun.intensity=.15;sun.diffuse=new B.Color3(.25,.30,.68);
-    skyMat.emissiveColor=new B.Color3(.02,.04,.12);document.getElementById('dnBtn').innerHTML='&#9728; JOUR';toast('Nuit a Hawaii...');
-  }else{
-    sc.clearColor=new B.Color4(.42,.72,.94,1);sc.fogColor=new B.Color3(.50,.78,.96);sc.fogDensity=.0035;
-    sky.intensity=.65;sky.diffuse=new B.Color3(.80,.90,.98);sun.intensity=2.8;sun.diffuse=new B.Color3(1.0,.95,.80);
-    skyMat.emissiveColor=new B.Color3(.42,.72,.94);document.getElementById('dnBtn').innerHTML='&#9790; NUIT';toast('Belle journee sur l\'ile !');
-  }
-};
-
-var jBase=document.getElementById('joy'),jNub=document.getElementById('jnub'),jid=-1,JMAX=36;
-function jUp(cx,cy){
-  var r=jBase.getBoundingClientRect(),dx=cx-(r.left+r.width/2),dy=cy-(r.top+r.height/2),d=Math.sqrt(dx*dx+dy*dy);
-  if(d>JMAX){dx=dx/d*JMAX;dy=dy/d*JMAX;}
-  jNub.style.transform='translate(calc(-50% + '+dx+'px),calc(-50% + '+dy+'px))';
-  jLX=d>5?dx/JMAX:0;jLY=d>5?-dy/JMAX:0;
 }
-function jRst(){jNub.style.transform='translate(-50%,-50%)';jLX=0;jLY=0;jid=-1;}
-jBase.addEventListener('touchstart',function(e){e.preventDefault();jid=e.touches[0].identifier;jUp(e.touches[0].clientX,e.touches[0].clientY);},{passive:false});
-jBase.addEventListener('touchmove',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jid)jUp(e.changedTouches[i].clientX,e.changedTouches[i].clientY);},{passive:false});
-jBase.addEventListener('touchend',jRst,{passive:true});
-jBase.addEventListener('mousedown',function(e){jUp(e.clientX,e.clientY);});
-window.addEventListener('mouseup',jRst);
-window.addEventListener('keydown',function(e){KY[e.code]=1;if(e.code==='Space'){e.preventDefault();doJump();}if(e.code==='ShiftLeft'||e.code==='ShiftRight')sprint=true;});
-window.addEventListener('keyup',function(e){KY[e.code]=0;if(e.code==='ShiftLeft'||e.code==='ShiftRight')sprint=false;});
-window.addEventListener('wheel',function(e){CAM.dist=Math.max(6,Math.min(24,CAM.dist+e.deltaY*.012));},{passive:true});
-var mDn=false,mLx=0,mLy=0;
-cv.addEventListener('mousedown',function(e){if(e.button===2){mDn=true;mLx=e.clientX;mLy=e.clientY;}});
-window.addEventListener('mousemove',function(e){if(!mDn)return;CAM.yaw-=(e.clientX-mLx)*.004;CAM.pitch=Math.max(.08,Math.min(.78,CAM.pitch+(e.clientY-mLy)*.003));mLx=e.clientX;mLy=e.clientY;});
-window.addEventListener('mouseup',function(e){if(e.button===2)mDn=false;});
-cv.addEventListener('contextmenu',function(e){e.preventDefault();});
-var p0t=null,iDt=0,iCDt=0;
-cv.addEventListener('touchstart',function(e){if(e.touches.length===2){p0t=e.touches[0];var p1=e.touches[1];iDt=Math.hypot(p1.clientX-p0t.clientX,p1.clientY-p0t.clientY);iCDt=CAM.dist;}},{passive:true});
-cv.addEventListener('touchmove',function(e){if(e.touches.length===2&&iDt>0){var d=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);CAM.dist=Math.max(6,Math.min(24,iCDt*(iDt/d)));}},{passive:true});
-};
-// Si Babylon déjà chargé (cas où CDN était ok)
-if(window.babylonReady && window.startGame) window.startGame();
+
+// ── Charger un GLB depuis GitHub ──
+async function loadGLB(filename,position,rotation,scale){
+  var url=BASE_URL+filename;
+  try{
+    var result=await BABYLON.SceneLoader.ImportMeshAsync('','',url,bScene);
+    var root=result.meshes[0];
+    if(!root)return null;
+    root.position=new BABYLON.Vector3(position.x,position.y,position.z);
+    if(rotation)root.rotation=new BABYLON.Vector3(rotation.x||0,rotation.y||0,rotation.z||0);
+    if(scale)root.scaling=new BABYLON.Vector3(scale,scale,scale);
+    // Activer ombres sur tous les meshes
+    result.meshes.forEach(function(m){
+      m.receiveShadows=true;
+      if(window._shadows)window._shadows.addShadowCaster(m);
+    });
+    // Améliorer les matériaux pour le PBR
+    result.meshes.forEach(function(m){
+      if(m.material){
+        if(m.material instanceof BABYLON.PBRMaterial){
+          m.material.environmentIntensity=0.4;
+        }
+      }
+    });
+    return root;
+  }catch(e){
+    // Fallback si le fichier n'existe pas — cube coloré
+    return buildFallback(filename,position,scale||1);
+  }
+}
+
+// Fallback si GLB manquant
+function buildFallback(name,pos,sc){
+  var size=sc||1;
+  var h=size*(2+Math.random()*4);
+  var box=BABYLON.MeshBuilder.CreateBox('fb_'+name,{width:size*1.5,height:h,depth:size*1.5},bScene);
+  box.position=new BABYLON.Vector3(pos.x,h/2,pos.z);
+  var mat=new BABYLON.StandardMaterial('fbm_'+name,bScene);
+  mat.diffuseColor=new BABYLON.Color3(0.1+Math.random()*0.15,0.1+Math.random()*0.15,0.15+Math.random()*0.2);
+  mat.specularColor=new BABYLON.Color3(0.3,0.3,0.4);
+  box.material=mat;
+  box.receiveShadows=true;
+  if(window._shadows)window._shadows.addShadowCaster(box);
+  // Fenêtres émissives
+  var wc=Math.floor(h/1.5);
+  for(var wi=0;wi<wc;wi++){
+    if(Math.random()<0.6){
+      var win=BABYLON.MeshBuilder.CreateBox('w'+wi,{width:0.4,height:0.4,depth:0.05},bScene);
+      win.position=new BABYLON.Vector3(pos.x+(Math.random()<0.5?size*0.76:-size*0.76),wi*1.5+1,pos.z);
+      var wm=new BABYLON.StandardMaterial('wm'+wi,bScene);
+      var r=Math.random();
+      if(r<0.3){wm.emissiveColor=new BABYLON.Color3(0.9,0.8,0.5);}
+      else if(r<0.6){wm.emissiveColor=new BABYLON.Color3(0.4,0.7,1);}
+      else{wm.emissiveColor=new BABYLON.Color3(0.2,0.2,0.2);}
+      win.material=wm;
+    }
+  }
+  return box;
+}
+
+// ── Lampadaires urbains ──
+function buildStreetLight(x,z){
+  var pole=BABYLON.MeshBuilder.CreateCylinder('pole',{height:7,diameter:0.12,tessellation:8},bScene);
+  pole.position=new BABYLON.Vector3(x,3.5,z);
+  var pm=new BABYLON.StandardMaterial('pm',bScene);
+  pm.diffuseColor=new BABYLON.Color3(0.25,0.25,0.3);pm.specularColor=new BABYLON.Color3(0.5,0.5,0.6);
+  pole.material=pm;
+
+  var arm=BABYLON.MeshBuilder.CreateBox('arm',{width:2,height:0.08,depth:0.08},bScene);
+  arm.position=new BABYLON.Vector3(x+1,7,z);arm.material=pm;
+
+  var fix=BABYLON.MeshBuilder.CreateBox('fix',{width:0.5,height:0.2,depth:0.2},bScene);
+  fix.position=new BABYLON.Vector3(x+2,6.9,z);
+  var fm=new BABYLON.StandardMaterial('fm',bScene);
+  fm.diffuseColor=new BABYLON.Color3(0.9,0.85,0.6);
+  fm.emissiveColor=new BABYLON.Color3(0.9,0.75,0.3);
+  fix.material=fm;
+
+  // Point light orange chaud
+  var pl=new BABYLON.PointLight('pl',new BABYLON.Vector3(x+2,6.5,z),bScene);
+  pl.diffuse=new BABYLON.Color3(1,0.75,0.3);
+  pl.specular=new BABYLON.Color3(0.5,0.4,0.2);
+  pl.intensity=3;pl.range=18;
+  return pl;
+}
+
+// ── Néons de commerce ──
+function buildNeonSign(x,y,z,color){
+  var sign=BABYLON.MeshBuilder.CreateBox('neon',{width:3,height:0.3,depth:0.1},bScene);
+  sign.position=new BABYLON.Vector3(x,y,z);
+  var sm=new BABYLON.StandardMaterial('nm',bScene);
+  sm.emissiveColor=color;sm.diffuseColor=color;
+  sign.material=sm;
+  var pl=new BABYLON.PointLight('npl',new BABYLON.Vector3(x,y,z+0.5),bScene);
+  pl.diffuse=color;pl.intensity=2;pl.range=8;
+}
+
+// ── Routes ──
+async function buildRoads(){
+  // Essayer de charger un vrai modèle de route, sinon fallback géométrique
+  var roadFiles=['road-straight.glb','roadStraight.glb','road_straight.glb'];
+  var roadLoaded=false;
+  for(var i=0;i<roadFiles.length&&!roadLoaded;i++){
+    try{
+      var r=await BABYLON.SceneLoader.ImportMeshAsync('','',BASE_URL+roadFiles[i],bScene);
+      if(r&&r.meshes.length>0){
+        roadLoaded=true;
+        // Placer des routes en grille
+        for(var ri=-4;ri<=4;ri++){
+          var m=r.meshes[0].clone('road_'+ri);
+          m.position=new BABYLON.Vector3(ri*16,0.02,0);
+          m.rotation.y=Math.PI/2;
+        }
+      }
+    }catch(e){}
+  }
+}
+
+// ── Ville ──
+async function buildCity(){
+  var NEON_COLORS=[
+    new BABYLON.Color3(1,0.1,0.1),new BABYLON.Color3(0.1,0.8,1),
+    new BABYLON.Color3(1,0.5,0),new BABYLON.Color3(0.8,0.1,1),
+    new BABYLON.Color3(0.1,1,0.4)
+  ];
+
+  // Grille de bâtiments
+  var buildingPositions=[
+    {x:-28,z:-28},{x:-12,z:-28},{x:4,z:-28},{x:20,z:-28},{x:36,z:-28},
+    {x:-28,z:-12},{x:-12,z:-12},{x:4,z:-12},{x:20,z:-12},{x:36,z:-12},
+    {x:-28,z:4},{x:-12,z:4},{x:20,z:4},{x:36,z:4},
+    {x:-28,z:20},{x:-12,z:20},{x:4,z:20},{x:20,z:20},{x:36,z:20},
+    {x:-28,z:36},{x:-12,z:36},{x:4,z:36},{x:20,z:36},{x:36,z:36},
+    // Zone industrielle
+    {x:-52,z:-40},{x:-52,z:-20},{x:-52,z:0},{x:-52,z:20},
+    // Gratte-ciels centre
+    {x:0,z:-52},{x:16,z:-52},{x:-16,z:-52},{x:0,z:-68},{x:16,z:-68}
+  ];
+
+  // Fichiers bâtiments à essayer
+  var bFiles=ASSET_FILES.buildings;
+  var loaded=[];
+
+  // Essayer de charger quelques modèles de base
+  for(var i=0;i<Math.min(4,bFiles.length);i++){
+    try{
+      var r=await BABYLON.SceneLoader.ImportMeshAsync('','',BASE_URL+bFiles[i],bScene);
+      if(r&&r.meshes.length>0){r.meshes[0].setEnabled(false);loaded.push(r.meshes[0]);}
+    }catch(e){}
+  }
+
+  // Placer les bâtiments
+  for(var bi=0;bi<buildingPositions.length;bi++){
+    var bp=buildingPositions[bi];
+    var sc=0.8+Math.random()*1.4;
+    var ry=Math.random()*Math.PI*2;
+
+    if(loaded.length>0&&Math.random()>0.3){
+      var template=loaded[bi%loaded.length];
+      var clone=template.clone('bld_'+bi);
+      clone.setEnabled(true);
+      clone.position=new BABYLON.Vector3(bp.x,0,bp.z);
+      clone.rotation.y=ry;clone.scaling=new BABYLON.Vector3(sc,sc,sc);
+      clone.getChildMeshes().forEach(function(m){m.receiveShadows=true;if(window._shadows)window._shadows.addShadowCaster(m);});
+    }else{
+      buildFallback('b'+bi,{x:bp.x,z:bp.z},sc*3);
+    }
+
+    // Néon sur chaque bâtiment
+    if(Math.random()>0.4){
+      buildNeonSign(bp.x,3.5+Math.random()*2,bp.z+2,NEON_COLORS[bi%NEON_COLORS.length]);
+    }
+
+    // Lampadaires aux coins
+    if(bi%3===0) buildStreetLight(bp.x+5,bp.z+5);
+  }
+
+  // Voiture taxi
+  try{
+    var taxi=await BABYLON.SceneLoader.ImportMeshAsync('','',BASE_URL+'Taxi.glb',bScene);
+    if(taxi&&taxi.meshes.length>0){
+      taxi.meshes[0].position=new BABYLON.Vector3(8,0,8);
+      taxi.meshes[0].rotation.y=Math.PI/4;
+      taxi.meshes[0].scaling=new BABYLON.Vector3(0.5,0.5,0.5);
+    }
+  }catch(e){}
+}
+
+// ── Nature ──
+async function buildNature(){
+  var tFiles=ASSET_FILES.nature;
+  var tLoaded=[];
+  for(var i=0;i<Math.min(3,tFiles.length);i++){
+    try{
+      var r=await BABYLON.SceneLoader.ImportMeshAsync('','',BASE_URL+tFiles[i],bScene);
+      if(r&&r.meshes.length>0){r.meshes[0].setEnabled(false);tLoaded.push(r.meshes[0]);}
+    }catch(e){}
+  }
+
+  // Placer arbres autour de la ville
+  var treePos=[
+    {x:50,z:0},{x:50,z:20},{x:50,z:-20},{x:-50,z:0},{x:-50,z:20},{x:-50,z:-20},
+    {x:0,z:50},{x:20,z:50},{x:-20,z:50},{x:0,z:-50},{x:20,z:-50},{x:-20,z:-50},
+    {x:44,z:44},{x:-44,z:44},{x:44,z:-44},{x:-44,z:-44},
+    {x:30,z:50},{x:-30,z:50},{x:30,z:-50},{x:-30,z:-50}
+  ];
+
+  for(var ti=0;ti<treePos.length;ti++){
+    var tp=treePos[ti];
+    var sc=0.6+Math.random();
+    if(tLoaded.length>0){
+      var clone=tLoaded[ti%tLoaded.length].clone('tree_'+ti);
+      clone.setEnabled(true);
+      clone.position=new BABYLON.Vector3(tp.x,0,tp.z);
+      clone.rotation.y=Math.random()*Math.PI*2;
+      clone.scaling=new BABYLON.Vector3(sc,sc,sc);
+    }else{
+      // Fallback arbre géométrique
+      var trunk=BABYLON.MeshBuilder.CreateCylinder('trunk'+ti,{height:3*sc,diameter:0.3*sc},bScene);
+      trunk.position=new BABYLON.Vector3(tp.x,1.5*sc,tp.z);
+      var tm=new BABYLON.StandardMaterial('tm',bScene);tm.diffuseColor=new BABYLON.Color3(0.25,0.15,0.08);trunk.material=tm;
+      var foliage=BABYLON.MeshBuilder.CreateSphere('fol'+ti,{diameter:2.5*sc},bScene);
+      foliage.position=new BABYLON.Vector3(tp.x,4*sc,tp.z);
+      var fm=new BABYLON.StandardMaterial('fm'+ti,bScene);fm.diffuseColor=new BABYLON.Color3(0.1,0.3,0.12);foliage.material=fm;
+    }
+  }
+}
+
+// ── Plots à acheter ──
+var PLOTS=[
+  {x:-8,z:-8,price:2500,name:'LOT CENTRE',desc:'Cœur de la ville'},
+  {x:24,z:24,price:3200,name:'LOT NORD',desc:'Vue panoramique'},
+  {x:48,z:-8,price:2800,name:'LOT EST',desc:'Zone résidentielle'},
+  {x:-48,z:24,price:1800,name:'LOT OUEST',desc:'Grand espace'},
+  {x:24,z:-48,price:4500,name:'LOT PREMIUM',desc:'Emplacement exclusif'}
+];
+var plotMeshes=[];
+
+function buildPlots(){
+  PLOTS.forEach(function(p,i){
+    var plane=BABYLON.MeshBuilder.CreateGround('plot'+i,{width:12,height:12},bScene);
+    plane.position=new BABYLON.Vector3(p.x,0.08,p.z);
+    var mat=new BABYLON.StandardMaterial('pm'+i,bScene);
+    mat.diffuseColor=new BABYLON.Color3(0.1,0.9,0.1);
+    mat.emissiveColor=new BABYLON.Color3(0.02,0.15,0.02);
+    mat.alpha=0.3;
+    plane.material=mat;
+    // Piquets aux coins
+    [[-6,-6],[-6,6],[6,-6],[6,6]].forEach(function(c){
+      var stake=BABYLON.MeshBuilder.CreateCylinder('sk',{height:1.6,diameter:0.15},bScene);
+      stake.position=new BABYLON.Vector3(p.x+c[0],0.8,p.z+c[1]);
+      var sm2=new BABYLON.StandardMaterial('skm',bScene);sm2.diffuseColor=new BABYLON.Color3(0.9,0.7,0);sm2.emissiveColor=new BABYLON.Color3(0.3,0.2,0);
+      stake.material=sm2;
+    });
+    plotMeshes.push(plane);
+    plane.userData={plotIdx:i};
+  });
+}
+
+// ── Proxy joueur (invisible, juste pour la caméra) ──
+function buildPlayerProxy(){
+  _playerMesh=BABYLON.MeshBuilder.CreateBox('player',{width:0.5,height:1.8,depth:0.5},bScene);
+  _playerMesh.position=new BABYLON.Vector3(0,1,0);
+  _playerMesh.isVisible=false;
+  var pm=new BABYLON.StandardMaterial('plm',bScene);pm.alpha=0;
+  _playerMesh.material=pm;
+}
+
+// ═══════════════════════════════
+// GAME LOOP
+// ═══════════════════════════════
+var _prevT=performance.now();
+var _mmTimer=0;
+function gameLoop(){
+  var now=performance.now(),dt=Math.min((now-_prevT)/1000,0.05);_prevT=now;
+  updatePlayer(dt);
+  updateCamera();
+  _mmTimer+=dt;if(_mmTimer>0.3){_mmTimer=0;drawMM();}
+  // Animer reflets sol
+  animateScene(now);
+  bScene.render();
+}
+
+function updatePlayer(dt){
+  var speed=(isSprint&&stamina>2?9:5)*dt;
+  var fw=new BABYLON.Vector3(Math.sin(camYaw),0,Math.cos(camYaw));
+  var rt=new BABYLON.Vector3(Math.cos(camYaw),0,-Math.sin(camYaw));
+  var mv=BABYLON.Vector3.Zero();
+  var moved=false;
+
+  if(Math.abs(jAx)>0.04||Math.abs(jAy)>0.04){
+    mv.addInPlace(rt.scale(jAx));mv.addInPlace(fw.scale(-jAy));moved=true;
+    var ln=mv.length();if(ln>0)mv.scaleInPlace(speed*Math.min(ln,1)/ln);
+  }else{
+    if(_keys.u)mv.subtractInPlace(fw);if(_keys.d)mv.addInPlace(fw);
+    if(_keys.r)mv.addInPlace(rt);if(_keys.l)mv.subtractInPlace(rt);
+    if(mv.length()>0){moved=true;mv.normalize().scaleInPlace(speed);}
+  }
+
+  if(moved){
+    var ta=Math.atan2(mv.x,mv.z),da=ta-playerAngle;
+    while(da>Math.PI)da-=Math.PI*2;while(da<-Math.PI)da+=Math.PI*2;
+    playerAngle+=da*Math.min(1,dt*14);
+    if(isSprint)stamina=Math.max(0,stamina-dt*22);
+    else stamina=Math.min(100,stamina+dt*12);
+  }else stamina=Math.min(100,stamina+dt*18);
+
+  playerPos.x+=mv.x;playerPos.z+=mv.z;
+  // Limiter zone
+  playerPos.x=Math.max(-100,Math.min(100,playerPos.x));
+  playerPos.z=Math.max(-100,Math.min(100,playerPos.z));
+
+  // Gravité simple
+  playerVelY-=22*dt;playerPos.y+=playerVelY*dt;
+  if(playerPos.y<=0){playerPos.y=0;playerVelY=0;isOnGround=true;}else isOnGround=false;
+
+  if(_playerMesh)_playerMesh.position=new BABYLON.Vector3(playerPos.x,playerPos.y+0.9,playerPos.z);
+
+  document.getElementById('stBar').style.width=stamina+'%';
+  updateZone();
+}
+
+function updateCamera(){
+  var tx=playerPos.x+Math.sin(camYaw)*CAM_DIST;
+  var ty=playerPos.y+CAM_H;
+  var tz=playerPos.z+Math.cos(camYaw)*CAM_DIST;
+  camera.position=BABYLON.Vector3.Lerp(camera.position,new BABYLON.Vector3(tx,ty,tz),0.1);
+  var tgt=new BABYLON.Vector3(playerPos.x,playerPos.y+1.6,playerPos.z);
+  camera.target=BABYLON.Vector3.Lerp(camera.target,tgt,0.12);
+  // Lumières fill suivent le joueur
+  if(window._fl1)window._fl1.position=new BABYLON.Vector3(playerPos.x,playerPos.y+8,playerPos.z);
+}
+
+function animateScene(now){
+  // Scintillement néons
+  if(Math.random()<0.05){
+    var lights=bScene.lights;
+    var neonLights=lights.filter(function(l){return l.name==='npl';});
+    if(neonLights.length>0){
+      var nl=neonLights[Math.floor(Math.random()*neonLights.length)];
+      nl.intensity=1.5+Math.random()*1.5;
+    }
+  }
+}
+
+function updateZone(){
+  var x=playerPos.x,z=playerPos.z,zone;
+  var d=Math.sqrt(x*x+z*z);
+  if(z<-40&&Math.abs(x)<30)zone='🏙️ CENTRE-VILLE';
+  else if(d<20)zone='🏢 QUARTIER AFFAIRES';
+  else if(d<50)zone='🏘️ ZONE RÉSIDENTIELLE';
+  else zone='🌳 PÉRIPHÉRIE';
+  document.getElementById('zoneTag').textContent=zone;
+}
+
+// ═══════════════════════════════
+// JOUR / NUIT
+// ═══════════════════════════════
+function toggleDayNight(){
+  _isNight=!_isNight;
+  var btn=document.getElementById('dnBtn');
+  var btn2=document.getElementById('camBtn');
+  if(_isNight){
+    // NUIT — ambiance GTA/AC
+    bScene.clearColor=new BABYLON.Color4(0.02,0.02,0.05,1);
+    bScene.fogColor=new BABYLON.Color3(0.04,0.04,0.08);
+    bScene.fogDensity=0.01;
+    if(_ambLight){_ambLight.intensity=0.15;_ambLight.diffuse=new BABYLON.Color3(0.1,0.12,0.3);}
+    if(_sun){_sun.intensity=0.15;_sun.diffuse=new BABYLON.Color3(0.3,0.35,0.8);}
+    if(btn){btn.textContent='☀ JOUR';btn.style.borderColor='#aaccff';btn.style.color='#aaccff';}
+    if(btn2){btn2.textContent='☀';btn2.style.borderColor='#aaccff';btn2.style.color='#aaccff';}
+    pop('🌙 Mode Nuit — Néons activés');
+  }else{
+    // JOUR — lumière naturelle
+    bScene.clearColor=new BABYLON.Color4(0.5,0.65,0.85,1);
+    bScene.fogColor=new BABYLON.Color3(0.6,0.72,0.9);
+    bScene.fogDensity=0.004;
+    if(_ambLight){_ambLight.intensity=0.8;_ambLight.diffuse=new BABYLON.Color3(0.9,0.88,0.8);}
+    if(_sun){_sun.intensity=1.8;_sun.diffuse=new BABYLON.Color3(1,0.98,0.9);}
+    if(btn){btn.textContent='🌙 NUIT';btn.style.borderColor='';btn.style.color='';}
+    if(btn2){btn2.textContent='🌙';btn2.style.borderColor='';btn2.style.color='';}
+    pop('☀ Mode Jour');
+  }
+}
+
+// ═══════════════════════════════
+// JOYSTICK
+// ═══════════════════════════════
+function setupJoystick(){
+  var base=document.getElementById('joy'),nub=document.getElementById('jnub');
+  var jid=-1;
+  function move(cx,cy){
+    var r=base.getBoundingClientRect(),bx=r.left+r.width/2,by=r.top+r.height/2;
+    var dx=cx-bx,dy=cy-by,d=Math.sqrt(dx*dx+dy*dy),max=30;
+    if(d>max){dx=dx/d*max;dy=dy/d*max;d=max;}
+    nub.style.transform='translate(calc(-50% + '+dx+'px),calc(-50% + '+dy+'px))';
+    jAx=d>5?dx/max:0;jAy=d>5?dy/max:0;
+  }
+  function reset(){nub.style.transform='translate(-50%,-50%)';jAx=0;jAy=0;jid=-1;}
+  base.addEventListener('touchstart',function(e){e.preventDefault();var t=e.touches[0];if(!t)return;jid=t.identifier;move(t.clientX,t.clientY);},{passive:false});
+  base.addEventListener('touchmove',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jid)move(e.changedTouches[i].clientX,e.changedTouches[i].clientY);},{passive:false});
+  base.addEventListener('touchend',reset,{passive:false});
+  base.addEventListener('mousedown',function(e){move(e.clientX,e.clientY);});
+  window.addEventListener('mousemove',function(e){if(e.buttons===1&&document.activeElement===base)move(e.clientX,e.clientY);});
+  window.addEventListener('mouseup',function(){if(jid>=0||jAx||jAy)reset();});
+}
+
+// Rotation caméra par drag
+function setupPointerLock(canvas){
+  var last={x:0},dragging=false;
+  canvas.addEventListener('touchstart',function(e){if(e.touches.length===1){last.x=e.touches[0].clientX;dragging=true;}},{passive:true});
+  canvas.addEventListener('touchmove',function(e){if(dragging&&e.touches.length===1){var dx=e.touches[0].clientX-last.x;camYaw+=dx*0.006;last.x=e.touches[0].clientX;}},{passive:true});
+  canvas.addEventListener('touchend',function(){dragging=false;},{passive:true});
+  canvas.addEventListener('mousedown',function(e){if(e.button===2||e.button===1){last.x=e.clientX;dragging=true;}});
+  window.addEventListener('mousemove',function(e){if(dragging){camYaw+=(e.clientX-last.x)*0.005;last.x=e.clientX;}});
+  window.addEventListener('mouseup',function(){dragging=false;});
+  window.addEventListener('wheel',function(e){CAM_DIST=Math.max(5,Math.min(30,CAM_DIST+e.deltaY*0.01));},{passive:true});
+  canvas.addEventListener('contextmenu',function(e){e.preventDefault();});
+}
+
+var _keys={u:0,d:0,l:0,r:0};
+function setupKeys(){
+  window.addEventListener('keydown',function(e){
+    if(e.key==='ArrowUp'||e.key==='w'||e.key==='W')_keys.u=1;
+    if(e.key==='ArrowDown'||e.key==='s'||e.key==='S')_keys.d=1;
+    if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')_keys.l=1;
+    if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')_keys.r=1;
+    if(e.key===' '){e.preventDefault();doJump();}
+    if(e.key==='Shift')isSprint=true;
+  });
+  window.addEventListener('keyup',function(e){
+    if(e.key==='ArrowUp'||e.key==='w'||e.key==='W')_keys.u=0;
+    if(e.key==='ArrowDown'||e.key==='s'||e.key==='S')_keys.d=0;
+    if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')_keys.l=0;
+    if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')_keys.r=0;
+    if(e.key==='Shift')isSprint=false;
+  });
+}
+
+function doJump(e){if(e&&e.preventDefault)e.preventDefault();if(isOnGround){playerVelY=9;isOnGround=false;}}
+function setSprint(v,e){if(e&&e.preventDefault)e.preventDefault();isSprint=v;}
+
+// ═══════════════════════════════
+// ACHATS TERRAIN
+// ═══════════════════════════════
+function setMode(m,el){
+  curMode=m;
+  document.querySelectorAll('.mb').forEach(function(b){b.classList.remove('on');});
+  if(el)el.classList.add('on');
+  if(m==='buy'){
+    pop('MODE ACHAT — Approche un terrain vert');
+    setupBuyMode();
+  }else if(m==='build')pop('MODE CONSTRUCTION — Bientôt disponible');
+  else pop('MODE EXPLORATION');
+}
+
+function setupBuyMode(){
+  plotMeshes.forEach(function(mesh,i){
+    mesh.actionManager=new BABYLON.ActionManager(bScene);
+    mesh.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger,function(){
+      if(ownedPlots.indexOf(i)===-1)showPlot(i);
+    }));
+  });
+}
+
+function showPlot(idx){
+  pendingPlot=idx;var p=PLOTS[idx];
+  document.getElementById('tpTitle').textContent=p.name;
+  document.getElementById('tpDesc').textContent=p.desc;
+  document.getElementById('tpPrice').textContent=p.price;
+  document.getElementById('tpanel').style.display='block';
+}
+function confirmBuy(){
+  if(pendingPlot===null)return;var p=PLOTS[pendingPlot];
+  if(gold<p.price){pop('❌ FONDS INSUFFISANTS');cancelBuy();return;}
+  gold-=p.price;ownedPlots.push(pendingPlot);ownedCount++;
+  var m=plotMeshes[pendingPlot];
+  if(m&&m.material){m.material.diffuseColor=new BABYLON.Color3(0.1,0.1,0.9);m.material.emissiveColor=new BABYLON.Color3(0.02,0.02,0.2);}
+  updateHUD();cancelBuy();pop('✦ '+p.name+' ACHETÉ !');
+}
+function cancelBuy(){pendingPlot=null;document.getElementById('tpanel').style.display='none';}
+function updateHUD(){
+  document.getElementById('goldVal').textContent=gold.toLocaleString('fr-FR');
+  document.getElementById('plotVal').textContent=ownedCount;
+}
+setInterval(function(){if(engine){gold+=80+ownedCount*40;updateHUD();}},30000);
+
+// ═══════════════════════════════
+// MINIMAP
+// ═══════════════════════════════
+var mmCtx=document.getElementById('mmCanvas').getContext('2d');
+function drawMM(){
+  var W=110,H=110,cx=W/2,cy=H/2;
+  mmCtx.clearRect(0,0,W,H);
+  mmCtx.save();mmCtx.beginPath();mmCtx.arc(cx,cy,cx-1,0,Math.PI*2);mmCtx.clip();
+  mmCtx.fillStyle='#0a0c18';mmCtx.fillRect(0,0,W,H);
+  // Grille routes
+  mmCtx.strokeStyle='#1a1f3a';mmCtx.lineWidth=1;
+  for(var i=-6;i<=6;i++){
+    var x=(i*16/200+0.5)*W;mmCtx.beginPath();mmCtx.moveTo(x,0);mmCtx.lineTo(x,H);mmCtx.stroke();
+    var z=(i*16/200+0.5)*H;mmCtx.beginPath();mmCtx.moveTo(0,z);mmCtx.lineTo(W,z);mmCtx.stroke();
+  }
+  // Plots
+  PLOTS.forEach(function(p,i){
+    var mx=(p.x/200+0.5)*W,mz=(p.z/200+0.5)*H;
+    mmCtx.fillStyle=ownedPlots.indexOf(i)>=0?'#4444ee':'#44cc44';
+    mmCtx.beginPath();mmCtx.arc(mx,mz,3,0,Math.PI*2);mmCtx.fill();
+  });
+  // Joueur
+  var ax=(playerPos.x/200+0.5)*W,az=(playerPos.z/200+0.5)*H;
+  mmCtx.save();mmCtx.translate(ax,az);mmCtx.rotate(playerAngle);
+  mmCtx.fillStyle='#ff4444';
+  mmCtx.beginPath();mmCtx.moveTo(0,-5);mmCtx.lineTo(3,4);mmCtx.lineTo(0,2);mmCtx.lineTo(-3,4);mmCtx.closePath();mmCtx.fill();
+  mmCtx.restore();mmCtx.restore();
+}
+
+// ═══════════════════════════════
+// TOAST
+// ═══════════════════════════════
+function pop(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.className='show';
+  if(_toastT)clearTimeout(_toastT);
+  _toastT=setTimeout(function(){t.className='';},3000);
+}
+
+// ═══════════════════════════════
+// AVATAR EDITOR
+// ═══════════════════════════════
+var AV={skin:0,eye:0,lip:2,hairStyle:0,hairColor:0,top:0,topColor:0,bottom:0,glasses:0,hat:0,beard:0};
+var SKINS=['#f5c89a','#f0a870','#d4845a','#b86030','#8a4520','#4a2010'];
+var SKIN_N=['Très clair','Clair','Doré','Hâlé','Brun','Foncé'];
+var EYES=['#3a5a8a','#2a7a3a','#8a5a2a','#4a4a6a','#8a2a2a','#1a1a2a'];
+var EYE_N=['Bleu','Vert','Noisette','Gris','Ambre','Noir'];
+var LIPS=['#d4706a','#e87880','#c05050','#b04848','#884848','#f0a090'];
+var LIP_N=['Nude','Rose','Rouge','Bordeaux','Moka','Pêche'];
+var HSTYLES=['👩','👱','🧑','👨','🧔','💇'];var HSTYLE_N=['Court','Mi-long','Long','Frisé','Rasé','Chignon'];
+var HCOLS=['#0a0604','#3a1a08','#8a5a18','#c8a020','#e8d890','#c04848','#4a2888','#2a6088'];
+var HCOL_N=['Noir','Brun','Châtain','Blond','Platine','Roux','Violet','Bleu'];
+var TOPS=['👕','👔','🧥','🥼','🧤','👗','🥋','🩱'];var TOP_N=['T-shirt','Chemise','Veste','Manteau','Pull','Robe','Kimono','Débardeur'];
+var TCOLS=['#1a3a8a','#aa2222','#1a6a2a','#c8aa18','#882288','#111111','#cc5518','#ffffff'];var TCOL_N=['Bleu','Rouge','Vert','Or','Violet','Noir','Orange','Blanc'];
+var BOTS=['👖','🩲','🩳','👙','🥻','🩴'];var BOT_N=['Jean','Short','Bermuda','Legging','Jupe','Pantalon'];
+var GLASSES=['🕶️','👓','🥽','✨','❌'];var GLASS_N=['Soleil','Lunettes','Masque','Vintage','Aucune'];
+var HATS=['🎩','⛑️','👒','🧢','👑','❌'];var HAT_N=['Haut-de-forme','Casque','Chapeau','Casquette','Couronne','Aucun'];
+var BEARDS=['🧔','🥸','😶','❌'];var BEARD_N=['Barbe','Moustache','Léger','Aucun'];
+
+var _avScene2=null,_avRen2=null,_avCam2=null,_avMesh=null,_avRaf2=null;
+
+function openAvScreen(){
+  document.getElementById('avScreen').style.display='flex';
+  buildEditorUI();
+  setTimeout(function(){initAvPreview();},100);
+}
+function closeAvScreen(){
+  document.getElementById('avScreen').style.display='none';
+  if(_avRaf2)cancelAnimationFrame(_avRaf2);
+  if(_avRen2)_avRen2.dispose();
+  _avRen2=null;_avScene2=null;
+}
+async function saveAvatarAndClose(){
+  await sbSave(AV);
+  pop('✓ Avatar sauvegardé !');
+  closeAvScreen();
+}
+
+function initAvPreview(){
+  var cv=document.getElementById('avCanvas');
+  if(!cv)return;
+  var W=cv.clientWidth||window.innerWidth,H=cv.clientHeight||window.innerHeight*0.4;
+  cv.width=W*window.devicePixelRatio;cv.height=H*window.devicePixelRatio;
+  if(_avRen2)_avRen2.dispose();
+  _avRen2=new BABYLON.Engine(cv,true,{alpha:true});
+  _avScene2=new BABYLON.Scene(_avRen2);
+  _avScene2.clearColor=new BABYLON.Color4(0.04,0.03,0.08,1);
+  _avScene2.ambientColor=new BABYLON.Color3(0.3,0.3,0.3);
+  var cam2=new BABYLON.ArcRotateCamera('ac',Math.PI/4,Math.PI/3,2.8,new BABYLON.Vector3(0,0.9,0),_avScene2);
+  cam2.lowerRadiusLimit=1.5;cam2.upperRadiusLimit=5;
+  cam2.attachControl(cv,true);
+  var al=new BABYLON.HemisphericLight('al',new BABYLON.Vector3(0,1,0),_avScene2);al.intensity=1.5;
+  var dl=new BABYLON.DirectionalLight('dl',new BABYLON.Vector3(-1,-2,-1),_avScene2);dl.intensity=2;
+  buildAvMesh();
+  _avRen2.runRenderLoop(function(){
+    if(document.getElementById('avScreen').style.display==='none'){_avRen2.stopRenderLoop();return;}
+    if(_avMesh)_avMesh.rotation.y+=0.006;
+    _avScene2.render();
+  });
+}
+
+function buildAvMesh(){
+  if(_avMesh){_avMesh.dispose();}
+  var sc=_avScene2;
+  var g=new BABYLON.TransformNode('avRoot',sc);
+  var skinC=BABYLON.Color3.FromHexString(SKINS[AV.skin]);
+  var hairC=BABYLON.Color3.FromHexString(HCOLS[AV.hairColor]);
+  var topC=BABYLON.Color3.FromHexString(TCOLS[AV.topColor]);
+  function mat(c,r){var m=new BABYLON.StandardMaterial('m',sc);m.diffuseColor=c;m.specularColor=new BABYLON.Color3(r||0.3,r||0.3,r||0.3);return m;}
+
+  // Corps
+  var torso=BABYLON.MeshBuilder.CreateBox('torso',{width:0.7,height:0.85,depth:0.38},sc);
+  torso.position.y=0.42;torso.material=mat(topC,0.2);torso.parent=g;
+
+  // Jambes
+  [-1,1].forEach(function(s){
+    var leg=BABYLON.MeshBuilder.CreateCylinder('leg',{height:0.9,diameter:0.24},sc);
+    leg.position=new BABYLON.Vector3(s*0.14,-0.45,0);leg.material=mat(new BABYLON.Color3(0.1,0.12,0.22));leg.parent=g;
+    var shoe=BABYLON.MeshBuilder.CreateBox('shoe',{width:0.2,height:0.1,depth:0.3},sc);
+    shoe.position=new BABYLON.Vector3(s*0.14,-0.92,0.04);shoe.material=mat(new BABYLON.Color3(0.08,0.08,0.1));shoe.parent=g;
+  });
+
+  // Bras
+  [-1,1].forEach(function(s){
+    var ua=BABYLON.MeshBuilder.CreateCylinder('ua',{height:0.5,diameter:0.2},sc);
+    ua.position=new BABYLON.Vector3(s*0.5,0.56,0);ua.material=mat(topC,0.2);ua.parent=g;
+    var fa=BABYLON.MeshBuilder.CreateCylinder('fa',{height:0.44,diameter:0.17},sc);
+    fa.position=new BABYLON.Vector3(s*0.5,0.16,0);fa.material=mat(skinC,0.15);fa.parent=g;
+    var hand=BABYLON.MeshBuilder.CreateSphere('hand',{diameter:0.17},sc);
+    hand.position=new BABYLON.Vector3(s*0.5,-0.06,0);hand.material=mat(skinC,0.12);hand.parent=g;
+  });
+
+  // Cou
+  var neck=BABYLON.MeshBuilder.CreateCylinder('neck',{height:0.22,diameter:0.18},sc);
+  neck.position.y=0.98;neck.material=mat(skinC,0.12);neck.parent=g;
+
+  // Tête
+  var head=BABYLON.MeshBuilder.CreateSphere('head',{diameter:0.52,segments:16},sc);
+  head.scaling=new BABYLON.Vector3(1,1.08,0.92);head.position.y=1.3;head.material=mat(skinC,0.1);head.parent=g;
+
+  // Yeux
+  [-1,1].forEach(function(s){
+    var ew=BABYLON.MeshBuilder.CreateSphere('ew',{diameter:0.11},sc);ew.position=new BABYLON.Vector3(s*0.12,1.32,0.23);ew.material=mat(new BABYLON.Color3(1,1,1),0.05);ew.parent=g;
+    var iris=BABYLON.MeshBuilder.CreateSphere('iris',{diameter:0.075},sc);iris.position=new BABYLON.Vector3(s*0.12,1.32,0.255);iris.material=mat(BABYLON.Color3.FromHexString(EYES[AV.eye]),0.05);iris.parent=g;
+    var pupil=BABYLON.MeshBuilder.CreateSphere('pupil',{diameter:0.044},sc);pupil.position=new BABYLON.Vector3(s*0.12,1.32,0.27);pupil.material=mat(new BABYLON.Color3(0.03,0.03,0.04),0);pupil.parent=g;
+  });
+
+  // Nez + lèvres
+  var nose=BABYLON.MeshBuilder.CreateSphere('nose',{diameter:0.09},sc);nose.scaling=new BABYLON.Vector3(0.7,0.8,1.1);nose.position.set(0,1.22,0.27);nose.material=mat(skinC,0.1);nose.parent=g;
+  var lip=BABYLON.MeshBuilder.CreateBox('lip',{width:0.18,height:0.04,depth:0.06},sc);lip.position.set(0,1.17,0.27);lip.material=mat(BABYLON.Color3.FromHexString(LIPS[AV.lip]),0.05);lip.parent=g;
+
+  // Cheveux
+  if(AV.hairStyle!==4){
+    var hairTop=BABYLON.MeshBuilder.CreateSphere('ht',{diameter:0.54},sc);hairTop.scaling=new BABYLON.Vector3(1,0.68,0.92);hairTop.position.y=1.5;hairTop.material=mat(hairC,0.4);hairTop.parent=g;
+    var hairF=BABYLON.MeshBuilder.CreateSphere('hf',{diameter:0.36},sc);hairF.scaling=new BABYLON.Vector3(0.82,0.55,0.45);hairF.position.set(0,1.38,0.22);hairF.material=mat(hairC,0.4);hairF.parent=g;
+    [-1,1].forEach(function(s){var hs=BABYLON.MeshBuilder.CreateSphere('hs',{diameter:0.3},sc);hs.scaling=new BABYLON.Vector3(0.45,0.62,0.72);hs.position.set(s*0.26,1.3,0.02);hs.material=mat(hairC,0.4);hs.parent=g;});
+    if(AV.hairStyle>=2){var tail=BABYLON.MeshBuilder.CreateCylinder('tail',{height:0.5,diameter:0.14},sc);tail.position.set(0,1.1,-0.26);tail.material=mat(hairC,0.4);tail.parent=g;}
+  }
+
+  _avMesh=g;
+}
+
+function refreshAvMesh(){if(_avScene2)buildAvMesh();}
+
+function buildSwatches(id,colors,names,key){
+  var el=document.getElementById(id);if(!el)return;el.innerHTML='';
+  colors.forEach(function(c,i){
+    var d=document.createElement('div');d.className='av-swatch'+(AV[key]===i?' on':'');
+    d.style.background=c;d.title=names[i];
+    d.onclick=function(){AV[key]=i;buildSwatches(id,colors,names,key);refreshAvMesh();};
+    el.appendChild(d);
+  });
+}
+function buildGrid(id,items,names,key){
+  var el=document.getElementById(id);if(!el)return;el.innerHTML='';
+  items.forEach(function(ico,i){
+    var d=document.createElement('div');d.className='av-gitem'+(AV[key]===i?' on':'');
+    d.innerHTML=ico+'<span>'+names[i]+'</span>';
+    d.onclick=function(){AV[key]=i;buildGrid(id,items,names,key);refreshAvMesh();};
+    el.appendChild(d);
+  });
+}
+function buildEditorUI(){
+  buildSwatches('skinSw',SKINS,SKIN_N,'skin');
+  buildSwatches('eyeSw',EYES,EYE_N,'eye');
+  buildSwatches('lipSw',LIPS,LIP_N,'lip');
+  buildGrid('hairStyleG',HSTYLES,HSTYLE_N,'hairStyle');
+  buildSwatches('hairColSw',HCOLS,HCOL_N,'hairColor');
+  buildGrid('topG',TOPS,TOP_N,'top');
+  buildSwatches('topColSw',TCOLS,TCOL_N,'topColor');
+  buildGrid('botG',BOTS,BOT_N,'bottom');
+  buildGrid('glassG',GLASSES,GLASS_N,'glasses');
+  buildGrid('hatG',HATS,HAT_N,'hat');
+  buildGrid('beardG',BEARDS,BEARD_N,'beard');
+}
+function avTab(idx,el){
+  document.querySelectorAll('#avScreen .av-tab').forEach(function(t){t.classList.remove('on');});
+  el.classList.add('on');
+  for(var i=0;i<4;i++){var p=document.getElementById('avP'+i);if(p)p.style.display=i===idx?'block':'none';}
+}
+
+// ═══════════════════════════════
+// DÉMARRAGE
+// ═══════════════════════════════
+window.addEventListener('load',function(){
+  stepLoad('INITIALISATION...');
+  setTimeout(initGame,200);
+});
 </script>
 
 </body>
