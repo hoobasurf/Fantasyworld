@@ -3,47 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Lilo & Stitch Island</title>
+<title>Stitch Island Adventure</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#1a0830}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0518}
 #cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
-#loading{position:fixed;inset:0;background:linear-gradient(180deg,#1a0830,#3a1860);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-#loading h1{font-family:Georgia,serif;font-size:22px;color:#ffb8d8;letter-spacing:5px}
-#loading p{font-size:10px;color:rgba(255,184,216,.45);letter-spacing:3px}
-.bw{width:220px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
-.bf{height:100%;background:linear-gradient(90deg,#ffb8d8,#ffd06a);border-radius:2px;transition:width .25s}
+#loading{position:fixed;inset:0;background:linear-gradient(180deg,#0a0518,#1a0830);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#loading h1{font-family:Georgia,serif;font-size:20px;color:#ffb8d8;letter-spacing:4px}
+#loading p{font-size:9px;color:rgba(255,184,216,.45);letter-spacing:3px}
+.bw{width:200px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+.bf{height:100%;background:linear-gradient(90deg,#ffb8d8,#ffd06a);border-radius:2px;transition:width .2s}
 #stepTxt{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:2px}
-#hud{position:fixed;top:12px;left:0;right:0;display:none;justify-content:space-between;padding:0 14px;pointer-events:none;z-index:20}
-.pill{background:rgba(0,0,15,.75);border-radius:20px;padding:5px 13px;font-family:Georgia,serif;font-size:10px;color:#ffd06a;border:1.5px solid rgba(255,208,106,.3)}
-#zone{position:fixed;bottom:82px;left:130px;pointer-events:none;z-index:20;display:none}
-#joy{position:fixed;left:16px;bottom:82px;z-index:30;width:110px;height:110px;border-radius:50%;background:rgba(0,0,0,.25);border:3px solid rgba(255,208,106,.5);touch-action:none}
-#jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,rgba(255,220,80,.8),rgba(180,80,0,.9));border:3px solid #ffd06a}
-#btns{position:fixed;right:14px;bottom:82px;z-index:30;display:flex;flex-direction:column;gap:8px}
-.btn{width:56px;height:56px;border-radius:50%;background:rgba(0,0,20,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:9px;cursor:pointer;touch-action:manipulation;border:3px solid rgba(255,255,255,.2)}
-#toast{position:fixed;top:54px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;z-index:80;background:rgba(0,0,20,.92);border:2px solid #ffd06a;border-radius:20px;padding:7px 18px;color:#ffd06a;font-size:11px;font-family:Georgia,serif;white-space:nowrap;pointer-events:none;transition:all .2s}
+/* HUD */
+#hud{position:fixed;top:10px;left:0;right:0;display:none;justify-content:space-between;padding:0 12px;pointer-events:none;z-index:20}
+.pill{background:rgba(0,0,15,.78);border-radius:18px;padding:5px 12px;font-family:Georgia,serif;font-size:9px;color:#ffd06a;border:1.5px solid rgba(255,208,106,.3)}
+/* Joystick */
+#joy{position:fixed;left:14px;bottom:78px;z-index:30;width:108px;height:108px;border-radius:50%;background:rgba(0,0,0,.28);border:3px solid rgba(255,208,106,.45);touch-action:none}
+#jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,rgba(255,220,80,.85),rgba(180,80,0,.92));border:3px solid #ffd06a}
+/* Boutons */
+#btns{position:fixed;right:14px;bottom:78px;z-index:30;display:flex;flex-direction:column;gap:7px}
+.btn{width:54px;height:54px;border-radius:50%;background:rgba(0,0,20,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:8px;cursor:pointer;touch-action:manipulation;border:2.5px solid rgba(255,255,255,.2)}
+/* Panneau énigme */
+#puzzle{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:50;background:rgba(0,0,0,.65)}
+#puzzleBox{background:linear-gradient(180deg,#3a2010,#1e1008);border:3px solid #8b5a2b;border-radius:12px;padding:22px;max-width:320px;width:90%;text-align:center;font-family:Georgia,serif;color:#ffd06a;box-shadow:0 0 40px rgba(0,0,0,.8)}
+#puzzleBox h2{font-size:14px;margin-bottom:12px;color:#ffb870;letter-spacing:2px}
+#puzzleBox p{font-size:11px;color:rgba(255,208,106,.8);margin-bottom:14px;line-height:1.6}
+.pzBtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.pzBtn{padding:8px 14px;background:rgba(139,90,43,.4);border:1.5px solid #8b5a2b;border-radius:8px;color:#ffd06a;font-family:Georgia,serif;font-size:11px;cursor:pointer;transition:background .15s}
+.pzBtn:hover,.pzBtn:active{background:rgba(139,90,43,.8)}
+.pzBtn.correct{border-color:#4aff7a;color:#4aff7a}
+.pzBtn.wrong{border-color:#ff4a4a;color:#ff4a4a}
+#dirBtns{display:flex;gap:10px;justify-content:center;margin-top:10px}
+.dirBtn{padding:9px 18px;background:rgba(40,100,40,.4);border:1.5px solid #4a9a4a;border-radius:8px;color:#7aff7a;font-family:Georgia,serif;font-size:12px;cursor:pointer}
+.dirBtn:active{background:rgba(40,100,40,.8)}
+/* Toast */
+#toast{position:fixed;top:52px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;z-index:80;background:rgba(0,0,20,.94);border:2px solid #ffd06a;border-radius:18px;padding:7px 16px;color:#ffd06a;font-size:10px;font-family:Georgia,serif;white-space:nowrap;pointer-events:none;transition:all .18s}
 #toast.show{transform:translateX(-50%) scale(1);opacity:1}
+/* Victoire */
+#victory{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:90;background:rgba(0,100,200,.4)}
+#victoryBox{background:linear-gradient(180deg,#0a3060,#051830);border:3px solid #7de8ff;border-radius:16px;padding:28px;text-align:center;font-family:Georgia,serif;color:#7de8ff;max-width:300px}
+#victoryBox h1{font-size:22px;letter-spacing:3px;margin-bottom:12px;color:#ffd06a}
+#victoryBox p{font-size:12px;line-height:1.7;color:rgba(125,232,255,.85)}
 </style>
 </head>
 <body>
 <div id="loading">
-  <h1>LILO &amp; STITCH ISLAND</h1>
-  <p>HAWAII — ALOHA</p>
+  <h1>STITCH ISLAND</h1>
+  <p>HAWAII ADVENTURE</p>
   <div class="bw"><div class="bf" id="bf" style="width:2%"></div></div>
   <div id="stepTxt">CHARGEMENT...</div>
 </div>
 <canvas id="cv"></canvas>
+
 <div id="hud">
-  <div class="pill">&#127796; HAWAII</div>
-  <div class="pill">&#128100; STITCH</div>
-  <div class="pill" id="dnBtn" onclick="toggleDN()" style="pointer-events:all;cursor:pointer">&#9790; NUIT</div>
+  <div class="pill" id="zoneLbl">&#127807; JUNGLE</div>
+  <div class="pill" id="cluesLbl">&#128270; Indices: 0/6</div>
 </div>
-<div id="zone"><div class="pill" id="zoneTxt">&#127944; PLAGE</div></div>
+
 <div id="joy"><div id="jnub"></div></div>
 <div id="btns">
   <div class="btn" style="border-color:#7de8ff;color:#7de8ff" ontouchstart="doJump(event)" onclick="doJump()">&#8679;<br>JUMP</div>
-  <div class="btn" style="border-color:#ffd700;color:#ffd700" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">&#9889;<br>RUN</div>
+  <div class="btn" style="border-color:#ff9944;color:#ff9944" id="interactBtn" onclick="tryInteract()" ontouchstart="tryInteract()">&#10003;<br>OK</div>
 </div>
+
+<!-- Panneau énigme -->
+
+<div id="puzzle">
+  <div id="puzzleBox">
+    <h2 id="pzTitle">&#127795; PANNEAU MYSTERIEUX</h2>
+    <p id="pzText"></p>
+    <div id="pzContent"></div>
+    <div id="dirBtns" style="display:none">
+      <div class="dirBtn" onclick="choosePath('left')">&#8592; GAUCHE</div>
+      <div class="dirBtn" onclick="choosePath('forward')">&#8593; TOUT DROIT</div>
+      <div class="dirBtn" onclick="choosePath('right')">&#8594; DROITE</div>
+    </div>
+  </div>
+</div>
+
+<!-- Victoire -->
+
+<div id="victory">
+  <div id="victoryBox">
+    <h1>&#127754; OHANA!</h1>
+    <p>Tu as trouvé la plage !<br><br>Stitch retrouve l'océan d'Hawaii.<br>Ohana means family &#128153;</p>
+    <br>
+    <div class="dirBtn" onclick="restartGame()" style="display:inline-block;margin:0 auto">&#8635; REJOUER</div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -66,500 +114,530 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0830}
 </script>
 
 <script>
+// ── DONNÉES DU JEU ──
+// Labyrinthe : chemin principal avec 6 carrefours
+// Chaque carrefour a une position, une énigme, et 3 sorties (gauche, tout_droit, droite)
+// Une seule direction est correcte (mène vers la sortie)
+
+var MAZE_DATA = {
+  start: {x:0, z:0, nextCarrefour: 0},
+  carrefours: [
+    {
+      id:0, x:0, z:-18, yaw:0,
+      enigme: {
+        type:'symboles', // Mémoriser séquence
+        titre:'PANNEAU BOIS #1',
+        texte:'Les symboles hawaiiens indiquent le chemin.\nMémorise la séquence : 🌺 🐚 🌴\nQuelle est la 2ème figure ?',
+        choix:['🌺 Hibiscus','🐚 Coquillage','🌴 Palmier'],
+        bonne:1, // index 1 = coquillage
+        message:'La mer appelle... Continue tout droit !'
+      },
+      correct:'forward', left:{x:-12,z:-18}, forward:{x:0,z:-36}, right:{x:12,z:-18},
+      nextCorrect:1, nextWrong_desc:'Impasse végétation!'
+    },
+    {
+      id:1, x:0, z:-36, yaw:0,
+      enigme: {
+        type:'couleurs',
+        titre:'PANNEAU BOIS #2',
+        texte:'Les fleurs hawaiiennes ont des couleurs.\nL\'hibiscus jaune indique le SOLEIL.\nL\'hibiscus rouge indique le DANGER.\nQuelle couleur choisir pour aller vers l\'océan ?',
+        choix:['🌺 Rouge - Danger','🌻 Jaune - Soleil','💜 Violet - Mystère'],
+        bonne:1,
+        message:'Le soleil guide vers la mer !'
+      },
+      correct:'right', left:{x:-14,z:-36}, forward:{x:0,z:-52}, right:{x:14,z:-36},
+      nextCorrect:2, nextWrong_desc:'Impasse!'
+    },
+    {
+      id:2, x:14, z:-36, yaw:-Math.PI/2,
+      enigme: {
+        type:'rotation',
+        titre:'PANNEAU BOIS #3',
+        texte:'Tourne les blocs pour former une flèche !\nLa flèche doit pointer vers L\'OCEAN.\nQuelle direction pointe vers la mer bleue ?',
+        choix:['⬆ Nord - Montagne','⬇ Sud - Jungle','➡ Est - Mer bleue'],
+        bonne:2,
+        message:'La mer est à l\'Est ! En avant !'
+      },
+      correct:'forward', left:{x:14,z:-20}, forward:{x:28,z:-36}, right:{x:14,z:-52},
+      nextCorrect:3, nextWrong_desc:'Impasse!'
+    },
+    {
+      id:3, x:28, z:-36, yaw:-Math.PI/2,
+      enigme: {
+        type:'symboles',
+        titre:'PANNEAU BOIS #4',
+        texte:'Stitch cherche l\'océan...\nLe signe de l\'eau ressemble à des vagues ~\nLequel de ces symboles représente l\'eau ?',
+        choix:['∧∧∧ Montagnes','≈≈≈ Vagues d\'eau','▲▲▲ Arbres'],
+        bonne:1,
+        message:'Les vagues ! L\'océan est proche !'
+      },
+      correct:'right', left:{x:28,z:-22}, forward:{x:44,z:-36}, right:{x:28,z:-50},
+      nextCorrect:4, nextWrong_desc:'Impasse!'
+    },
+    {
+      id:4, x:28, z:-50, yaw:Math.PI,
+      enigme: {
+        type:'couleurs',
+        titre:'PANNEAU BOIS #5',
+        texte:'Presque arrivé !\nLe ciel à l\'horizon est :\nBLEU = océan devant\nROSE = retour arrière\nVERT = jungle\nVers où aller ?',
+        choix:['🔵 Bleu - Océan','🌸 Rose - Arrière','🟢 Vert - Jungle'],
+        bonne:0,
+        message:'Oui ! L\'océan bleu est devant !'
+      },
+      correct:'forward', left:{x:14,z:-50}, forward:{x:28,z:-64}, right:{x:42,z:-50},
+      nextCorrect:5, nextWrong_desc:'Impasse!'
+    },
+    {
+      id:5, x:28, z:-64, yaw:Math.PI,
+      enigme: {
+        type:'rotation',
+        titre:'PANNEAU BOIS #6 - DERNIER !',
+        texte:'Dernier carrefour !\nLa boussole magique tourne...\nNord=Montagne, Sud=Fusée, Est=Jungle, OUEST=PLAGE\nVers quelle direction ?',
+        choix:['⬆ Nord - Montagne','⬅ Ouest - Plage','⬇ Sud - Fusée'],
+        bonne:1,
+        message:'LA PLAGE ! OHANA !'
+      },
+      correct:'left', left:{x:14,z:-64}, forward:{x:28,z:-80}, right:{x:42,z:-64},
+      nextCorrect:'VICTORY', nextWrong_desc:'Impasse!'
+    }
+  ]
+};
+
+// État du jeu
+var gameState = {
+  currentCarrefour: -1,  // -1 = pas encore arrivé au premier
+  cluesSolved: 0,
+  nearCarrefour: null,
+  atVictory: false,
+  wrongPaths: {} // chemins bloqués
+};
+
+var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
+
+// ── BABYLON ──
 window.startGame=function(){
 'use strict';
 var B=BABYLON;
-var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
 
 var bfEl=document.getElementById('bf');
 function step(p,t){bfEl.style.width=p+'%';if(t)document.getElementById('stepTxt').textContent=t;}
-function toast(m){var t=document.getElementById('toast');t.textContent=m;t.className='show';clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='';},3000);}
-function showGame(){document.getElementById('loading').style.display='none';document.getElementById('hud').style.display='flex';document.getElementById('zone').style.display='block';}
+function toast(m,dur){var t=document.getElementById('toast');t.textContent=m;t.className='show';clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='';},dur||3000);}
+function showGame(){document.getElementById('loading').style.display='none';document.getElementById('hud').style.display='flex';}
 
-var P={x:0,y:0,z:0,vx:0,vy:0,vz:0,yaw:0,onGround:true,inWater:false};
+// ── JOUEUR ──
+var P={x:0,y:0,z:2,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:true};
 var pRoot=null,pYOff=0,pAnims={},curAnim=null;
-var jLX=0,jLY=0,KY={};
-var CAM={yaw:Math.PI,pitch:.12,dist:6}; // caméra basse derrière Stitch
-var night=false,sprint=false;
-var waveT=0,lastT=performance.now();
-var waveRings=[],colCircles=[];
-var ISLAND_R=80; // grande île
-var WATER_Y=-.3; // niveau eau
+var jLX=0,jLY=0,KY={},jid=-1;
+var sprint=false,waveT=0,lastT=performance.now();
+// Murs de collision (boîtes AABB)
+var walls=[]; // {x1,z1,x2,z2} boîtes infranchissables
+var interactZones=[]; // {x,z,r,id} zones interaction
 
 var cv=document.getElementById('cv');
 var eng=new B.Engine(cv,true,{antialias:true,stencil:true,adaptToDeviceRatio:true},true);
 var sc=new B.Scene(eng);
-sc.clearColor=new B.Color4(.85,.58,.78,1);
-// Brouillard linéaire — jungle cache la plage
+sc.clearColor=new B.Color4(.82,.55,.75,1);
 sc.fogMode=B.Scene.FOGMODE_LINEAR;
-sc.fogStart=55;sc.fogEnd=130;
-sc.fogColor=new B.Color3(.7,.55,.72);
+sc.fogStart=22;sc.fogEnd=55;
+sc.fogColor=new B.Color3(.68,.52,.68);
 
-var cam=new B.FreeCamera('cam',new B.Vector3(0,8,12),sc);
-cam.minZ=.1;cam.maxZ=600;cam.fov=1.0;
+var cam=new B.FreeCamera('cam',new B.Vector3(0,4,10),sc);
+cam.minZ=.1;cam.maxZ=300;cam.fov=.95;
 cam.inputs.clear();
 
-step(6,'LUMIERES CARTOON...');
+step(6,'LUMIERES...');
 
-// Lumière principale — soleil chaud coucher
-var sun=new B.DirectionalLight('sun',new B.Vector3(-.35,-1,.2),sc);
-sun.position=new B.Vector3(-80,140,50);
-sun.intensity=2.8;
-sun.diffuse=new B.Color3(1.0,.80,.52);
-sun.specular=new B.Color3(0,0,0); // pas de specular = style cartoon
-
+var sun=new B.DirectionalLight('sun',new B.Vector3(-.3,-1,.15),sc);
+sun.intensity=2.6;sun.diffuse=new B.Color3(1,.82,.5);sun.specular=new B.Color3(0,0,0);
 var shadows=null;
 try{
-  shadows=new B.ShadowGenerator(2048,sun);
-  // Ombres nettes style cartoon
-  shadows.usePoissonSampling=true;
-  shadows.darkness=.55; // ombre foncée cartoon
-  shadows.transparencyShadow=true;
+  shadows=new B.ShadowGenerator(1024,sun);
+  shadows.usePoissonSampling=true;shadows.darkness=.5;
 }catch(e){}
-
-// Lumière ambiante rose/mauve ciel Lilo & Stitch
 var sky=new B.HemisphericLight('sky',new B.Vector3(0,1,0),sc);
-sky.intensity=.75;
-sky.diffuse=new B.Color3(.90,.70,.85);
-sky.groundColor=new B.Color3(.65,.48,.28);
-sky.specular=new B.Color3(0,0,0);
-
+sky.intensity=.72;sky.diffuse=new B.Color3(.88,.68,.82);sky.groundColor=new B.Color3(.55,.42,.22);sky.specular=new B.Color3(0,0,0);
 var fill=new B.PointLight('fill',new B.Vector3(0,3,0),sc);
-fill.intensity=.22;fill.range=9;
-fill.diffuse=new B.Color3(1,.82,.5);
+fill.intensity=.2;fill.range=8;fill.diffuse=new B.Color3(1,.82,.5);
 
-step(14,'CEL-SHADING...');
-
-// ── CEL SHADER CARTOON ──
-// Crée un material avec cel-shading via CustomMaterial ou ShaderMaterial
-function celMat(name,diffCol,outlineCol,outlineW){
-  outlineW=outlineW||.04;
-  var mat=new B.StandardMaterial(name,sc);
-  mat.diffuseColor=diffCol||new B.Color3(1,1,1);
-  mat.specularColor=new B.Color3(0,0,0);
-  mat.ambientColor=diffCol?diffCol.scale(.3):new B.Color3(.3,.3,.3);
-  return mat;
-}
-
-// Contour noir cartoon via mesh dupliqué légèrement agrandi
-function addOutline(mesh,w,col){
-  w=w||.04;
-  try{
-    mesh.outlineColor=col||new B.Color3(0,0,0);
-    mesh.outlineWidth=w;
-    mesh.renderOutline=true;
-  }catch(e){}
-}
-
-step(20,'CIEL LILO & STITCH...');
+step(12,'CIEL...');
 
 // Dôme ciel coucher de soleil
-var skyDome=B.MeshBuilder.CreateSphere('skyD',{diameter:1000,segments:8},sc);
+var skyDome=B.MeshBuilder.CreateSphere('skyD',{diameter:600,segments:7},sc);
 skyDome.flipFaces(true);
 var skyMat=new B.StandardMaterial('skyMat',sc);
 skyMat.backFaceCulling=false;skyMat.disableLighting=true;
-var skyDyn=new B.DynamicTexture('sdt',{width:4,height:512},sc,false);
+var skyDyn=new B.DynamicTexture('sdt',{width:4,height:256},sc,false);
 (function(){
-  var ctx=skyDyn.getContext();
-  var c=document.createElement('canvas');c.width=4;c.height=512;
-  var cx=c.getContext('2d');
-  var g=cx.createLinearGradient(0,0,0,512);
-  g.addColorStop(0,'#3322aa');
-  g.addColorStop(.2,'#7744cc');
-  g.addColorStop(.45,'#dd7aaa');
-  g.addColorStop(.65,'#f09040');
-  g.addColorStop(.82,'#f8d060');
-  g.addColorStop(1,'#ffe0c0');
-  cx.fillStyle=g;cx.fillRect(0,0,4,512);
-  ctx.drawImage(c,0,0);skyDyn.update(false);
+  var ctx=skyDyn.getContext(),c=document.createElement('canvas');c.width=4;c.height=256;
+  var cx=c.getContext('2d'),g=cx.createLinearGradient(0,0,0,256);
+  g.addColorStop(0,'#2a1a88');g.addColorStop(.22,'#6a38b8');g.addColorStop(.48,'#d870a0');
+  g.addColorStop(.68,'#f08030');g.addColorStop(.84,'#f8d055');g.addColorStop(1,'#ffe0b0');
+  cx.fillStyle=g;cx.fillRect(0,0,4,256);ctx.drawImage(c,0,0);skyDyn.update(false);
 })();
 skyMat.emissiveTexture=skyDyn;skyMat.emissiveTexture.uScale=1;skyMat.emissiveTexture.vScale=1;
 skyDome.material=skyMat;
 
-// Nuages cartoon arrondis style Disney
+// Nuages cartoon
 function makeCloud(x,y,z,s){
-  var cMat=new B.StandardMaterial('cM'+Math.random(),sc);
-  cMat.diffuseColor=new B.Color3(1,.96,.98);
-  cMat.emissiveColor=new B.Color3(.85,.78,.88);
-  cMat.specularColor=new B.Color3(0,0,0);
-  var parts=[[0,0,0,1],[.55,.18,0,.75],[-.55,.12,0,.7],[.28,.42,0,.62],[-.22,.38,0,.58],[.8,0,0,.58],[-.8,.04,0,.54],[.0,.5,0,.5]];
-  parts.forEach(function(b){
-    var cb=B.MeshBuilder.CreateSphere('cb',{diameter:s*b[3]*2,segments:6},sc);
-    cb.material=cMat;cb.position.set(x+b[0]*s,y+b[1]*s,z+b[2]*s);
-    addOutline(cb,.015,new B.Color3(.6,.5,.7));
+  var cm=new B.StandardMaterial('cm',sc);cm.diffuseColor=new B.Color3(1,.96,.98);cm.emissiveColor=new B.Color3(.82,.75,.84);cm.specularColor=new B.Color3(0,0,0);
+  [[0,0,0,1],[.5,.18,0,.75],[-.5,.12,0,.7],[.25,.42,0,.6],[-.2,.38,0,.55],[.75,0,0,.55],[-.75,.04,0,.5]].forEach(function(b){
+    var cb=B.MeshBuilder.CreateSphere('cb',{diameter:s*b[3]*2,segments:5},sc);
+    cb.material=cm;cb.position.set(x+b[0]*s,y+b[1]*s,z+b[2]*s);
+    cb.outlineColor=new B.Color3(.5,.44,.55);cb.outlineWidth=.012;cb.renderOutline=true;
   });
 }
-[[-50,38,-160,16],[15,42,-150,14],[90,35,-140,12],[-90,32,-130,13],
- [0,46,-170,18],[-40,30,-110,11],[55,33,-125,13],[130,28,-120,10],
- [40,50,-180,15],[-70,36,-145,12]
-].forEach(function(c){makeCloud(c[0],c[1],c[2],c[3]);});
+[[-40,32,-120,13],[20,36,-110,11],[80,29,-100,10],[-80,28,-90,10],[0,40,-130,15],[50,30,-95,10]].forEach(function(c){makeCloud(c[0],c[1],c[2],c[3]);});
 
-// Montagnes silhouettes bleues au loin
+// Montagnes lointaines
 function makeMtn(x,z,h,w){
-  var mt=B.MeshBuilder.CreateCylinder('mt',{height:h,diameterTop:1,diameterBottom:w,tessellation:5},sc);
-  var mtMat=new B.StandardMaterial('mtM',sc);
-  mtMat.diffuseColor=new B.Color3(.28,.36,.55);
-  mtMat.emissiveColor=new B.Color3(.18,.24,.40);
-  mtMat.specularColor=new B.Color3(0,0,0);
-  mt.material=mtMat;mt.position.set(x,h*.35,z);
-  addOutline(mt,.03,new B.Color3(.1,.15,.25));
+  var mt=B.MeshBuilder.CreateCylinder('mt',{height:h,diameterTop:.5,diameterBottom:w,tessellation:5},sc);
+  var mm=new B.StandardMaterial('mm',sc);mm.diffuseColor=new B.Color3(.28,.34,.52);mm.emissiveColor=new B.Color3(.16,.22,.38);mm.specularColor=new B.Color3(0,0,0);
+  mt.material=mm;mt.position.set(x,h*.3,z);
 }
-[[-90,-170,30,22],[80,-160,26,18],[130,-145,22,16],[-110,-135,24,18],
- [45,-175,28,20],[65,-158,20,14],[-55,-155,25,18],[160,-130,18,14]
-].forEach(function(m){makeMtn(m[0],m[1],m[2],m[3]);});
+[[-80,-160,28,20],[70,-155,24,17],[120,-140,20,15],[-100,-130,22,17],[40,-170,26,18]].forEach(function(m){makeMtn(m[0],m[1],m[2],m[3]);});
 
-step(28,'GRANDE ILE...');
+step(22,'SOL & CHEMINS...');
 
-// Grande île — jungle dense au centre, plage loin autour
-var TSIZE=200,TSUB=80;
-var terrain=B.MeshBuilder.CreateGround('terrain',{width:TSIZE,height:TSIZE,subdivisions:TSUB,updatable:true},sc);
+// ── SOL ──
+// Grande étendue herbe verte cartoon
+var ground=B.MeshBuilder.CreateGround('gnd',{width:300,height:300,subdivisions:2},sc);
+var gMat=new B.StandardMaterial('gMat',sc);
+gMat.diffuseColor=new B.Color3(.22,.68,.18);gMat.ambientColor=new B.Color3(.08,.25,.06);gMat.specularColor=new B.Color3(0,0,0);
+ground.material=gMat;ground.position.y=-.02;ground.receiveShadows=true;
 
-function noise2(x,z,f){
-  var xi=Math.floor(x*f),zi=Math.floor(z*f),xf=x*f-xi,zf=z*f-zi;
-  function h(a,b){return Math.sin(a*127.1+b*311.7)*.5+.5;}
-  var a=h(xi,zi),b=h(xi+1,zi),c=h(xi,zi+1),d=h(xi+1,zi+1);
-  var ux=xf*xf*(3-2*xf),uz=zf*zf*(3-2*zf);
-  return (a*(1-ux)+b*ux)*(1-uz)+(c*(1-ux)+d*ux)*uz;
-}
-function getH(wx,wz){
-  var dx=wx/TSIZE,dz=wz/TSIZE;
-  var dist=Math.sqrt(dx*dx+dz*dz)*2.2;
-  var island=Math.max(0,Math.pow(Math.max(0,1-dist),1.1));
-  var h=island*(
-    noise2(wx,wz,.018)*8+
-    noise2(wx,wz,.05)*4+
-    noise2(wx,wz,.12)*2+
-    noise2(wx,wz,.28)*.8
-  );
-  // Colline/montagne jungle centre
-  var mx=wx+8,mz=wz+10;
-  h+=Math.max(0,(1-Math.sqrt(mx*mx+mz*mz)/30))*16;
-  h=Math.max(0,h);
-  // Plage large = zone basse à la lisière
-  if(dist>0.72)h=Math.min(h,.18);
-  return h;
-}
+// Sable plage au loin
+var beachGnd=B.MeshBuilder.CreateGround('beach',{width:300,height:300,subdivisions:2},sc);
+var bMat=new B.StandardMaterial('bMat',sc);
+bMat.diffuseColor=new B.Color3(.96,.74,.32);bMat.ambientColor=new B.Color3(.4,.28,.1);bMat.specularColor=new B.Color3(0,0,0);
+beachGnd.material=bMat;beachGnd.position.set(0,-.03,-200);beachGnd.receiveShadows=true;
 
-var hCache={};
-var vpos=terrain.getVerticesData(B.VertexBuffer.PositionKind);
-for(var vi=0;vi<vpos.length;vi+=3){
-  var hv=getH(vpos[vi],vpos[vi+2]);
-  vpos[vi+1]=hv;
-  hCache[Math.round(vpos[vi]*3)+'_'+Math.round(vpos[vi+2]*3)]=hv;
-}
-terrain.updateVerticesData(B.VertexBuffer.PositionKind,vpos);
-terrain.bakeCurrentTransformIntoVertices();
+// ── CHEMINS DE SABLE ──
+// Chemin principal et branches du labyrinthe
+var pathMat=new B.StandardMaterial('pMat',sc);
+pathMat.diffuseColor=new B.Color3(.94,.70,.28);pathMat.ambientColor=new B.Color3(.40,.26,.08);pathMat.specularColor=new B.Color3(0,0,0);
 
-function terrH(wx,wz){
-  var k=Math.round(wx*3)+'_'+Math.round(wz*3);
-  return hCache[k]!==undefined?hCache[k]:getH(wx,wz);
-}
-
-// Matériau herbe vert vif cartoon
-var terrMat=new B.StandardMaterial('terrMat',sc);
-terrMat.diffuseColor=new B.Color3(.25,.72,.22);
-terrMat.ambientColor=new B.Color3(.1,.28,.08);
-terrMat.specularColor=new B.Color3(0,0,0);
-terrain.material=terrMat;terrain.receiveShadows=true;
-
-// Sable — couleur orange chaud cartoon style Lilo & Stitch
-var beach=B.MeshBuilder.CreateGround('beach',{width:400,height:400,subdivisions:2},sc);
-var beachMat=new B.StandardMaterial('beachMat',sc);
-beachMat.diffuseColor=new B.Color3(.96,.72,.32);
-beachMat.ambientColor=new B.Color3(.4,.28,.1);
-beachMat.specularColor=new B.Color3(0,0,0);
-beach.material=beachMat;beach.position.y=-.04;beach.receiveShadows=true;
-
-step(36,'EAU CARTOON...');
-
-// Eau — aplat bleu turquoise cartoon
-var ocean=B.MeshBuilder.CreateGround('ocean',{width:2000,height:2000,subdivisions:3},sc);
-var oceanMat=new B.StandardMaterial('oceanMat',sc);
-oceanMat.diffuseColor=new B.Color3(.22,.68,.88);
-oceanMat.ambientColor=new B.Color3(.08,.28,.40);
-oceanMat.emissiveColor=new B.Color3(.04,.14,.22);
-oceanMat.specularColor=new B.Color3(.5,.6,.7);
-oceanMat.specularPower=30;
-oceanMat.alpha=.88;
-ocean.material=oceanMat;ocean.position.y=WATER_Y;
-
-// Lagon translucide près de la plage
-var lagon=B.MeshBuilder.CreateCylinder('lagon',{height:.25,diameter:240,tessellation:64},sc);
-var lagonMat=new B.StandardMaterial('lagonMat',sc);
-lagonMat.diffuseColor=new B.Color3(.3,.82,.92);
-lagonMat.emissiveColor=new B.Color3(.05,.22,.32);
-lagonMat.specularColor=new B.Color3(0,0,0);
-lagonMat.alpha=.55;
-lagon.material=lagonMat;lagon.position.y=WATER_Y;
-
-// Vagues cartoon — cercles blancs
-for(var wi=0;wi<10;wi++){
-  var wR=B.MeshBuilder.CreateTorus('wv'+wi,{diameter:(85+wi*10)*2,thickness:.35,tessellation:80},sc);
-  var wMat=new B.StandardMaterial('wm'+wi,sc);
-  wMat.diffuseColor=new B.Color3(1,1,1);
-  wMat.emissiveColor=new B.Color3(.8,.9,1);
-  wMat.specularColor=new B.Color3(0,0,0);
-  wMat.alpha=.6-wi*.05;wMat.backFaceCulling=false;
-  wR.material=wMat;wR.position.y=WATER_Y+.05;wR.rotation.x=Math.PI/2;
-  waveRings.push({m:wR,ph:wi/10*Math.PI*2,spd:.7+Math.random()*.4});
-}
-
-step(44,'PALMIERS CARTOON...');
-
-// ── PALMIER STYLE LILO & STITCH ──
-// Tronc courbé reconnaissable + couronne large et verte
-function makePalm(x,z,h,leanX,leanZ){
-  var gh=terrH(x,z);
-  // Couleur tronc grise/beige cartoon
-  var trunkCol=new B.Color3(.72,.62,.48);
-
-  // Tronc en 10 segments bien courbés
-  var NS=10;
-  var pts=[new B.Vector3(x,gh,z)];
-  var cx2=x,cy=gh,cz2=z;
-  for(var i=1;i<=NS;i++){
-    var t=i/NS;
-    var curve=Math.pow(t,1.5)*1.8;
-    cx2+=leanX/NS*curve;
-    cy+=h/NS;
-    cz2+=leanZ/NS*curve;
-    pts.push(new B.Vector3(cx2,cy,cz2));
-  }
-  for(var i=0;i<NS;i++){
-    var p0=pts[i],p1=pts[i+1];
-    var diam=(.32-.022*i);
-    var seg=B.MeshBuilder.CreateCylinder('ts'+Math.random(),{
-      height:p0.subtract(p1).length()*1.05,
-      diameterTop:Math.max(.05,diam-.03),
-      diameterBottom:diam,
-      tessellation:7
-    },sc);
-    var tMat=celMat('tM'+Math.random(),trunkCol);
-    seg.material=tMat;
-    var mid=B.Vector3.Lerp(p0,p1,.5);
-    seg.position=mid.clone();
-    var dir=p1.subtract(p0).normalize();
-    var up=new B.Vector3(0,1,0);
-    var axis=B.Vector3.Cross(up,dir);
-    if(axis.length()>.001){axis.normalize();seg.rotate(axis,Math.acos(Math.min(1,B.Vector3.Dot(up,dir))),B.Space.WORLD);}
-    addOutline(seg,.025);
-    seg.receiveShadows=true;if(shadows)shadows.addShadowCaster(seg);
-  }
-
-  // Feuilles vertes vives — grandes et retombantes
-  var top=pts[NS];
-  var NL=10+Math.floor(Math.random()*4);
-  var leafGreen=new B.Color3(.22,.78,.18);
-  for(var i=0;i<NL;i++){
-    var ang=i/NL*Math.PI*2+(Math.random()-.5)*.25;
-    var ll=3.5+Math.random()*2.5;
-    var lf=B.MeshBuilder.CreateCylinder('lf'+Math.random(),{
-      height:ll,diameterTop:.04,diameterBottom:.28,tessellation:5
-    },sc);
-    var lfMat=celMat('lfM'+Math.random(),new B.Color3(.18+Math.random()*.15,.72+Math.random()*.25,.12+Math.random()*.1));
-    lf.material=lfMat;
-    var droop=.65+Math.random()*.45;
-    var lx=top.x+Math.sin(ang)*ll*.42;
-    var ly=top.y-droop;
-    var lz=top.z+Math.cos(ang)*ll*.42;
-    lf.position.set(lx,ly,lz);
-    lf.rotation.set(-droop*.82,ang,(Math.random()-.5)*.1);
-    addOutline(lf,.02,new B.Color3(0,.2,0));
-    if(shadows)shadows.addShadowCaster(lf);
-  }
-  // Boule verte au sommet (couronne dense)
-  var crown=B.MeshBuilder.CreateSphere('cr'+Math.random(),{diameter:h*.28,segments:7},sc);
-  var crMat=celMat('crM'+Math.random(),new B.Color3(.2,.75,.15));
-  crown.material=crMat;crown.position.set(top.x,top.y,top.z);
-  addOutline(crown,.03,new B.Color3(0,.15,0));
-  if(shadows)shadows.addShadowCaster(crown);
-
-  colCircles.push({x:x,z:z,r:.4});
-}
-
-// Palmiers — grande île, très nombreux, partout
-// Plage loin du centre (r > 25)
-var palmPositions=[];
-// Anneau plage extérieur
-for(var i=0;i<50;i++){
-  var a=i/50*Math.PI*2+(Math.random()-.5)*.2;
-  var r=28+Math.random()*18;
-  palmPositions.push([Math.sin(a)*r,Math.cos(a)*r,5+Math.random()*3,(Math.random()-.5)*1.2,(Math.random()-.5)*1.2]);
-}
-// Jungle intérieure dense
-for(var i=0;i<80;i++){
-  var a=Math.random()*Math.PI*2;
-  var r=2+Math.random()*24;
-  palmPositions.push([Math.sin(a)*r,Math.cos(a)*r,7+Math.random()*5,(Math.random()-.5)*.8,(Math.random()-.5)*.8]);
-}
-// Extra fond jungle
-for(var i=0;i<30;i++){
-  var a=Math.random()*Math.PI*2;
-  var r=5+Math.random()*18;
-  palmPositions.push([Math.sin(a)*r,Math.cos(a)*r,9+Math.random()*6,(Math.random()-.5)*.6,(Math.random()-.5)*.6]);
-}
-palmPositions.forEach(function(d){makePalm(d[0],d[1],d[2],d[3],d[4]);});
-
-step(58,'FORET...');
-
-// Arbres jungle — gros feuillages cartoon (bulles vertes)
-function makeTree(x,z,h,r){
-  var gh=terrH(x,z);if(gh<.1)return;
-  var trunk=B.MeshBuilder.CreateCylinder('tt'+Math.random(),{height:h,diameterTop:r*.18,diameterBottom:r*.3,tessellation:7},sc);
-  trunk.material=celMat('ttM',new B.Color3(.55,.42,.28));
-  trunk.position.set(x,gh+h/2,z);
-  addOutline(trunk,.03);
-  if(shadows)shadows.addShadowCaster(trunk);
-  // Feuillage en bulles cartoon
-  var cols=[new B.Color3(.2,.72,.15),new B.Color3(.16,.62,.12),new B.Color3(.24,.80,.18),new B.Color3(.28,.68,.20)];
-  [[0,h*.7,0,r],[r*.3,h*.55,0,r*.7],[-(r*.3),h*.6,0,r*.7],[0,h*.55,r*.3,r*.65],[0,h*.58,-(r*.3),r*.65],[0,h*.88,0,r*.6]].forEach(function(b){
-    var cr=B.MeshBuilder.CreateSphere('cr'+Math.random(),{diameter:b[3]*2,segments:7},sc);
-    cr.material=celMat('crM'+Math.random(),cols[Math.floor(Math.random()*cols.length)]);
-    cr.position.set(x+b[0],gh+b[1],z+b[2]);
-    cr.scaling.set(1,.8+Math.random()*.3,1);
-    addOutline(cr,.03,new B.Color3(0,.15,0));
-    cr.receiveShadows=true;if(shadows)shadows.addShadowCaster(cr);
-  });
-  colCircles.push({x:x,z:z,r:r*.5});
-}
-// Forêt dense — jungle hawaïenne
-for(var i=0;i<120;i++){
-  var a=Math.random()*Math.PI*2,r2=1+Math.random()*35;
-  var tx=Math.sin(a)*r2,tz=Math.cos(a)*r2;
-  makeTree(tx,tz,6+Math.random()*8,2+Math.random()*2.5);
-}
-
-// Buissons fleuris cartoon
-function makeFlowerBush(x,z,col,s){
-  var gh=terrH(x,z);if(gh<.08)return;
-  s=s||(.25+Math.random()*.35);
-  var b=B.MeshBuilder.CreateSphere('fb'+Math.random(),{diameter:s*2,segments:6},sc);
-  b.material=celMat('fbM'+Math.random(),col||new B.Color3(.3,.7,.2));
-  b.position.set(x,gh+s*.6,z);
-  b.scaling.set(.9+Math.random()*.4,.6+Math.random()*.3,.9+Math.random()*.4);
-  addOutline(b,.02);
-  if(shadows)shadows.addShadowCaster(b);
-}
-var flColors=[
-  new B.Color3(.25,.68,.18), new B.Color3(.3,.4,.95),
-  new B.Color3(.95,.2,.6),   new B.Color3(.95,.85,.1),
-  new B.Color3(.9,.3,.82),   new B.Color3(.98,.5,.1),
-  new B.Color3(.15,.8,.3),   new B.Color3(.85,.15,.85)
-];
-for(var i=0;i<300;i++){
-  var a=Math.random()*Math.PI*2,r2=.5+Math.random()*55;
-  makeFlowerBush(Math.sin(a)*r2,Math.cos(a)*r2,flColors[Math.floor(Math.random()*flColors.length)]);
-}
-
-// ── CHEMINS DE SABLE DANS LA JUNGLE ──
-// Plusieurs sentiers sinueux en sable orangé entre les arbres
-var sandPathMat=new B.StandardMaterial('pathMat',sc);
-sandPathMat.diffuseColor=new B.Color3(.96,.72,.30);
-sandPathMat.ambientColor=new B.Color3(.42,.28,.10);
-sandPathMat.specularColor=new B.Color3(0,0,0);
-
-function makePath(x0,z0,x1,z1,w){
-  // Chemin = série de disques plats le long d'une ligne
+function makeSandPath(x0,z0,x1,z1,w){
+  w=w||3.5;
   var dx=x1-x0,dz=z1-z0,len=Math.sqrt(dx*dx+dz*dz);
-  var steps=Math.floor(len/(w*.7));
+  var steps=Math.max(3,Math.floor(len/2.5));
   for(var si=0;si<=steps;si++){
     var t=si/steps;
-    // Légère sinuosité
-    var sway=Math.sin(t*Math.PI*3)*(w*.6);
-    var px=x0+dx*t+sway*(-(dz/len));
-    var pz=z0+dz*t+sway*(dx/len);
-    var gh=terrH(px,pz);
-    var disc=B.MeshBuilder.CreateCylinder('path'+Math.random(),{height:.08,diameter:w*1.6,tessellation:8},sc);
-    disc.material=sandPathMat;
-    disc.position.set(px,gh+.04,pz);
-    disc.receiveShadows=true;
+    var px=x0+dx*t,pz=z0+dz*t;
+    var disc=B.MeshBuilder.CreateCylinder('path',{height:.06,diameter:w*1.8,tessellation:8},sc);
+    disc.material=pathMat;disc.position.set(px,.04,pz);disc.receiveShadows=true;
   }
 }
 
-// Sentiers principaux qui traversent la jungle
-makePath(0,0, 18,22, 2.2);      // centre → plage nord-est
-makePath(0,0, -20,18, 2.0);     // centre → plage nord-ouest
-makePath(0,0, 20,-15, 2.2);     // centre → plage sud-est
-makePath(0,0, -18,-20, 2.0);    // centre → cascade
-makePath(0,0, -5,28, 1.8);      // centre → plage nord
-makePath(0,0, 8,-28, 1.8);      // centre → plage sud
-// Intersections intérieures
-makePath(5,8, -5,10, 1.6);
-makePath(-8,-5, 8,-6, 1.6);
-makePath(10,5, 10,-10, 1.5);
-makePath(-10,5, -10,-10, 1.5);
+// Chemin principal: départ → carrefours → sortie
+makeSandPath(0,4, 0,-16, 3.5);        // départ → C1
+makeSandPath(0,-16, 0,-20, 3.5);
+makeSandPath(0,-20, 0,-34, 3.5);      // C1 → C2
+makeSandPath(0,-34, 0,-38, 3.5);
+makeSandPath(0,-38, 12,-38, 3.5);     // C2 → droite → C3
+makeSandPath(12,-38, 16,-38, 3.5);
+makeSandPath(16,-38, 26,-38, 3.5);    // C3 → C4
+makeSandPath(26,-38, 30,-38, 3.5);
+makeSandPath(30,-38, 30,-48, 3.5);    // C4 → C5
+makeSandPath(30,-48, 30,-52, 3.5);
+makeSandPath(30,-52, 30,-62, 3.5);    // C5 → C6
+makeSandPath(30,-62, 30,-66, 3.5);
+makeSandPath(30,-66, 16,-66, 3.5);    // C6 → sortie (gauche)
+makeSandPath(16,-66, 0,-72, 3.5);     // vers plage
+makeSandPath(0,-72, 0,-90, 4);        // ouverture plage
 
-step(70,'ROCHERS VOLCANIQUES...');
-
-function makeRock(x,z,s,sy){
-  var gh=terrH(x,z);
-  var rk=B.MeshBuilder.CreateSphere('rk'+Math.random(),{diameter:s*2,segments:6},sc);
-  rk.material=celMat('rkM'+Math.random(),new B.Color3(.28,.25,.30));
-  rk.position.set(x,gh+s*sy*.35,z);
-  rk.scaling.set(.7+Math.random()*.5,sy,.7+Math.random()*.5);
-  rk.rotation.set(Math.random()*.2,(Math.random()-.5)*Math.PI,Math.random()*.15);
-  addOutline(rk,.04,new B.Color3(.05,.04,.06));
-  rk.receiveShadows=true;if(shadows)shadows.addShadowCaster(rk);
-  colCircles.push({x:x,z:z,r:s*.55});
+// Petites pierres sur le chemin (décoratif, pas de collision)
+var stoneMat=new B.StandardMaterial('stMat',sc);
+stoneMat.diffuseColor=new B.Color3(.58,.55,.52);stoneMat.specularColor=new B.Color3(.1,.1,.1);
+function makeStone(x,z,s){
+  var st=B.MeshBuilder.CreateSphere('stone',{diameter:s,segments:5},sc);
+  st.material=stoneMat;st.position.set(x,.08+s*.3,z);st.scaling.set(1,.45,1);
+  st.rotation.y=Math.random()*Math.PI;
+  if(shadows)shadows.addShadowCaster(st);
 }
-// Rochers noirs côté plage + jungle
-[[38,14,3.5,.45],[40,-12,3.8,.38],[36,-28,3,.52],[-38,12,3.5,.42],[-36,-15,3.2,.48],
- [-32,28,2.8,.42],[18,36,2.5,.48],[-20,35,2.8,.44],[18,-36,2.2,.52],[-22,-35,2.6,.44],
- // Côté gauche gros bloc (comme image)
- [-44,2,5.5,.5],[-46,8,6,.45],[-42,14,4.5,.52],[-48,5,5,.48],[-45,16,4,.55],
- // Petits rochers partout
- [22,6,1.3,.65],[20,-6,1.1,.70],[-22,5,1.2,.68],[-20,-7,.9,.72],
- [8,8,1,.65],[-8,-8,1.2,.6],[10,-5,.9,.7],[-10,6,1.05,.65]
-].forEach(function(r){makeRock(r[0],r[1],r[2],r[3]);});
+// Petites pierres le long des chemins
+[[0,-8,.4],[.8,-12,.3],[-.5,-25,.35],[.3,-28,.28],[14,-38,.38],[20,-38,.3],
+ [30,-43,.35],[30,-57,.4],[22,-66,.32],[8,-70,.38],[0,-80,.4],[-5,-78,.3]
+].forEach(function(s){makeStone(s[0],s[1],s[2]);});
 
-step(80,'PERSONNAGE...');
+step(34,'FUSEE ECRASEE...');
 
-// Stitch cartoon avec contours noirs
+// ── FUSÉE ÉCRASÉE QUI FUME ──
+var rocketMat=new B.StandardMaterial('rMat',sc);
+rocketMat.diffuseColor=new B.Color3(.72,.72,.78);rocketMat.specularColor=new B.Color3(.3,.3,.35);rocketMat.specularPower=20;
+
+// Corps fusée
+var rBody=B.MeshBuilder.CreateCylinder('rBody',{height:3,diameterTop:.5,diameterBottom:1.2,tessellation:9},sc);
+rBody.material=rocketMat;rBody.position.set(-4,.5,8);rBody.rotation.set(.6,0,.35);
+if(shadows)shadows.addShadowCaster(rBody);
+walls.push({x1:-6.5,z1:6,x2:-1.5,z2:10.5});
+
+// Nez
+var rNose=B.MeshBuilder.CreateCylinder('rNose',{height:1.2,diameterTop:.05,diameterBottom:.5,tessellation:9},sc);
+rNose.material=rocketMat;rNose.position.set(-4.8,2.1,6.8);rNose.rotation.set(.6,0,.35);
+
+// Ailerons cassés
+var finMat=new B.StandardMaterial('fMat',sc);
+finMat.diffuseColor=new B.Color3(.85,.3,.18);finMat.specularColor=new B.Color3(0,0,0);
+[0,1,-1].forEach(function(i){
+  var fin=B.MeshBuilder.CreateBox('fin',{width:.08,height:1.2,depth:.8},sc);
+  fin.material=finMat;fin.position.set(-4+i*.6,-.1,9.5);fin.rotation.set(.2,i*.4,.15+i*.3);
+  if(shadows)shadows.addShadowCaster(fin);
+});
+
+// Flammes/fumée (sphères animées oranges/grises)
+var smokeMeshes=[];
+var flameMat=new B.StandardMaterial('flameMat',sc);flameMat.diffuseColor=new B.Color3(.95,.45,.05);flameMat.emissiveColor=new B.Color3(.6,.2,.0);flameMat.specularColor=new B.Color3(0,0,0);
+var smokeMat=new B.StandardMaterial('smokeMat',sc);smokeMat.diffuseColor=new B.Color3(.5,.48,.46);smokeMat.emissiveColor=new B.Color3(.18,.16,.14);smokeMat.specularColor=new B.Color3(0,0,0);
+for(var si=0;si<12;si++){
+  var sp=B.MeshBuilder.CreateSphere('smoke',{diameter:.35+Math.random()*.3,segments:5},sc);
+  sp.material=si<4?flameMat:smokeMat;
+  sp.material.alpha=.7+Math.random()*.2;
+  smokeMeshes.push({m:sp,phase:Math.random()*Math.PI*2,spd:.8+Math.random()*.5,ox:-4.5+Math.random()-.5});
+}
+
+// Débris autour
+var debrMat=new B.StandardMaterial('dMat',sc);debrMat.diffuseColor=new B.Color3(.6,.58,.55);debrMat.specularColor=new B.Color3(.15,.15,.15);
+[[-5.5,1,7.5,.3],[-2.5,0,9,.25],[-6,0,9.2,.2],[-3,0,7,.2],[-5,0,10.5,.25]].forEach(function(d){
+  var db=B.MeshBuilder.CreateBox('db',{width:d[3]*2,height:d[3],depth:d[3]*1.5},sc);
+  db.material=debrMat;db.position.set(d[0],d[1],d[2]);db.rotation.set(Math.random()*.5,(Math.random()-.5)*Math.PI,Math.random()*.4);
+});
+
+step(46,'VEGETATION JUNGLE...');
+
+// ── VEGETATION — MUR INFRANCHISSABLE ──
+// Chaque plante/arbre a une boîte de collision ajoutée à walls[]
+
+var leafGreen=new B.Color3(.2,.72,.15);
+var darkGreen=new B.Color3(.12,.55,.1);
+var leafMat=new B.StandardMaterial('lfMat',sc);
+leafMat.diffuseColor=leafGreen;leafMat.ambientColor=new B.Color3(.06,.22,.04);leafMat.specularColor=new B.Color3(0,0,0);
+var trunkMat=new B.StandardMaterial('trMat',sc);
+trunkMat.diffuseColor=new B.Color3(.55,.42,.28);trunkMat.specularColor=new B.Color3(0,0,0);
+
+// Arbre avec collision
+function makeTree(x,z,h,r,addWall){
+  if(addWall!==false)walls.push({x1:x-r*.55,z1:z-r*.55,x2:x+r*.55,z2:z+r*.55});
+  var trunk=B.MeshBuilder.CreateCylinder('tr',{height:h,diameterTop:r*.18,diameterBottom:r*.28,tessellation:7},sc);
+  trunk.material=trunkMat;trunk.position.set(x,h/2,z);
+  trunk.outlineColor=new B.Color3(0,0,0);trunk.outlineWidth=.04;trunk.renderOutline=true;
+  if(shadows)shadows.addShadowCaster(trunk);
+  var cols=[new B.Color3(.18+Math.random()*.12,.68+Math.random()*.2,.12+Math.random()*.1),
+            new B.Color3(.14,.56,.1),new B.Color3(.24,.78,.18)];
+  [[0,h*.72,0,r],[r*.28,h*.56,0,r*.68],[-(r*.28),h*.58,0,r*.68],[0,h*.58,r*.28,r*.65],[0,h*.9,0,r*.55]].forEach(function(b){
+    var cr=B.MeshBuilder.CreateSphere('cr',{diameter:b[3]*2,segments:6},sc);
+    cr.material=new B.StandardMaterial('crm',sc);
+    cr.material.diffuseColor=cols[Math.floor(Math.random()*cols.length)];
+    cr.material.specularColor=new B.Color3(0,0,0);
+    cr.position.set(x+b[0],b[1],z+b[2]);cr.scaling.set(1,.78,1);
+    cr.outlineColor=new B.Color3(0,.1,0);cr.outlineWidth=.03;cr.renderOutline=true;
+    if(shadows)shadows.addShadowCaster(cr);
+  });
+}
+
+// Palmier avec collision
+function makePalm(x,z,h,lx,lz){
+  walls.push({x1:x-.45,z1:z-.45,x2:x+.45,z2:z+.45});
+  var NS=8,pts=[new B.Vector3(x,0,z)],cx2=x,cy=0,cz2=z;
+  for(var i=1;i<=NS;i++){var t=i/NS,bend=Math.pow(t,1.6)*1.5;cx2+=lx/NS*bend;cy+=h/NS;cz2+=lz/NS*bend;pts.push(new B.Vector3(cx2,cy,cz2));}
+  for(var i=0;i<NS;i++){
+    var p0=pts[i],p1=pts[i+1],d=(.28-.022*i);
+    var seg=B.MeshBuilder.CreateCylinder('ts',{height:p0.subtract(p1).length()*1.05,diameterTop:Math.max(.04,d-.03),diameterBottom:d,tessellation:7},sc);
+    seg.material=trunkMat;var mid=B.Vector3.Lerp(p0,p1,.5);seg.position=mid.clone();
+    var dir=p1.subtract(p0).normalize(),up=new B.Vector3(0,1,0),axis=B.Vector3.Cross(up,dir);
+    if(axis.length()>.001){axis.normalize();seg.rotate(axis,Math.acos(Math.min(1,B.Vector3.Dot(up,dir))),B.Space.WORLD);}
+    seg.outlineColor=new B.Color3(.15,.1,.05);seg.outlineWidth=.03;seg.renderOutline=true;
+    if(shadows)shadows.addShadowCaster(seg);
+  }
+  var top=pts[NS];
+  for(var i=0;i<9+Math.floor(Math.random()*4);i++){
+    var ang=i/9*Math.PI*2+(Math.random()-.5)*.3,ll=3+Math.random()*2;
+    var lf=B.MeshBuilder.CreateCylinder('lf',{height:ll,diameterTop:.03,diameterBottom:.24,tessellation:5},sc);
+    var lm=new B.StandardMaterial('lm',sc);lm.diffuseColor=new B.Color3(.18+Math.random()*.12,.70+Math.random()*.2,.12);lm.specularColor=new B.Color3(0,0,0);
+    lf.material=lm;var droop=.62+Math.random()*.4;
+    lf.position.set(top.x+Math.sin(ang)*ll*.44,top.y-droop,top.z+Math.cos(ang)*ll*.44);
+    lf.rotation.set(-droop*.8,ang,(Math.random()-.5)*.1);
+    lf.outlineColor=new B.Color3(0,.12,0);lf.outlineWidth=.02;lf.renderOutline=true;
+    if(shadows)shadows.addShadowCaster(lf);
+  }
+}
+
+// Buisson mur
+function makeBush(x,z,s,wall){
+  if(wall!==false)walls.push({x1:x-s*.8,z1:z-s*.8,x2:x+s*.8,z2:z+s*.8});
+  var b=B.MeshBuilder.CreateSphere('bu',{diameter:s*2,segments:6},sc);
+  var bm=new B.StandardMaterial('bm',sc);
+  bm.diffuseColor=new B.Color3(.18+Math.random()*.14,.62+Math.random()*.2,.12+Math.random()*.1);
+  bm.specularColor=new B.Color3(0,0,0);
+  b.material=bm;b.position.set(x,s*.6,z);b.scaling.set(1+Math.random()*.3,.58+Math.random()*.25,1+Math.random()*.3);
+  b.outlineColor=new B.Color3(0,.1,0);b.outlineWidth=.03;b.renderOutline=true;
+  if(shadows)shadows.addShadowCaster(b);
+}
+
+// ── PLACEMENT VEGETATION ──
+// Les plantes bordent le chemin — murs naturels des 2 côtés
+// Chemin principal axe Z (x=0, de z=4 à z=-18)
+var vegX,vegZ;
+for(var i=0;i<12;i++){
+  vegZ=-i*1.5+3;
+  // Gauche du chemin
+  makePalm(-4+Math.random()*.5,vegZ,5+Math.random()*3,(Math.random()-.5)*.8,(Math.random()-.5)*.5);
+  makeTree(-7+Math.random(),vegZ,6+Math.random()*4,2,true);
+  makeBush(-5.5+Math.random()*.5,vegZ-.5,.6+Math.random()*.4,true);
+  // Droite
+  makePalm(4+Math.random()*.5,vegZ,5+Math.random()*3,(Math.random()-.5)*.8,(Math.random()-.5)*.5);
+  makeTree(7+Math.random(),vegZ,6+Math.random()*4,2,true);
+  makeBush(5.5+Math.random()*.5,vegZ-.5,.6+Math.random()*.4,true);
+}
+
+// C1→C2 (x=0, z=-20 à -36)
+for(var i=0;i<9;i++){
+  vegZ=-20-i*1.8;
+  makePalm(-4.5+Math.random()*.4,vegZ,5.5+Math.random()*3,(Math.random()-.5)*.7,(Math.random()-.5)*.4);
+  makeTree(-8+Math.random(),vegZ,7+Math.random()*4,2.2,true);
+  makeBush(-5.5+Math.random()*.4,vegZ,.7+Math.random()*.4,true);
+  makePalm(4.5+Math.random()*.4,vegZ,5.5+Math.random()*3,(Math.random()-.5)*.7,(Math.random()-.5)*.4);
+  makeTree(8+Math.random(),vegZ,7+Math.random()*4,2.2,true);
+  makeBush(5.5+Math.random()*.4,vegZ,.7+Math.random()*.4,true);
+}
+
+// C2→C3 horizontal (z=-38, x=0 à 16)
+for(var i=0;i<9;i++){
+  vegX=i*1.8;
+  makePalm(vegX,-41.5+Math.random()*.4,5+Math.random()*3,(Math.random()-.5)*.5,(Math.random()-.5)*.8);
+  makeTree(vegX,-44+Math.random(),6.5+Math.random()*4,2,true);
+  makeBush(vegX+.3,-42+Math.random()*.4,.65+Math.random()*.35,true);
+  makePalm(vegX,-34.5+Math.random()*.4,5+Math.random()*3,(Math.random()-.5)*.5,(Math.random()-.5)*.8);
+  makeTree(vegX,-32+Math.random(),6+Math.random()*3.5,2,true);
+  makeBush(vegX+.3,-35+Math.random()*.4,.65+Math.random()*.35,true);
+}
+
+// C3→C4 horizontal (z=-38, x=16 à 30)
+for(var i=0;i<8;i++){
+  vegX=16+i*1.8;
+  makePalm(vegX,-41.5,5+Math.random()*3,(Math.random()-.5)*.5,-.6+Math.random()*.3);
+  makeTree(vegX,-45,7+Math.random()*4,2,true);
+  makePalm(vegX,-34.5,5+Math.random()*3,(Math.random()-.5)*.5,.6+Math.random()*.3);
+  makeTree(vegX,-31,6+Math.random()*3.5,2,true);
+}
+
+// C4→C5 vertical (x=30, z=-38 à -50)
+for(var i=0;i<7;i++){
+  vegZ=-38-i*1.8;
+  makePalm(26.5,vegZ,5.5+Math.random()*3,-.7+Math.random()*.3,(Math.random()-.5)*.4);
+  makeTree(23,vegZ,7+Math.random()*4,2,true);
+  makeBush(25.5,vegZ+.3,.7+Math.random()*.4,true);
+  makePalm(33.5,vegZ,5.5+Math.random()*3,.7+Math.random()*.3,(Math.random()-.5)*.4);
+  makeTree(36.5,vegZ,6.5+Math.random()*4,2,true);
+  makeBush(34.5,vegZ+.3,.65+Math.random()*.35,true);
+}
+
+// C5→C6 vertical (x=30, z=-52 à -64)
+for(var i=0;i<7;i++){
+  vegZ=-52-i*1.8;
+  makePalm(26.5,vegZ,5.5+Math.random()*3,-.7,(Math.random()-.5)*.3);
+  makeTree(23,vegZ,7+Math.random()*4,2.2,true);
+  makePalm(33.5,vegZ,5.5+Math.random()*3,.7,(Math.random()-.5)*.3);
+  makeTree(37,vegZ,7+Math.random()*4,2.2,true);
+}
+
+// C6→sortie horizontal (z=-66, x=30 à 0) + vers plage
+for(var i=0;i<10;i++){
+  vegX=28-i*3;
+  makePalm(vegX,-69.5,5.5+Math.random()*3,(Math.random()-.5)*.4,-.7+Math.random()*.2);
+  makeTree(vegX,-73,7+Math.random()*4,2,true);
+  makePalm(vegX,-62.5,5.5+Math.random()*3,(Math.random()-.5)*.4,.7+Math.random()*.2);
+  makeTree(vegX,-59,6.5+Math.random()*3.5,2,true);
+}
+// Vers plage
+for(var i=0;i<8;i++){
+  vegZ=-72-i*2;
+  makePalm(-5+Math.random()*.4,vegZ,6+Math.random()*3,(Math.random()-.5)*.5,-.5);
+  makePalm(5+Math.random()*.4,vegZ,6+Math.random()*3,(Math.random()-.5)*.5,.5);
+}
+
+// Jungle dense autour (fond, rend l'île immense)
+for(var i=0;i<60;i++){
+  var ang=Math.random()*Math.PI*2,rr=45+Math.random()*40;
+  var tx=Math.sin(ang)*rr,tz=Math.cos(ang)*rr-20;
+  makeTree(tx,tz,7+Math.random()*6,2.2+Math.random()*1.5,false); // pas de collision (trop loin)
+  makePalm(tx+2,tz-2,6+Math.random()*4,(Math.random()-.5),(Math.random()-.5));
+}
+
+// Fleurs colorées cartoon (décoratives, pas de collision)
+var flCols=[new B.Color3(.3,.4,.95),new B.Color3(.95,.2,.6),new B.Color3(.95,.85,.1),new B.Color3(.9,.3,.82),new B.Color3(.98,.5,.1)];
+for(var i=0;i<80;i++){
+  var ang=Math.random()*Math.PI*2,rr=Math.random()*55;
+  var fx=Math.sin(ang)*rr,fz=Math.cos(ang)*rr-10;
+  var fl=B.MeshBuilder.CreateSphere('fl',{diameter:.28+Math.random()*.2,segments:5},sc);
+  var fm=new B.StandardMaterial('fm',sc);fm.diffuseColor=flCols[Math.floor(Math.random()*5)];
+  fm.emissiveColor=fm.diffuseColor.scale(.15);fm.specularColor=new B.Color3(0,0,0);
+  fl.material=fm;fl.position.set(fx,.18+Math.random()*.2,fz);fl.scaling.y=.6;
+}
+
+step(64,'PANNEAUX...');
+
+// ── PANNEAUX AUX CARREFOURS ──
+var signMat=new B.StandardMaterial('signMat',sc);
+signMat.diffuseColor=new B.Color3(.68,.45,.22);signMat.specularColor=new B.Color3(.05,.04,.02);
+var signTextMat=new B.StandardMaterial('stm',sc);
+signTextMat.diffuseColor=new B.Color3(.92,.78,.42);signTextMat.emissiveColor=new B.Color3(.3,.22,.08);signTextMat.specularColor=new B.Color3(0,0,0);
+
+MAZE_DATA.carrefours.forEach(function(cf){
+  // Poteau
+  var pole=B.MeshBuilder.CreateCylinder('pole',{height:2.5,diameter:.18,tessellation:7},sc);
+  pole.material=signMat;pole.position.set(cf.x+1.5,1.25,cf.z);
+  pole.outlineColor=new B.Color3(.2,.12,.05);pole.outlineWidth=.03;pole.renderOutline=true;
+  // Panneau
+  var sign=B.MeshBuilder.CreateBox('sign',{width:1.8,height:.9,depth:.12},sc);
+  sign.material=signTextMat;sign.position.set(cf.x+1.5,2.6,cf.z);
+  sign.outlineColor=new B.Color3(.25,.15,.05);sign.outlineWidth=.04;sign.renderOutline=true;
+  if(shadows){shadows.addShadowCaster(pole);shadows.addShadowCaster(sign);}
+  // Zone interaction
+  interactZones.push({x:cf.x,z:cf.z,r:4.5,id:cf.id});
+});
+
+// ── OCEAN ──
+var ocean=B.MeshBuilder.CreateGround('ocean',{width:600,height:200,subdivisions:2},sc);
+var oMat=new B.StandardMaterial('oMat',sc);
+oMat.diffuseColor=new B.Color3(.22,.68,.88);oMat.emissiveColor=new B.Color3(.04,.14,.22);oMat.specularColor=new B.Color3(.5,.6,.7);oMat.specularPower=30;oMat.alpha=.88;
+ocean.material=oMat;ocean.position.set(0,-.1,-200);
+
+// Vague simple
+var waveMat=new B.StandardMaterial('wm',sc);waveMat.diffuseColor=new B.Color3(1,1,1);waveMat.emissiveColor=new B.Color3(.6,.8,1);waveMat.alpha=.55;waveMat.specularColor=new B.Color3(0,0,0);
+var waveRing=B.MeshBuilder.CreateTorus('wave',{diameter:240,thickness:.5,tessellation:80},sc);
+waveRing.material=waveMat;waveRing.position.set(0,-.08,-200);waveRing.rotation.x=Math.PI/2;
+
+// Zone victoire
+interactZones.push({x:0,z:-90,r:8,id:'VICTORY'});
+
+step(76,'PERSONNAGE...');
+
+// ── STITCH ──
 function buildStitch(){
   var g=new B.TransformNode('stitch',sc);
-  var matBlue=celMat('sBlue',new B.Color3(.15,.52,.88));
-  var matLight=celMat('sLight',new B.Color3(.55,.78,.95));
-  var matDark=celMat('sDark',new B.Color3(.05,.04,.05));
-  var matEye=celMat('sEye',new B.Color3(.92,.92,1));
-  matEye.emissiveColor=new B.Color3(.3,.3,.4);
+  function cM(col){var m=new B.StandardMaterial('sm'+Math.random(),sc);m.diffuseColor=col;m.specularColor=new B.Color3(0,0,0);return m;}
+  var blue=cM(new B.Color3(.14,.50,.88));
+  var light=cM(new B.Color3(.52,.76,.96));
+  var dark=cM(new B.Color3(.04,.03,.04));
+  var eyeW=cM(new B.Color3(.92,.92,1));eyeW.emissiveColor=new B.Color3(.28,.28,.38);
 
-  var body=B.MeshBuilder.CreateSphere('bd',{diameter:.82,segments:14},sc);
-  body.scaling.set(1,.88,1);body.material=matBlue;body.parent=g;addOutline(body,.04);
+  function add(mesh,mat,oc){mesh.material=mat;mesh.parent=g;mesh.outlineColor=oc||new B.Color3(0,0,0);mesh.outlineWidth=.04;mesh.renderOutline=true;if(shadows)shadows.addShadowCaster(mesh);}
 
-  var head=B.MeshBuilder.CreateSphere('hd',{diameter:.65,segments:14},sc);
-  head.position.y=.80;head.material=matBlue;head.parent=g;addOutline(head,.04);
-
-  var snout=B.MeshBuilder.CreateSphere('sn',{diameter:.36,segments:10},sc);
-  snout.scaling.set(1.15,.72,.9);snout.position.set(0,.74,.3);snout.material=matLight;snout.parent=g;addOutline(snout,.025);
-
-  var nose=B.MeshBuilder.CreateSphere('ns',{diameter:.11,segments:6},sc);
-  nose.position.set(0,.78,.38);nose.material=matDark;nose.parent=g;
-
+  var body=B.MeshBuilder.CreateSphere('bd',{diameter:.92,segments:14},sc);body.scaling.set(1,.88,1);add(body,blue);
+  var head=B.MeshBuilder.CreateSphere('hd',{diameter:.72,segments:14},sc);head.position.y=.9;add(head,blue);
+  var snout=B.MeshBuilder.CreateSphere('sn',{diameter:.40,segments:10},sc);snout.scaling.set(1.1,.7,.88);snout.position.set(0,.84,.32);add(snout,light);
+  var nose=B.MeshBuilder.CreateSphere('ns',{diameter:.12,segments:6},sc);nose.position.set(0,.88,.42);add(nose,dark);
   [-1,1].forEach(function(e){
-    var ear=B.MeshBuilder.CreateCylinder('ear',{height:.62,diameterTop:.08,diameterBottom:.20,tessellation:6},sc);
-    ear.position.set(e*.28,1.18,.04);ear.rotation.set(-.1,0,e*.40);ear.material=matBlue;ear.parent=g;addOutline(ear,.03);
+    var ear=B.MeshBuilder.CreateCylinder('ear',{height:.65,diameterTop:.08,diameterBottom:.22,tessellation:6},sc);
+    ear.position.set(e*.30,1.32,.04);ear.rotation.set(-.1,0,e*.42);add(ear,blue);
+    var ew=B.MeshBuilder.CreateSphere('ew',{diameter:.17,segments:7},sc);ew.position.set(e*.19,.94,.32);ew.material=eyeW;ew.parent=g;ew.outlineColor=new B.Color3(0,0,0);ew.outlineWidth=.03;ew.renderOutline=true;
+    var ep=B.MeshBuilder.CreateSphere('ep',{diameter:.10,segments:6},sc);ep.position.set(e*.19,.94,.38);add(ep,dark);
+    var leg=B.MeshBuilder.CreateCylinder('lg',{height:.48,diameterTop:.16,diameterBottom:.14,tessellation:7},sc);leg.position.set(e*.26,-.28,0);add(leg,blue);
+    var foot=B.MeshBuilder.CreateSphere('ft',{diameter:.25,segments:7},sc);foot.scaling.set(1.5,.7,1.9);foot.position.set(e*.26,-.55,.09);add(foot,blue);
+    var arm=B.MeshBuilder.CreateCylinder('arm',{height:.44,diameterTop:.10,diameterBottom:.15,tessellation:6},sc);arm.position.set(e*.50,.16,0);arm.rotation.set(.35,0,e*.85);add(arm,blue);
   });
-
-  [-1,1].forEach(function(e){
-    var ew=B.MeshBuilder.CreateSphere('ew',{diameter:.16,segments:8},sc);
-    ew.position.set(e*.17,.82,.30);ew.material=matEye;ew.parent=g;
-    var ep=B.MeshBuilder.CreateSphere('ep',{diameter:.09,segments:7},sc);
-    ep.position.set(e*.17,.82,.35);ep.material=matDark;ep.parent=g;
-  });
-
-  [-1,1].forEach(function(e){
-    var leg=B.MeshBuilder.CreateCylinder('lg',{height:.44,diameterTop:.15,diameterBottom:.13,tessellation:7},sc);
-    leg.position.set(e*.23,-.24,0);leg.material=matBlue;leg.parent=g;addOutline(leg,.03);
-    var foot=B.MeshBuilder.CreateSphere('ft',{diameter:.22,segments:7},sc);
-    foot.scaling.set(1.5,.7,1.9);foot.position.set(e*.23,-.48,.08);foot.material=matBlue;foot.parent=g;addOutline(foot,.025);
-    var arm=B.MeshBuilder.CreateCylinder('arm',{height:.40,diameterTop:.09,diameterBottom:.13,tessellation:6},sc);
-    arm.position.set(e*.44,.14,0);arm.rotation.set(.35,0,e*.82);arm.material=matBlue;arm.parent=g;addOutline(arm,.025);
-  });
-
-  var tail=B.MeshBuilder.CreateSphere('tl',{diameter:.24,segments:7},sc);
-  tail.scaling.set(.72,1.5,.72);tail.position.set(0,.12,-.45);tail.material=matBlue;tail.parent=g;addOutline(tail,.025);
-
-  g.getChildMeshes().forEach(function(m){m.receiveShadows=true;if(shadows)shadows.addShadowCaster(m);});
+  var tail=B.MeshBuilder.CreateSphere('tl',{diameter:.26,segments:7},sc);tail.scaling.set(.7,1.5,.7);tail.position.set(0,.14,-.50);add(tail,blue);
+  g.getChildMeshes().forEach(function(m){m.receiveShadows=true;});
   return g;
 }
 
@@ -581,160 +659,222 @@ function setupPlayer(root,anims,isGLB){
       if(!pAnims.walk&&anims[1])pAnims.walk=anims[1];
       playAnim(pAnims.idle);
     }
-  } else {pYOff=.55;}
+  } else {pYOff=.62;}
   root.position.set(P.x,P.y+pYOff,P.z);
-  CAM.yaw=P.yaw+Math.PI;
+  P.yaw=Math.PI;
 }
 
-var fallback=buildStitch();
-setupPlayer(fallback,[],false);
-step(94,'FINALISATION...');
+var stitch=buildStitch();
+setupPlayer(stitch,[],false);
 
 B.SceneLoader.ImportMesh('','',BASE+'stitch2.glb',sc,
-  function(meshes,ps,sk,ag){
-    fallback.getChildMeshes().forEach(function(m){m.dispose();});fallback.dispose();
-    setupPlayer(meshes[0],ag,true);toast('Stitch arrive !');
-  },null,function(){}
+  function(m,ps,sk,ag){stitch.getChildMeshes().forEach(function(me){me.dispose();});stitch.dispose();setupPlayer(m[0],ag,true);toast('Stitch est prêt !');},
+  null,function(){}
 );
 
-step(100,'');showGame();
-toast('Aloha ! Bienvenue sur l\'île !');
+step(88,'FINALISATION...');
+showGame();
+toast('Stitch s\'est écrasé ! Trouve la plage !',4000);
 
 // ── BOUCLE ──
 eng.runRenderLoop(function(){
   var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;
+  waveT+=dt;
 
+  // ── INPUT ──
   var fwd=0,turn=0;
   if(KY['KeyW']||KY['KeyZ']||KY['ArrowUp'])fwd=1;
-  // JOYSTICK: haut/bas = avancer/reculer, gauche/droite = tourner Stitch
   if(KY['KeyS']||KY['ArrowDown'])fwd=-1;
   if(KY['KeyD']||KY['ArrowRight'])turn=1;
   if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft'])turn=-1;
   fwd+=jLY; turn-=jLX;
-  var spd=sprint?9:5.2;
+  if(Math.abs(fwd)>1)fwd=fwd>0?1:-1;
+  if(Math.abs(turn)>1)turn=turn>0?1:-1;
+  var spd=sprint?7.5:4.5;
 
-  // Stitch tourne sur lui-meme (gauche/droite joystick)
-  P.yaw+=turn*dt*2.6;
+  P.yaw+=turn*dt*2.5;
 
-  // Stitch avance dans la direction ou il regarde
-  var moveMag=Math.abs(fwd)>0.05?Math.abs(fwd):0;
-  if(moveMag>0.05){
-    P.vx+=((-Math.sin(P.yaw))*fwd*spd-P.vx)*Math.min(1,dt*12);
-    P.vz+=((-Math.cos(P.yaw))*fwd*spd-P.vz)*Math.min(1,dt*12);
-    playAnim(sprint&&pAnims.run?pAnims.run:(pAnims.walk||pAnims.idle));
+  var moveMag=Math.abs(fwd);
+  if(moveMag>.05){
+    P.vx+=(-Math.sin(P.yaw)*fwd*spd-P.vx)*Math.min(1,dt*12);
+    P.vz+=(-Math.cos(P.yaw)*fwd*spd-P.vz)*Math.min(1,dt*12);
+    playAnim(pAnims.walk||pAnims.idle);
   } else {
-    P.vx*=Math.pow(.01,dt); P.vz*=Math.pow(.01,dt);
-    if(Math.abs(P.vx)<.02)P.vx=0; if(Math.abs(P.vz)<.02)P.vz=0;
+    P.vx*=Math.pow(.01,dt);P.vz*=Math.pow(.01,dt);
+    if(Math.abs(P.vx)<.02)P.vx=0;if(Math.abs(P.vz)<.02)P.vz=0;
     if(pAnims.idle)playAnim(pAnims.idle);
   }
 
-  // Gravite + eau
-  P.inWater=(P.y<WATER_Y+.1);
-  if(P.inWater){
-    if(!P.onGround){P.vy-=12*dt;if(P.vy<-4)P.vy=-4;}
-    P.vx*=Math.pow(.3,dt);P.vz*=Math.pow(.3,dt);
-  } else {
-    if(!P.onGround){P.vy-=28*dt;if(P.vy<-26)P.vy=-26;}
-  }
+  if(!P.onGround){P.vy-=26*dt;if(P.vy<-24)P.vy=-24;}
+  var nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
 
-  P.x+=P.vx*dt; P.z+=P.vz*dt; P.y+=P.vy*dt;
-  var floorY=P.inWater?Math.max(WATER_Y,terrH(P.x,P.z)):terrH(P.x,P.z);
-  if(P.y<=floorY&&P.vy<=0){P.y=floorY;P.vy=0;P.onGround=true;}else P.onGround=false;
-
-  // Collisions obstacles
-  for(var ci=0;ci<colCircles.length;ci++){
-    var ob=colCircles[ci],ddx=P.x-ob.x,ddz=P.z-ob.z;
-    var d2=ddx*ddx+ddz*ddz,mn=.6+ob.r;
-    if(d2<mn*mn&&d2>.001){
-      var dd=Math.sqrt(d2),nnx=ddx/dd,nnz=ddz/dd;
-      P.x=ob.x+nnx*mn;P.z=ob.z+nnz*mn;
-      var dot=P.vx*nnx+P.vz*nnz;if(dot<0){P.vx-=dot*nnx;P.vz-=dot*nnz;}
+  // ── COLLISIONS MURS (AABB strict) ──
+  var PRAD=.55;
+  var canX=true,canZ=true;
+  for(var wi=0;wi<walls.length;wi++){
+    var w=walls[wi];
+    var inX=(nx+PRAD>w.x1&&nx-PRAD<w.x2);
+    var inZ=(nz+PRAD>w.z1&&nz-PRAD<w.z2);
+    var curInX=(P.x+PRAD>w.x1&&P.x-PRAD<w.x2);
+    var curInZ=(P.z+PRAD>w.z1&&P.z-PRAD<w.z2);
+    if(inX&&inZ){
+      if(!curInX)canX=false;
+      if(!curInZ)canZ=false;
     }
   }
-  var pd=Math.sqrt(P.x*P.x+P.z*P.z);
-  if(pd>ISLAND_R){var pa=Math.atan2(P.x,P.z);P.x=Math.sin(pa)*ISLAND_R;P.z=Math.cos(pa)*ISLAND_R;P.vx*=.04;P.vz*=.04;}
+  if(canX)P.x=nx; else P.vx=0;
+  if(canZ)P.z=nz; else P.vz=0;
 
-  // Mesh joueur
+  P.y+=P.vy*dt;
+  if(P.y<=0&&P.vy<=0){P.y=0;P.vy=0;P.onGround=true;}else if(P.y>0)P.onGround=false;
+
+  // ── MESH JOUEUR ──
   if(pRoot){
-    pRoot.position.x=P.x;
-    pRoot.position.y=P.y+pYOff+(P.inWater?-0.18:0);
-    pRoot.position.z=P.z;
-    pRoot.rotation.y=P.yaw; // rotation directe sans lerp
+    pRoot.position.x=P.x;pRoot.position.y=P.y+pYOff;pRoot.position.z=P.z;
+    pRoot.rotation.y=P.yaw;
   }
-  if(fill)fill.position.set(P.x,P.y+4,P.z);
+  if(fill)fill.position.set(P.x,P.y+3,P.z);
 
-  // CAMERA — STRICTEMENT DERRIERE STITCH, TOURNE AVEC LUI
-  // La camera suit P.yaw instantanement, jamais independante
-  var camYaw=P.yaw+Math.PI; // exactement derriere
-  var CAM_DIST=6.0;
-  var CAM_H=2.0;   // hauteur camera
-  var CAM_TH=0.85; // hauteur point vise sur Stitch
+  // ── CAMERA strictement derrière Stitch ──
+  var camYaw=P.yaw+Math.PI;
+  var cX=P.x+Math.sin(camYaw)*5.5;
+  var cZ=P.z+Math.cos(camYaw)*5.5;
+  var cY=P.y+pYOff+2.1;
+  cam.position.x+=(cX-cam.position.x)*Math.min(1,dt*20);
+  cam.position.y+=(cY-cam.position.y)*Math.min(1,dt*14);
+  cam.position.z+=(cZ-cam.position.z)*Math.min(1,dt*20);
+  cam.setTarget(new B.Vector3(P.x,P.y+pYOff+.85,P.z));
 
-  var camX=P.x+Math.sin(camYaw)*CAM_DIST;
-  var camZ=P.z+Math.cos(camYaw)*CAM_DIST;
-  var camY=P.y+pYOff+CAM_H;
-  var cGH=terrH(camX,camZ);
-  if(camY<cGH+1.0)camY=cGH+1.0;
+  // ── ZONES INTERACTION ──
+  gameState.nearCarrefour=null;
+  for(var zi=0;zi<interactZones.length;zi++){
+    var iz=interactZones[zi];
+    var dist=Math.sqrt((P.x-iz.x)*(P.x-iz.x)+(P.z-iz.z)*(P.z-iz.z));
+    if(dist<iz.r){
+      if(iz.id==='VICTORY'&&!gameState.atVictory){
+        triggerVictory();
+      } else if(iz.id!=='VICTORY'){
+        gameState.nearCarrefour=iz.id;
+      }
+    }
+  }
 
-  cam.position.x+=(camX-cam.position.x)*Math.min(1,dt*20);
-  cam.position.y+=(camY-cam.position.y)*Math.min(1,dt*14);
-  cam.position.z+=(camZ-cam.position.z)*Math.min(1,dt*20);
-  cam.setTarget(new B.Vector3(P.x, P.y+pYOff+CAM_TH, P.z));
+  // HUD
+  document.getElementById('cluesLbl').textContent='🔍 Indices: '+gameState.cluesSolved+'/6';
+  var dz2=Math.abs(P.z);
+  document.getElementById('zoneLbl').textContent=dz2<15?'🚀 FUSEE':dz2<75?'🌿 JUNGLE':'🏖 PLAGE';
 
-  // Brouillard jungle dense
-  var distCenter=Math.sqrt(P.x*P.x+P.z*P.z);
-  var inJungle=distCenter<28;
-  sc.fogStart+=((inJungle?18:55)-sc.fogStart)*dt*2;
-  sc.fogEnd+=((inJungle?60:130)-sc.fogEnd)*dt*2;
-
-  // Animations
-  waveT+=dt;
-  waveRings.forEach(function(w){
-    w.m.scaling.x=1+Math.sin(waveT*w.spd+w.ph)*.055;
-    w.m.scaling.z=1+Math.sin(waveT*w.spd+w.ph)*.055;
-    w.m.position.y=WATER_Y+.05+Math.sin(waveT*2+w.ph)*.04;
-    w.m.material.alpha=.5+Math.sin(waveT*2.4+w.ph)*.12;
+  // Fumée fusée
+  smokeMeshes.forEach(function(s,i){
+    s.m.position.set(s.ox+Math.sin(waveT*s.spd+s.phase)*.25,-3.5+Math.sin(waveT*s.spd+s.phase+1)*1.5+i*.35,8.5+Math.cos(waveT*s.spd*.7+s.phase)*.2);
+    s.m.material.alpha=.5+Math.sin(waveT*1.2+s.phase)*.2;
+    s.m.scaling.setAll(.8+Math.sin(waveT*s.spd+s.phase)*.3);
+    s.m.position.y+=waveT*.0005; // monte lentement
   });
-  // Eau se déplace
-  ocean.material.diffuseColor.r=.20+Math.sin(waveT*.3)*.04;
-  ocean.material.diffuseColor.g=.65+Math.sin(waveT*.5)*.06;
-  lagon.position.y=WATER_Y+Math.sin(waveT*.6)*.015;
-  ocean.position.y=WATER_Y+Math.sin(waveT*.4)*.02;
 
-  var dz2=Math.sqrt(P.x*P.x+P.z*P.z);
-  var inW=P.inWater;
-  document.getElementById('zoneTxt').innerHTML=
-    inW?'&#127754; OCEAN':
-    dz2<12?'&#127807; JUNGLE PROFONDE':
-    dz2<30?'&#127807; JUNGLE':
-    dz2<55?'&#127944; PLAGE':'&#127754; MER';
+  // Vague
+  waveRing.scaling.x=1+Math.sin(waveT*1.2)*.03;waveRing.scaling.z=1+Math.sin(waveT*1.2)*.03;
+  waveRing.position.y=-.08+Math.sin(waveT*1.5)*.03;waveRing.material.alpha=.45+Math.sin(waveT*1.8)*.1;
 
   sc.render();
 });
 
 window.addEventListener('resize',function(){if(eng)eng.resize();});
 
-function playAnim(a){if(!a||a===curAnim)return;if(curAnim)curAnim.stop();a.start(true);curAnim=a;}
-function doJump(e){if(e&&e.preventDefault)e.preventDefault();if(P.onGround&&!P.inWater){P.vy=9.5;P.onGround=false;if(pAnims.jump)playAnim(pAnims.jump);}}
-function setSprint(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;}
+// ── ENIGMES ──
+window.tryInteract=function(){
+  if(gameState.nearCarrefour===null){toast('Approche d\'un panneau !');return;}
+  var cf=MAZE_DATA.carrefours[gameState.nearCarrefour];
+  if(!cf)return;
+  openPuzzle(cf);
+};
 
-window.toggleDN=function(){
-  night=!night;
-  if(night){
-    sc.clearColor=new B.Color4(.01,.01,.05,1);
-    sky.intensity=.07;sky.diffuse=new B.Color3(.05,.08,.28);sun.intensity=.08;
-    skyMat.emissiveColor=new B.Color3(.01,.01,.06);skyMat.emissiveTexture=null;
-    document.getElementById('dnBtn').innerHTML='&#9728; JOUR';toast('Nuit hawaiienne...');
-  }else{
-    sc.clearColor=new B.Color4(.85,.58,.78,1);
-    sky.intensity=.75;sky.diffuse=new B.Color3(.90,.70,.85);sun.intensity=2.8;
-    skyMat.emissiveTexture=skyDyn;skyMat.emissiveColor=new B.Color3(1,1,1);
-    document.getElementById('dnBtn').innerHTML='&#9790; NUIT';toast('Coucher de soleil !');
+function openPuzzle(cf){
+  var pz=cf.enigme;
+  document.getElementById('pzTitle').textContent=pz.titre;
+  document.getElementById('pzText').textContent=pz.texte;
+  var content=document.getElementById('pzContent');
+  content.innerHTML='';
+  document.getElementById('dirBtns').style.display='none';
+
+  var btns=document.createElement('div');btns.className='pzBtns';
+  pz.choix.forEach(function(c,i){
+    var b=document.createElement('div');b.className='pzBtn';b.textContent=c;
+    b.onclick=function(){
+      if(i===pz.bonne){
+        b.classList.add('correct');
+        setTimeout(function(){
+          document.getElementById('puzzle').style.display='none';
+          toast(pz.message,3500);
+          gameState.cluesSolved++;
+          // Montrer directions
+          setTimeout(function(){showDirections(cf);},1200);
+        },800);
+      } else {
+        b.classList.add('wrong');
+        setTimeout(function(){b.classList.remove('wrong');},800);
+        toast('Ce n\'est pas ça... Réfléchis !');
+      }
+    };
+    btns.appendChild(b);
+  });
+  content.appendChild(btns);
+  document.getElementById('puzzle').style.display='flex';
+}
+
+function showDirections(cf){
+  document.getElementById('pzTitle').textContent='↗ QUELLE DIRECTION ?';
+  document.getElementById('pzText').textContent='Tu as déchiffré le panneau !\nMaintenant, choisis ton chemin.';
+  document.getElementById('pzContent').innerHTML='';
+  document.getElementById('dirBtns').style.display='flex';
+  document.getElementById('puzzle').style.display='flex';
+  window._currentCf=cf;
+}
+
+window.choosePath=function(dir){
+  var cf=window._currentCf;if(!cf)return;
+  document.getElementById('puzzle').style.display='none';
+  if(dir===cf.correct){
+    // Bon chemin — téléporte vers le prochain carrefour ou victoire
+    toast('Bonne direction !',2000);
+    var dest=cf[dir];
+    P.x=dest.x;P.z=dest.z;P.vx=0;P.vz=0;
+    if(cf.nextCorrect==='VICTORY'){
+      setTimeout(triggerVictory,1500);
+    }
+  } else {
+    // Mauvais chemin — impasse, retour
+    var dest=cf[dir];
+    P.x=dest.x;P.z=dest.z;P.vx=0;P.vz=0;
+    toast('Impasse ! La végétation bloque... Demi-tour !',3000);
+    setTimeout(function(){
+      // Retour au carrefour
+      P.x=cf.x;P.z=cf.z;P.vx=0;P.vz=0;
+    },2500);
   }
 };
 
-// Joystick GAUCHE = déplacement
-var jBase=document.getElementById('joy'),jNub=document.getElementById('jnub'),jid=-1,JMAX=38;
+function triggerVictory(){
+  if(gameState.atVictory)return;
+  gameState.atVictory=true;
+  P.x=0;P.z=-88;P.vx=0;P.vz=0;P.yaw=Math.PI;
+  document.getElementById('victory').style.display='flex';
+}
+window.restartGame=function(){
+  document.getElementById('victory').style.display='none';
+  P.x=0;P.z=2;P.vx=0;P.vz=0;P.yaw=Math.PI;P.y=0;
+  gameState.cluesSolved=0;gameState.atVictory=false;gameState.nearCarrefour=null;
+  toast('Nouvelle partie ! Trouve la plage !',3000);
+};
+
+function playAnim(a){if(!a||a===curAnim)return;if(curAnim)curAnim.stop();a.start(true);curAnim=a;}
+function doJump(e){if(e&&e.preventDefault)e.preventDefault();if(P.onGround){P.vy=7;P.onGround=false;}}
+window.doJump=doJump;
+function setSprint(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;}
+window.setSprint=setSprint;
+
+// Joystick
+var jBase=document.getElementById('joy'),jNub=document.getElementById('jnub'),JMAX=38;
 function jUp(cx,cy){
   var r=jBase.getBoundingClientRect(),dx=cx-(r.left+r.width/2),dy=cy-(r.top+r.height/2),d=Math.sqrt(dx*dx+dy*dy);
   if(d>JMAX){dx=dx/d*JMAX;dy=dy/d*JMAX;}
@@ -745,17 +885,13 @@ function jRst(){jNub.style.transform='translate(-50%,-50%)';jLX=0;jLY=0;jid=-1;}
 jBase.addEventListener('touchstart',function(e){e.preventDefault();jid=e.changedTouches[0].identifier;jUp(e.changedTouches[0].clientX,e.changedTouches[0].clientY);},{passive:false});
 jBase.addEventListener('touchmove',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jid)jUp(e.changedTouches[i].clientX,e.changedTouches[i].clientY);},{passive:false});
 jBase.addEventListener('touchend',jRst,{passive:true});
+jBase.addEventListener('mousedown',function(e){jUp(e.clientX,e.clientY);});
+window.addEventListener('mouseup',jRst);
+window.addEventListener('keydown',function(e){KY[e.code]=1;if(e.code==='Space'){e.preventDefault();doJump();}if(e.code==='ShiftLeft')sprint=true;if(e.code==='KeyE')tryInteract();});
+window.addEventListener('keyup',function(e){KY[e.code]=0;if(e.code==='ShiftLeft')sprint=false;});
+window.addEventListener('wheel',function(){},{passive:true});
 
-window.addEventListener('keydown',function(e){KY[e.code]=1;if(e.code==='Space'){e.preventDefault();doJump();}if(e.code==='ShiftLeft'||e.code==='ShiftRight')sprint=true;});
-window.addEventListener('keyup',function(e){KY[e.code]=0;if(e.code==='ShiftLeft'||e.code==='ShiftRight')sprint=false;});
-window.addEventListener('wheel',function(e){CAM.dist=Math.max(4,Math.min(22,CAM.dist+e.deltaY*.01));},{passive:true});
-
-// Camera locked behind Stitch — no manual rotation
-var camDrag={active:false,lx:0,ly:0,tid:-1}; // kept for compatibility
-cv.addEventListener('contextmenu',function(e){e.preventDefault();});
-var p0t=null,iDt=0,iCDt=0;
-cv.addEventListener('touchstart',function(e){if(e.touches.length===2){p0t=e.touches[0];var p1=e.touches[1];iDt=Math.hypot(p1.clientX-p0t.clientX,p1.clientY-p0t.clientY);iCDt=CAM.dist;}},{passive:true});
-cv.addEventListener('touchmove',function(e){if(e.touches.length===2&&iDt>0){var d=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);CAM.dist=Math.max(4,Math.min(22,iCDt*(iDt/d)));}},{passive:true});
+step(100,'');
 };
 if(window.BABYLON&&window.startGame)window.startGame();
 </script>
