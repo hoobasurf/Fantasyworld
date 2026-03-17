@@ -94,24 +94,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1828}
 </div>
 <div id="toast"></div>
 
-<script>
-(function(){
-  var s=document.getElementById('stepTxt');
-  var cdns=[
-    {b:'https://cdn.jsdelivr.net/npm/babylonjs@6.26.0/babylon.min.js',l:'https://cdn.jsdelivr.net/npm/babylonjs-loaders@6.26.0/babylonjs.loaders.min.js'},
-    {b:'https://unpkg.com/babylonjs@6.26.0/babylon.min.js',l:'https://unpkg.com/babylonjs-loaders@6.26.0/babylonjs.loaders.min.js'},
-    {b:'https://cdn.babylonjs.com/babylon.js',l:'https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js'}
-  ];
-  var i=0;
-  function next(){
-    if(i>=cdns.length){s.textContent='ERREUR CDN';return;}
-    var p=cdns[i++];s.textContent='CDN '+i+'...';
-    ld(p.b,function(){ld(p.l,function(){window.startGame&&window.startGame();},next);},next);
-  }
-  function ld(url,ok,fail){var sc=document.createElement('script');sc.src=url;sc.onload=ok;sc.onerror=function(){document.head.removeChild(sc);fail();};document.head.appendChild(sc);}
-  next();
-})();
-</script>
+<script src="https://cdn.jsdelivr.net/npm/babylonjs@6.26.0/babylon.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/babylonjs-loaders@6.26.0/babylonjs.loaders.min.js"></script>
 
 <script>
 // ── DONNÉES LABYRINTHE ──
@@ -993,7 +978,8 @@ window.addEventListener('wheel',function(e){CAM.dist=Math.max(4,Math.min(14,CAM.
 
 step(100,'');
 };
-if(window.BABYLON&&window.startGame)window.startGame();
+
+window.startGame();
 </script>
 
 </body>
