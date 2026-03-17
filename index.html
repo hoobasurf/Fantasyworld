@@ -76,9 +76,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#001828}
 </div>
 <div id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.149.0/examples/js/loaders/GLTFLoader.js"></script>
 
 <script>
 'use strict';
@@ -109,7 +109,7 @@ renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.2;
-renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.outputColorSpace=THREE.sRGBEncoding;
 
 var scene=new THREE.Scene();
 scene.background=new THREE.Color(0x3a9ade);
@@ -143,7 +143,7 @@ function loadTex(name,ru,rv){
   var t=tl.load(BASE+name);
   t.wrapS=t.wrapT=THREE.RepeatWrapping;
   if(ru)t.repeat.set(ru,rv||ru);
-  t.colorSpace=THREE.SRGBColorSpace;
+  t.colorSpace=THREE.sRGBEncoding;
   return t;
 }
 var texGrass=loadTex('grass.jpg',16,16);
