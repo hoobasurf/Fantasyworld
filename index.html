@@ -18,11 +18,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0518}
 #hud{position:fixed;top:10px;left:0;right:0;display:none;justify-content:space-between;padding:0 12px;pointer-events:none;z-index:20}
 .pill{background:rgba(0,0,15,.78);border-radius:18px;padding:5px 12px;font-family:Georgia,serif;font-size:9px;color:#ffd06a;border:1.5px solid rgba(255,208,106,.3)}
 /* Joystick */
-#joy{position:fixed;left:14px;bottom:78px;z-index:30;width:108px;height:108px;border-radius:50%;background:rgba(0,0,0,.28);border:3px solid rgba(255,208,106,.45);touch-action:none}
+/* Joystick gauche = déplacement */
+#joy{position:fixed;left:14px;bottom:14px;z-index:30;width:108px;height:108px;border-radius:50%;background:rgba(0,0,0,.28);border:3px solid rgba(255,208,106,.45);touch-action:none}
 #jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,rgba(255,220,80,.85),rgba(180,80,0,.92));border:3px solid #ffd06a}
-/* Boutons */
-#btns{position:fixed;right:14px;bottom:78px;z-index:30;display:flex;flex-direction:column;gap:7px}
-.btn{width:54px;height:54px;border-radius:50%;background:rgba(0,0,20,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:8px;cursor:pointer;touch-action:manipulation;border:2.5px solid rgba(255,255,255,.2)}
+/* Joystick droit = caméra */
+#rjoy{position:fixed;right:14px;bottom:14px;z-index:30;width:90px;height:90px;border-radius:50%;background:rgba(0,0,30,.25);border:2px solid rgba(125,232,255,.35);touch-action:none}
+#rjnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:radial-gradient(circle,rgba(125,232,255,.65),rgba(0,40,80,.9));border:2px solid rgba(125,232,255,.55)}
+/* Boutons action — centrés en bas, entre les 2 joysticks */
+#btns{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:30;display:flex;flex-direction:row;gap:10px}
+.btn{width:52px;height:52px;border-radius:50%;background:rgba(0,0,20,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:8px;cursor:pointer;touch-action:manipulation;border:2.5px solid rgba(255,255,255,.2)}
 /* Panneau énigme */
 #puzzle{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:50;background:rgba(0,0,0,.65)}
 #puzzleBox{background:linear-gradient(180deg,#3a2010,#1e1008);border:3px solid #8b5a2b;border-radius:12px;padding:22px;max-width:320px;width:90%;text-align:center;font-family:Georgia,serif;color:#ffd06a;box-shadow:0 0 40px rgba(0,0,0,.8)}
@@ -61,6 +65,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0518}
 </div>
 
 <div id="joy"><div id="jnub"></div></div>
+<div id="rjoy"><div id="rjnub"></div></div>
 <div id="btns">
   <div class="btn" style="border-color:#7de8ff;color:#7de8ff" ontouchstart="doJump(event)" onclick="doJump()">&#8679;<br>JUMP</div>
   <div class="btn" style="border-color:#ff9944;color:#ff9944" id="interactBtn" onclick="tryInteract()" ontouchstart="tryInteract()">&#10003;<br>OK</div>
@@ -228,6 +233,8 @@ function showGame(){document.getElementById('loading').style.display='none';docu
 var P={x:0,y:0,z:2,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:true};
 var pRoot=null,pYOff=0,pAnims={},curAnim=null;
 var jLX=0,jLY=0,KY={},jid=-1;
+var rjLX=0,rjLY=0,rjid=-1;   // joystick droit (caméra)
+var camLookH=0,camLookV=0;    // offset caméra joystick droit
 var sprint=false,waveT=0,lastT=performance.now();
 // Murs de collision (boîtes AABB)
 var walls=[]; // {x1,z1,x2,z2} boîtes infranchissables
@@ -643,7 +650,7 @@ ocean.material=oMat;ocean.position.set(0,-.1,-200);
 
 // Vague simple
 var waveMat=new B.StandardMaterial('wm',sc);waveMat.diffuseColor=new B.Color3(1,1,1);waveMat.emissiveColor=new B.Color3(.6,.8,1);waveMat.alpha=.55;waveMat.specularColor=new B.Color3(0,0,0);
-var waveRing=B.MeshBuilder.CreateTorus('wave',{diameter:240,thickness:.5,tessellation:80},sc);
+var waveRing=B.MeshBuilder.CreateTorus('wave',{diameter:240,thickness:.5,tessellation:48},sc);
 waveRing.material=waveMat;waveRing.position.set(0,-.08,-200);waveRing.rotation.x=Math.PI/2;
 
 // Zone victoire
@@ -662,9 +669,9 @@ function buildStitch(){
 
   function add(mesh,mat,oc){mesh.material=mat;mesh.parent=g;mesh.outlineColor=oc||new B.Color3(0,0,0);mesh.outlineWidth=.04;mesh.renderOutline=true;if(shadows)shadows.addShadowCaster(mesh);}
 
-  var body=B.MeshBuilder.CreateSphere('bd',{diameter:.92,segments:14},sc);body.scaling.set(1,.88,1);add(body,blue);
-  var head=B.MeshBuilder.CreateSphere('hd',{diameter:.72,segments:14},sc);head.position.y=.9;add(head,blue);
-  var snout=B.MeshBuilder.CreateSphere('sn',{diameter:.40,segments:10},sc);snout.scaling.set(1.1,.7,.88);snout.position.set(0,.84,.32);add(snout,light);
+  var body=B.MeshBuilder.CreateSphere('bd',{diameter:.92,segments:8},sc);body.scaling.set(1,.88,1);add(body,blue);
+  var head=B.MeshBuilder.CreateSphere('hd',{diameter:.72,segments:8},sc);head.position.y=.9;add(head,blue);
+  var snout=B.MeshBuilder.CreateSphere('sn',{diameter:.40,segments:7},sc);snout.scaling.set(1.1,.7,.88);snout.position.set(0,.84,.32);add(snout,light);
   var nose=B.MeshBuilder.CreateSphere('ns',{diameter:.12,segments:6},sc);nose.position.set(0,.88,.42);add(nose,dark);
   [-1,1].forEach(function(e){
     var ear=B.MeshBuilder.CreateCylinder('ear',{height:.65,diameterTop:.08,diameterBottom:.22,tessellation:6},sc);
@@ -685,7 +692,7 @@ function setupPlayer(root,anims,isGLB){
   if(isGLB){
     root.scaling.setAll(1);root.computeWorldMatrix(true);
     var bb=root.getHierarchyBoundingVectors(),h=bb.max.y-bb.min.y;
-    if(h>.05)root.scaling.setAll(1.9/h);
+    if(h>.05)root.scaling.setAll(1.3/h);
     root.computeWorldMatrix(true);
     var bb2=root.getHierarchyBoundingVectors();pYOff=-bb2.min.y+.05;
     root.getChildMeshes().forEach(function(m){m.receiveShadows=true;if(shadows)shadows.addShadowCaster(m,true);});
@@ -698,7 +705,7 @@ function setupPlayer(root,anims,isGLB){
       if(!pAnims.walk&&anims[1])pAnims.walk=anims[1];
       playAnim(pAnims.idle);
     }
-  } else {pYOff=.62;}
+  } else {pYOff=.48;}
   root.position.set(P.x,P.y+pYOff,P.z);
   P.yaw=Math.PI;
 }
@@ -726,7 +733,7 @@ eng.runRenderLoop(function(){
   if(KY['KeyS']||KY['ArrowDown'])fwd=-1;
   if(KY['KeyD']||KY['ArrowRight'])turn=1;
   if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft'])turn=-1;
-  fwd+=jLY; turn-=jLX;
+  fwd-=jLY; turn-=jLX;  // jLY inversé: haut joystick = avancer
   if(Math.abs(fwd)>1)fwd=fwd>0?1:-1;
   if(Math.abs(turn)>1)turn=turn>0?1:-1;
   var spd=sprint?7.5:4.5;
@@ -774,22 +781,28 @@ eng.runRenderLoop(function(){
     pRoot.rotation.y=P.yaw;
   }
   if(fill)fill.position.set(P.x,P.y+3,P.z);
+  // Joystick droit — caméra tourne autour de Stitch
+  camLookH += rjLX * dt * 2.2;
+  camLookV = Math.max(-.1, Math.min(.55, camLookV + rjLY * dt * 1.4));
+  // Retour progressif au centre si joystick relâché
+  if(Math.abs(rjLX)<.05) camLookH *= Math.pow(.85, dt*60);
+  if(Math.abs(rjLY)<.05) camLookV *= Math.pow(.88, dt*60);
 
-  // ── CAMERA derrière Stitch avec léger offset lateral quand tourne ──
-  var camYaw=P.yaw+Math.PI;
-  // Ajoute un léger décalage latéral proportionnel à la vitesse de rotation
-  // pour qu'on voit un peu le côté de Stitch quand il tourne
-  var lateralOffset=turn*0.8;
-  var perpYaw=camYaw+Math.PI/2;
-  var CAM_DIST=5.0;
-  var cX=P.x+Math.sin(camYaw)*CAM_DIST+Math.sin(perpYaw)*lateralOffset;
-  var cZ=P.z+Math.cos(camYaw)*CAM_DIST+Math.cos(perpYaw)*lateralOffset;
-  var cY=P.y+pYOff+2.0;
-  // Lerp rapide pour suivre sans traîner
-  cam.position.x+=(cX-cam.position.x)*Math.min(1,dt*22);
-  cam.position.y+=(cY-cam.position.y)*Math.min(1,dt*16);
-  cam.position.z+=(cZ-cam.position.z)*Math.min(1,dt*22);
-  cam.setTarget(new B.Vector3(P.x,P.y+pYOff+.80,P.z));
+  // ── CAMERA strictement derrière Stitch — tourne avec lui ──
+  // camYaw = toujours exactement derrière P.yaw
+  // Le joystick droit permet de regarder autour (camLook)
+  var baseCamYaw = P.yaw + Math.PI;
+  var finalCamYaw = baseCamYaw + camLookH;
+  var finalCamPitch = 0.18 + camLookV; // pitch de base + regard vertical
+  var CAM_DIST = 5.0;
+  var cr = CAM_DIST * Math.cos(finalCamPitch);
+  var cX = P.x + Math.sin(finalCamYaw)*cr;
+  var cZ = P.z + Math.cos(finalCamYaw)*cr;
+  var cY = P.y + pYOff + CAM_DIST*Math.sin(finalCamPitch) + 1.8;
+  cam.position.x += (cX-cam.position.x)*Math.min(1,dt*22);
+  cam.position.y += (cY-cam.position.y)*Math.min(1,dt*16);
+  cam.position.z += (cZ-cam.position.z)*Math.min(1,dt*22);
+  cam.setTarget(new B.Vector3(P.x, P.y+pYOff+0.82, P.z));
 
   // ── ZONES INTERACTION ──
   gameState.nearCarrefour=null;
@@ -919,7 +932,7 @@ window.doJump=doJump;
 function setSprint(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;}
 window.setSprint=setSprint;
 
-// Joystick
+// Joystick GAUCHE — déplacement
 var jBase=document.getElementById('joy'),jNub=document.getElementById('jnub'),JMAX=38;
 function jUp(cx,cy){
   var r=jBase.getBoundingClientRect(),dx=cx-(r.left+r.width/2),dy=cy-(r.top+r.height/2),d=Math.sqrt(dx*dx+dy*dy);
@@ -931,8 +944,24 @@ function jRst(){jNub.style.transform='translate(-50%,-50%)';jLX=0;jLY=0;jid=-1;}
 jBase.addEventListener('touchstart',function(e){e.preventDefault();jid=e.changedTouches[0].identifier;jUp(e.changedTouches[0].clientX,e.changedTouches[0].clientY);},{passive:false});
 jBase.addEventListener('touchmove',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jid)jUp(e.changedTouches[i].clientX,e.changedTouches[i].clientY);},{passive:false});
 jBase.addEventListener('touchend',jRst,{passive:true});
-jBase.addEventListener('mousedown',function(e){jUp(e.clientX,e.clientY);});
+jBase.addEventListener('mousedown',function(e){
+  var r=jBase.getBoundingClientRect();
+  if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)jUp(e.clientX,e.clientY);
+});
 window.addEventListener('mouseup',jRst);
+
+// Joystick DROIT — caméra
+var rjBase=document.getElementById('rjoy'),rjNub=document.getElementById('rjnub'),RJMAX=32;
+function rjUp(cx,cy){
+  var r=rjBase.getBoundingClientRect(),dx=cx-(r.left+r.width/2),dy=cy-(r.top+r.height/2),d=Math.sqrt(dx*dx+dy*dy);
+  if(d>RJMAX){dx=dx/d*RJMAX;dy=dy/d*RJMAX;}
+  rjNub.style.transform='translate(calc(-50% + '+dx+'px),calc(-50% + '+dy+'px))';
+  rjLX=d>4?dx/RJMAX:0;rjLY=d>4?dy/RJMAX:0;
+}
+function rjRst(){rjNub.style.transform='translate(-50%,-50%)';rjLX=0;rjLY=0;rjid=-1;}
+rjBase.addEventListener('touchstart',function(e){e.preventDefault();rjid=e.changedTouches[0].identifier;rjUp(e.changedTouches[0].clientX,e.changedTouches[0].clientY);},{passive:false});
+rjBase.addEventListener('touchmove',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===rjid)rjUp(e.changedTouches[i].clientX,e.changedTouches[i].clientY);},{passive:false});
+rjBase.addEventListener('touchend',rjRst,{passive:true});
 window.addEventListener('keydown',function(e){KY[e.code]=1;if(e.code==='Space'){e.preventDefault();doJump();}if(e.code==='ShiftLeft')sprint=true;if(e.code==='KeyE')tryInteract();});
 window.addEventListener('keyup',function(e){KY[e.code]=0;if(e.code==='ShiftLeft')sprint=false;});
 window.addEventListener('wheel',function(){},{passive:true});
