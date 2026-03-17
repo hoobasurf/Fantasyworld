@@ -158,10 +158,10 @@ var eng=new B.Engine(cv,true,{antialias:true,stencil:false,adaptToDeviceRatio:fa
 eng.setHardwareScalingLevel(window.devicePixelRatio>1?1.5:1);
 var sc=new B.Scene(eng);
 // Couleur ciel turquoise comme la photo
-sc.clearColor=new B.Color4(.45,.78,.92,1);
+sc.clearColor=new B.Color4(.35,.72,.91,1);
 sc.fogMode=B.Scene.FOGMODE_LINEAR;
 sc.fogStart=40;sc.fogEnd=110;
-sc.fogColor=new B.Color3(.55,.82,.90);
+sc.fogColor=new B.Color3(.48,.82,.90);
 
 var cam=new B.FreeCamera('cam',new B.Vector3(0,5,10),sc);
 cam.minZ=.1;cam.maxZ=250;cam.fov=.95;
@@ -171,8 +171,9 @@ step(7,'LUMIERES...');
 
 // Soleil tropical clair comme la photo
 var sun=new B.DirectionalLight('sun',new B.Vector3(-.25,-1,.1),sc);
-sun.intensity=3.0;
-sun.diffuse=new B.Color3(1.0,.95,.82);
+sun.intensity=3.4;
+sun.diffuse=new B.Color3(1.0,.96,.84);
+sun.specular=new B.Color3(.2,.18,.12);
 sun.specular=new B.Color3(.15,.12,.06);
 
 var shadows=null;
@@ -205,11 +206,11 @@ var skyDyn=new B.DynamicTexture('sdt',{width:4,height:256},sc,false);
   var ctx=skyDyn.getContext(),c=document.createElement('canvas');c.width=4;c.height=256;
   var cx=c.getContext('2d'),g=cx.createLinearGradient(0,0,0,256);
   // Bleu profond en haut → bleu clair → blanc/turquoise horizon (comme la photo)
-  g.addColorStop(0,'#1a6abf');
-  g.addColorStop(.35,'#3a90d8');
-  g.addColorStop(.65,'#62b8e8');
-  g.addColorStop(.88,'#90d4f0');
-  g.addColorStop(1,'#c0e8f5');
+  g.addColorStop(0,'#1e7acc');
+  g.addColorStop(.3,'#3a9ade');
+  g.addColorStop(.6,'#5ab8e8');
+  g.addColorStop(.82,'#8cd8f2');
+  g.addColorStop(1,'#b8ecf8');
   cx.fillStyle=g;cx.fillRect(0,0,4,256);
   ctx.drawImage(c,0,0);skyDyn.update(false);
 })();
@@ -288,13 +289,13 @@ function terrH(wx,wz){var k=Math.round(wx*3)+'_'+Math.round(wz*3);return hCache[
 
 // Herbe verte vive comme la photo
 var terrMat=new B.StandardMaterial('tMat',sc);
-terrMat.diffuseColor=new B.Color3(.28,.72,.18);terrMat.ambientColor=new B.Color3(.1,.28,.06);terrMat.specularColor=new B.Color3(.02,.04,.01);
+terrMat.diffuseColor=new B.Color3(.22,.68,.15);terrMat.ambientColor=new B.Color3(.08,.24,.05);terrMat.specularColor=new B.Color3(.02,.04,.01);
 terrain.material=terrMat;terrain.receiveShadows=true;
 
 // Sable chaud — plage
 var beach=B.MeshBuilder.CreateGround('beach',{width:300,height:300,subdivisions:2},sc);
 var bchMat=new B.StandardMaterial('bchMat',sc);
-bchMat.diffuseColor=new B.Color3(.90,.78,.52);bchMat.ambientColor=new B.Color3(.38,.30,.18);bchMat.specularColor=new B.Color3(.04,.04,.03);
+bchMat.diffuseColor=new B.Color3(.86,.74,.44);bchMat.ambientColor=new B.Color3(.35,.26,.14);bchMat.specularColor=new B.Color3(.04,.04,.03);
 beach.material=bchMat;beach.position.y=-.03;beach.receiveShadows=true;
 
 step(28,'EAU TURQUOISE...');
@@ -303,18 +304,19 @@ step(28,'EAU TURQUOISE...');
 var ocean=B.MeshBuilder.CreateGround('ocean',{width:1200,height:800,subdivisions:3},sc);
 var oceanMat=new B.StandardMaterial('oMat',sc);
 // Couleur turquoise/cyan vive = signature de la photo
-oceanMat.diffuseColor=new B.Color3(.18,.80,.82);
-oceanMat.emissiveColor=new B.Color3(.04,.22,.28);
-oceanMat.specularColor=new B.Color3(.8,.9,1.0);
-oceanMat.specularPower=55;
-oceanMat.alpha=.88;
+// Eau turquoise EXACTE de la photo #1dd8c8
+oceanMat.diffuseColor=new B.Color3(.11,.85,.78);
+oceanMat.emissiveColor=new B.Color3(.04,.28,.24);
+oceanMat.specularColor=new B.Color3(1,1,1);
+oceanMat.specularPower=120;
+oceanMat.alpha=.92;
 ocean.material=oceanMat;ocean.position.set(0,WATER_Y,-100);
 
 // Lagon turquoise clair près de la plage
 var lagon=B.MeshBuilder.CreateCylinder('lagon',{height:.22,diameter:220,tessellation:48},sc);
 var lagonMat=new B.StandardMaterial('lagonMat',sc);
-lagonMat.diffuseColor=new B.Color3(.28,.88,.90);
-lagonMat.emissiveColor=new B.Color3(.06,.28,.30);
+lagonMat.diffuseColor=new B.Color3(.25,.92,.86);
+lagonMat.emissiveColor=new B.Color3(.06,.38,.32);
 lagonMat.specularColor=new B.Color3(.6,.8,.9);lagonMat.specularPower=40;
 lagonMat.alpha=.52;
 lagon.material=lagonMat;lagon.position.y=WATER_Y+.05;
@@ -408,91 +410,147 @@ var dbMat=new B.StandardMaterial('dbMat',sc);dbMat.diffuseColor=new B.Color3(.58
 
 step(52,'PALMIERS REALISTES...');
 
-// ── MATERIAU TRONCS ET FEUILLES ──
-var trunkCol=new B.Color3(.60,.48,.30);
-var leafCols=[new B.Color3(.22,.72,.14),new B.Color3(.18,.62,.10),new B.Color3(.26,.80,.18),new B.Color3(.20,.68,.16)];
+// ── VRAIES TEXTURES depuis GitHub ──
+var trunkTex=new B.Texture(BASE+'bark.jpg',sc);trunkTex.uScale=1;trunkTex.vScale=3;trunkTex.wrapU=1;trunkTex.wrapV=1;
+var leafTex=new B.Texture(BASE+'leaf.jpg',sc);leafTex.uScale=1;leafTex.vScale=1;
+var grassTex2=new B.Texture(BASE+'grass.jpg',sc);grassTex2.uScale=14;grassTex2.vScale=14;
+var sandTex2=new B.Texture(BASE+'sand.jpg',sc);sandTex2.uScale=12;sandTex2.vScale=12;
+var rockTex2=new B.Texture(BASE+'rock.jpg',sc);rockTex2.uScale=3;rockTex2.vScale=3;
+// Appliquer sur terrain
+terrMat.diffuseTexture=grassTex2;terrMat.diffuseColor=new B.Color3(1,1,1);
+bchMat.diffuseTexture=sandTex2;bchMat.diffuseColor=new B.Color3(1,1,1);
+var trunkCol=new B.Color3(.60,.48,.30); // fallback si texture pas chargée
 
-// Palmier style photo — tronc fin courbé, grandes feuilles planes
+// ── PALMIER COMME LA PHOTO ──
+// Tronc très fin courbé + couronne = sphères denses vertes superposées
 function makePalm(x,z,h,lx,lz,addWall){
-  if(addWall!==false)walls.push({x1:x-.35,z1:z-.35,x2:x+.35,z2:z+.35});
+  if(addWall!==false)walls.push({x1:x-.38,z1:z-.38,x2:x+.38,z2:z+.38});
   var gh=terrH(x,z);
-  // Tronc 12 segments très courbé
-  var NS=12,pts=[new B.Vector3(x,gh,z)],cx2=x,cy=gh,cz2=z;
+  // Tronc 14 segments, courbure progressive forte
+  var NS=14,pts=[new B.Vector3(x,gh,z)],cx2=x,cy=gh,cz2=z;
   for(var i=1;i<=NS;i++){
-    var t=i/NS,bend=Math.pow(t,2.2)*2.5;
-    cx2+=lx/NS*bend+(Math.random()-.5)*.02;
+    var t=i/NS;
+    var bend=Math.pow(t,2.2)*3.0;
+    cx2+=lx/NS*bend+(Math.random()-.5)*.012;
     cy+=h/NS;
-    cz2+=lz/NS*bend+(Math.random()-.5)*.02;
+    cz2+=lz/NS*bend+(Math.random()-.5)*.012;
     pts.push(new B.Vector3(cx2,cy,cz2));
   }
+  // Tronc — texture écorce, très fin
   for(var i=0;i<NS;i++){
     var p0=pts[i],p1=pts[i+1];
-    var dBot=Math.max(.04,.18-.012*i),dTop=Math.max(.03,.14-.010*i);
-    var seg=B.MeshBuilder.CreateCylinder('ts',{height:p0.subtract(p1).length()*1.05,diameterTop:dTop,diameterBottom:dBot,tessellation:7},sc);
+    var dBot=Math.max(.03,.16-.010*i);
+    var dTop=Math.max(.022,.13-.009*i);
+    var seg=B.MeshBuilder.CreateCylinder('ts',{
+      height:p0.subtract(p1).length()*1.04,
+      diameterTop:dTop,diameterBottom:dBot,tessellation:7
+    },sc);
     var tM=new B.StandardMaterial('tM',sc);
-    // Couleur tronc varie légèrement du bas vers le haut
-    tM.diffuseColor=new B.Color3(trunkCol.r+i*.008,trunkCol.g+i*.005,trunkCol.b+i*.003);
-    tM.specularColor=new B.Color3(0,0,0);
+    tM.diffuseTexture=trunkTex;
+    tM.diffuseColor=new B.Color3(.92,.88,.78);
+    tM.specularColor=new B.Color3(.05,.04,.03);tM.specularPower=6;
     seg.material=tM;
     var mid=B.Vector3.Lerp(p0,p1,.5);seg.position=mid.clone();
     var dir=p1.subtract(p0).normalize(),up=new B.Vector3(0,1,0),axis=B.Vector3.Cross(up,dir);
     if(axis.length()>.001){axis.normalize();seg.rotate(axis,Math.acos(Math.min(1,B.Vector3.Dot(up,dir))),B.Space.WORLD);}
-    if(shadows)shadows.addShadowCaster(seg);
+    seg.receiveShadows=true;if(shadows)shadows.addShadowCaster(seg);
   }
-  // Feuilles — grandes planes retombantes
+  // ── COURONNE = sphères denses vertes comme dans la photo ──
+  // Plusieurs sphères qui se chevauchent = feuillage volumétrique dense
   var top=pts[NS];
-  var NL=11+Math.floor(Math.random()*4);
-  for(var i=0;i<NL;i++){
-    var ang=i/NL*Math.PI*2+(Math.random()-.5)*.25;
-    var ll=4.8+Math.random()*3.2,lw=.55+Math.random()*.35;
-    var lf=B.MeshBuilder.CreatePlane('lf',{width:ll,height:lw},sc);
-    var lm=new B.StandardMaterial('lm',sc);
-    lm.diffuseColor=leafCols[Math.floor(Math.random()*leafCols.length)].clone();
-    lm.diffuseColor.r+=Math.random()*.06;lm.diffuseColor.g+=Math.random()*.1;
-    lm.backFaceCulling=false;lm.specularColor=new B.Color3(.02,.04,.01);
-    lf.material=lm;
-    var droop=.6+Math.random()*.5;
-    lf.position.set(top.x+Math.sin(ang)*ll*.46,top.y-droop*.9,top.z+Math.cos(ang)*ll*.46);
-    lf.rotation.set(-droop*.85+(Math.random()-.5)*.08,ang+Math.PI/2,(Math.random()-.5)*.06);
-    if(shadows)shadows.addShadowCaster(lf);
-  }
+  var cr=h*.28; // rayon couronne
+  // Sphère centrale principale (la plus grosse)
+  var greens=[
+    new B.Color3(.18,.62,.12), new B.Color3(.22,.70,.14),
+    new B.Color3(.16,.58,.10), new B.Color3(.26,.72,.18),
+    new B.Color3(.20,.66,.16)
+  ];
+  // Boule principale
+  var c0=B.MeshBuilder.CreateSphere('c0',{diameter:cr*2.2,segments:7},sc);
+  var c0m=new B.StandardMaterial('c0m',sc);
+  c0m.diffuseTexture=leafTex;c0m.diffuseTexture.uScale=2;c0m.diffuseTexture.vScale=2;
+  c0m.diffuseColor=greens[0];c0m.specularColor=new B.Color3(.02,.05,.01);
+  c0.material=c0m;c0.position.set(top.x,top.y,top.z);
+  c0.scaling.set(1,.72,1); // légèrement aplatie
+  if(shadows)shadows.addShadowCaster(c0);
+  // Boules satellites autour (comme dans la photo — feuillage irrégulier)
+  var offsets=[
+    [.55,-.15,0,.88],[-.55,-.1,0,.82],[0,-.1,.5,.80],[0,-.12,-.5,.78],
+    [.4,.18,-.3,.72],[-.4,.15,.35,.68],[.3,-.28,.2,.65],[-.3,-.25,-.2,.62]
+  ];
+  offsets.forEach(function(o,oi){
+    var cb=B.MeshBuilder.CreateSphere('cb',{diameter:cr*o[3]*2,segments:6},sc);
+    var cbm=new B.StandardMaterial('cbm',sc);
+    cbm.diffuseTexture=leafTex;cbm.diffuseTexture.uScale=2;cbm.diffuseTexture.vScale=2;
+    cbm.diffuseColor=greens[oi%greens.length];cbm.specularColor=new B.Color3(.02,.05,.01);
+    cb.material=cbm;
+    cb.position.set(top.x+o[0]*cr,top.y+o[1]*cr,top.z+o[2]*cr);
+    cb.scaling.set(1,.75,1);
+    if(shadows)shadows.addShadowCaster(cb);
+  });
 }
 
 // Rochers volcaniques — comme dans la photo
 function makeRock(x,z,s,sy,addWall){
-  if(addWall!==false)walls.push({x1:x-s*.6,z1:z-s*.6,x2:x+s*.6,z2:z+s*.6});
+  if(addWall!==false)walls.push({x1:x-s*.65,z1:z-s*.65,x2:x+s*.65,z2:z+s*.65});
   var gh=terrH(x,z);
-  var rk=B.MeshBuilder.CreateSphere('rk',{diameter:s*2,segments:6},sc);
+  var rk=B.MeshBuilder.CreateSphere('rk',{diameter:s*2,segments:7},sc);
   var rkM=new B.StandardMaterial('rkM',sc);
-  // Gris foncé / brun volcanique comme la photo
-  rkM.diffuseColor=new B.Color3(.32+Math.random()*.08,.30+Math.random()*.06,.26+Math.random()*.06);
-  rkM.specularColor=new B.Color3(.08,.08,.07);rkM.specularPower=8;
-  rk.material=rkM;rk.position.set(x,gh+s*sy*.4,z);
-  rk.scaling.set(.72+Math.random()*.45,sy,.72+Math.random()*.4);
-  rk.rotation.set(Math.random()*.2,(Math.random()-.5)*Math.PI,Math.random()*.15);
-  if(shadows)shadows.addShadowCaster(rk);
-  // Végétation sur le rocher
-  if(s>1.5&&Math.random()>.4){
-    var rv=B.MeshBuilder.CreateSphere('rv',{diameter:s*.55,segments:5},sc);
-    var rvm=new B.StandardMaterial('rvm',sc);rvm.diffuseColor=new B.Color3(.22,.62,.16);rvm.specularColor=new B.Color3(0,0,0);
-    rv.material=rvm;rv.position.set(x,gh+s*sy*.6+s*.3,z+(Math.random()-.5)*s*.3);
+  rkM.diffuseTexture=rockTex2;rkM.diffuseTexture.uScale=2;rkM.diffuseTexture.vScale=2;
+  var dv=Math.random()*.08;
+  rkM.diffuseColor=new B.Color3(.20+dv,.18+dv,.16+dv);
+  rkM.specularColor=new B.Color3(.06,.06,.05);rkM.specularPower=5;
+  rk.material=rkM;
+  rk.position.set(x,gh+s*sy*.35-.1,z);
+  rk.scaling.set(.78+Math.random()*.4,sy,.78+Math.random()*.38);
+  rk.rotation.set(Math.random()*.18,(Math.random()-.5)*Math.PI,Math.random()*.12);
+  rk.receiveShadows=true;if(shadows)shadows.addShadowCaster(rk);
+  if(s>1.8){
+    for(var ri=0;ri<2+Math.floor(Math.random()*3);ri++){
+      var rs=s*(.28+Math.random()*.35);
+      var rks=B.MeshBuilder.CreateSphere('rks',{diameter:rs*2,segments:5},sc);
+      var rksm=new B.StandardMaterial('rksm',sc);
+      rksm.diffuseTexture=rockTex2;rksm.diffuseTexture.uScale=2;rksm.diffuseTexture.vScale=2;
+      var dv2=Math.random()*.06;
+      rksm.diffuseColor=new B.Color3(.18+dv2,.16+dv2,.14+dv2);
+      rksm.specularColor=new B.Color3(.05,.05,.04);
+      rks.material=rksm;
+      rks.position.set(x+(Math.random()-.5)*s*1.2,gh+rs*.4,z+(Math.random()-.5)*s*1.2);
+      rks.scaling.set(1,.55+Math.random()*.3,1);
+      rks.receiveShadows=true;if(shadows)shadows.addShadowCaster(rks);
+    }
+  }
+  if(s>1.5){
+    var rv=B.MeshBuilder.CreateSphere('rv',{diameter:s*.6+Math.random()*s*.3,segments:5},sc);
+    var rvm=new B.StandardMaterial('rvm',sc);
+    rvm.diffuseTexture=leafTex;rvm.diffuseTexture.uScale=2;rvm.diffuseTexture.vScale=2;
+    rvm.diffuseColor=new B.Color3(.20,.68,.14);rvm.specularColor=new B.Color3(.02,.04,.01);
+    rv.material=rvm;
+    rv.position.set(x+(Math.random()-.5)*s*.4,gh+s*sy*.55+s*.25,z+(Math.random()-.5)*s*.3);
+    rv.scaling.set(1,.62,1);if(shadows)shadows.addShadowCaster(rv);
   }
 }
 
-// Arbre feuilu tropical
-var trkMat=new B.StandardMaterial('trkMat',sc);
-trkMat.diffuseColor=new B.Color3(.52,.40,.26);trkMat.specularColor=new B.Color3(0,0,0);
 function makeTree(x,z,h,r,addWall){
-  if(addWall!==false)walls.push({x1:x-r*.55,z1:z-r*.55,x2:x+r*.55,z2:z+r*.55});
+  // Convertit en groupe de palmiers + buissons pour plus de réalisme
+  if(addWall!==false)walls.push({x1:x-r*.45,z1:z-r*.45,x2:x+r*.45,z2:z+r*.45});
   var gh=terrH(x,z);
-  var trunk=B.MeshBuilder.CreateCylinder('tr',{height:h,diameterTop:r*.16,diameterBottom:r*.28,tessellation:6},sc);
-  trunk.material=trkMat;trunk.position.set(x,gh+h/2,z);if(shadows)shadows.addShadowCaster(trunk);
-  var crowns=[new B.Color3(.20,.68,.14),new B.Color3(.16,.58,.10),new B.Color3(.24,.76,.18)];
-  [[0,h*.72,0,r],[r*.3,h*.56,0,r*.7],[-(r*.3),h*.58,0,r*.7],[0,h*.58,r*.3,r*.68],[0,h*.9,0,r*.56]].forEach(function(b){
-    var cr=B.MeshBuilder.CreateSphere('cr',{diameter:b[3]*2,segments:6},sc);
-    var crm=new B.StandardMaterial('crm',sc);crm.diffuseColor=crowns[Math.floor(Math.random()*crowns.length)];crm.specularColor=new B.Color3(0,0,0);
-    cr.material=crm;cr.position.set(x+b[0],gh+b[1],z+b[2]);cr.scaling.set(1,.8,1);if(shadows)shadows.addShadowCaster(cr);
-  });
+  // Buisson = feuilles larges planes au sol
+  var leafCount=4+Math.floor(Math.random()*4);
+  for(var li=0;li<leafCount;li++){
+    var la=li/leafCount*Math.PI*2+Math.random()*.5;
+    var ll=r*.8+Math.random()*r*.6;
+    var lf=B.MeshBuilder.CreatePlane('bl',{width:ll,height:ll*.45},sc);
+    var lm=new B.StandardMaterial('blm',sc);
+    lm.diffuseTexture=leafTex;lm.diffuseTexture.uScale=2;lm.diffuseTexture.vScale=1;
+    var gv=.75+Math.random()*.2;
+    lm.diffuseColor=new B.Color3(.65*gv,gv,.35*gv);
+    lm.backFaceCulling=false;lm.specularColor=new B.Color3(.02,.05,.01);
+    lf.material=lm;
+    lf.position.set(x+Math.sin(la)*ll*.35,gh+.25+Math.random()*.3,z+Math.cos(la)*ll*.35);
+    lf.rotation.set(-.55+Math.random()*.3,la+Math.PI/2,Math.random()*.2);
+    lf.receiveShadows=true;if(shadows)shadows.addShadowCaster(lf);
+  }
 }
 
 step(60,'VEGETATION...');
@@ -505,71 +563,71 @@ for(var i=0;i<16;i++){
   var vz=-i*1.4+3.5;
   makePalm(-3.0+Math.random()*.3,vz,8+Math.random()*5,-1.4+Math.random()*.4,(Math.random()-.5)*.3);
   makePalm(-5.8+Math.random()*.4,vz+.5,7+Math.random()*4,-1.1+Math.random()*.3,(Math.random()-.5)*.3);
-  makeTree(-4.2+Math.random()*.3,vz,11+Math.random()*5,3.2,true);
-  makeTree(-8.5+Math.random()*.5,vz,13+Math.random()*5,3.8,true);
+  makePalm(-4.2+Math.random()*.3,vz,11+Math.random()*5,3.2,true);
+  makePalm(-8.5+Math.random()*.5,vz,13+Math.random()*5,3.8,true);
   makePalm(3.0+Math.random()*.3,vz,8+Math.random()*5,1.4+Math.random()*.4,(Math.random()-.5)*.3);
   makePalm(5.8+Math.random()*.4,vz+.5,7+Math.random()*4,1.1+Math.random()*.3,(Math.random()-.5)*.3);
-  makeTree(4.2+Math.random()*.3,vz,11+Math.random()*5,3.2,true);
-  makeTree(8.5+Math.random()*.5,vz,13+Math.random()*5,3.8,true);
+  makePalm(4.2+Math.random()*.3,vz,11+Math.random()*5,3.2,true);
+  makePalm(8.5+Math.random()*.5,vz,13+Math.random()*5,3.8,true);
 }
 
-// C1→C2 (x=0, z=-20→-36)
+// C1→C2 (x=0, z=-20→-36) — UNIQUEMENT PALMIERS
 for(var i=0;i<10;i++){
   var vz=-20-i*1.7;
-  makePalm(-3.2+Math.random()*.3,vz,9+Math.random()*5,-1.3,(Math.random()-.5)*.3);
-  makeTree(-5+Math.random()*.3,vz,12+Math.random()*5,3.2,true);
-  makeTree(-9+Math.random()*.5,vz,13+Math.random()*5,4,true);
-  makePalm(3.2+Math.random()*.3,vz,9+Math.random()*5,1.3,(Math.random()-.5)*.3);
-  makeTree(5+Math.random()*.3,vz,12+Math.random()*5,3.2,true);
-  makeTree(9+Math.random()*.5,vz,13+Math.random()*5,4,true);
+  makePalm(-3.0+Math.random()*.3,vz,9+Math.random()*5,-1.3,(Math.random()-.5)*.3);
+  makePalm(-5.5+Math.random()*.4,vz-.4,8+Math.random()*4,-1.1,(Math.random()-.5)*.25);
+  makePalm(-8.5+Math.random()*.5,vz,10+Math.random()*5,-0.9,(Math.random()-.5)*.2,false);
+  makePalm(3.0+Math.random()*.3,vz,9+Math.random()*5,1.3,(Math.random()-.5)*.3);
+  makePalm(5.5+Math.random()*.4,vz-.4,8+Math.random()*4,1.1,(Math.random()-.5)*.25);
+  makePalm(8.5+Math.random()*.5,vz,10+Math.random()*5,0.9,(Math.random()-.5)*.2,false);
 }
 
-// C2→C3 horizontal (z=-38, x=0→12)
+// C2→C3 horizontal
 for(var i=0;i<9;i++){
   var vx=i*1.4;
-  makePalm(vx,-41.5+Math.random()*.3,8+Math.random()*4,(Math.random()-.5)*.5,-1.2+Math.random()*.3);
-  makeTree(vx,-44.5+Math.random()*.4,12+Math.random()*5,3.2,true);
-  makeTree(vx,-48+Math.random()*.5,13+Math.random()*5,3.8,true);
-  makePalm(vx,-34.5+Math.random()*.3,8+Math.random()*4,(Math.random()-.5)*.5,1.2+Math.random()*.3);
-  makeTree(vx,-31.5+Math.random()*.4,12+Math.random()*5,3.2,true);
+  makePalm(vx,-41.5+Math.random()*.3,8+Math.random()*4,(Math.random()-.5)*.4,-1.2+Math.random()*.2);
+  makePalm(vx,-45+Math.random()*.4,9+Math.random()*4,(Math.random()-.5)*.3,-1.0+Math.random()*.2);
+  makePalm(vx,-48.5+Math.random()*.4,8+Math.random()*3,(Math.random()-.5)*.3,-0.9,false);
+  makePalm(vx,-34.5+Math.random()*.3,8+Math.random()*4,(Math.random()-.5)*.4,1.2+Math.random()*.2);
+  makePalm(vx,-31+Math.random()*.4,9+Math.random()*4,(Math.random()-.5)*.3,1.0,false);
 }
 
 // C3→C4 (z=-38, x=12→26)
 for(var i=0;i<9;i++){
   var vx=12+i*1.6;
   makePalm(vx,-41.5,8+Math.random()*4,(Math.random()-.5)*.4,-1.2);
-  makeTree(vx,-45+Math.random()*.4,12+Math.random()*5,3.2,true);
+  makePalm(vx,-45+Math.random()*.4,12+Math.random()*5,3.2,true);
   makePalm(vx,-34.5,8+Math.random()*4,(Math.random()-.5)*.4,1.2);
-  makeTree(vx,-31+Math.random()*.4,11+Math.random()*4,3,true);
+  makePalm(vx,-31+Math.random()*.4,11+Math.random()*4,3,true);
 }
 
 // C4→C5 (x=28, z=-38→-50)
 for(var i=0;i<8;i++){
   var vz=-38-i*1.6;
   makePalm(25+Math.random()*.3,vz,8+Math.random()*4,-1.0,(Math.random()-.5)*.3);
-  makeTree(22+Math.random()*.3,vz,12+Math.random()*5,3,true);
-  makeTree(19+Math.random()*.4,vz,13+Math.random()*5,3.8,true);
+  makePalm(22+Math.random()*.3,vz,12+Math.random()*5,3,true);
+  makePalm(19+Math.random()*.4,vz,13+Math.random()*5,3.8,true);
   makePalm(31+Math.random()*.3,vz,8+Math.random()*4,1.0,(Math.random()-.5)*.3);
-  makeTree(34+Math.random()*.3,vz,12+Math.random()*5,3,true);
-  makeTree(37.5+Math.random()*.4,vz,13+Math.random()*5,3.8,true);
+  makePalm(34+Math.random()*.3,vz,12+Math.random()*5,3,true);
+  makePalm(37.5+Math.random()*.4,vz,13+Math.random()*5,3.8,true);
 }
 
 // C5→C6 (x=28, z=-52→-64)
 for(var i=0;i<8;i++){
   var vz=-52-i*1.6;
   makePalm(25+Math.random()*.3,vz,9+Math.random()*5,-1.0,(Math.random()-.5)*.3);
-  makeTree(22+Math.random()*.3,vz,12+Math.random()*5,3.2,true);
+  makePalm(22+Math.random()*.3,vz,12+Math.random()*5,3.2,true);
   makePalm(31+Math.random()*.3,vz,9+Math.random()*5,1.0,(Math.random()-.5)*.3);
-  makeTree(34+Math.random()*.3,vz,12+Math.random()*5,3.2,true);
+  makePalm(34+Math.random()*.3,vz,12+Math.random()*5,3.2,true);
 }
 
 // C6→sortie (z=-66, x=28→0 puis vers plage)
 for(var i=0;i<10;i++){
   var vx=26-i*2.8;
   makePalm(vx,-69.5,8+Math.random()*4,(Math.random()-.5)*.4,-1.1);
-  makeTree(vx,-73+Math.random()*.4,12+Math.random()*5,3,true);
+  makePalm(vx,-73+Math.random()*.4,12+Math.random()*5,3,true);
   makePalm(vx,-62.5,8+Math.random()*4,(Math.random()-.5)*.4,1.1);
-  makeTree(vx,-59+Math.random()*.4,11+Math.random()*4,3,true);
+  makePalm(vx,-59+Math.random()*.4,11+Math.random()*4,3,true);
 }
 for(var i=0;i<8;i++){
   var vz=-72-i*2;
@@ -582,6 +640,17 @@ for(var i=0;i<8;i++){
  [-34,25,2.8,.42],[12,34,2.5,.48],[-14,33,2.8,.44],[14,-34,2.2,.52],[-15,-33,2.6,.44],
  [-42,2,5.5,.5],[-44,8,6,.45],[-40,14,4.5,.52],[-46,5,5,.48],[-43,16,4,.55],
 ].forEach(function(r){makeRock(r[0],r[1],r[2],r[3]);});
+
+// Gros bloc rocheux au premier plan côté droit — signature de la photo
+makeRock(32,5,6.5,.52);
+makeRock(36,2,5.8,.48);
+makeRock(38,7,5,.55);
+makeRock(34,10,4.5,.50);
+makeRock(30,3,4,.58);
+// Côté gauche aussi
+makeRock(-30,6,5.5,.50);
+makeRock(-34,3,5,.52);
+makeRock(-36,8,4.5,.48);
 
 // Jungle dense tout autour (loin, sans collision)
 for(var i=0;i<50;i++){
