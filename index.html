@@ -20,8 +20,12 @@
 #breath-label{font-family:Georgia,serif;font-size:9px;color:#88ffee;text-shadow:0 0 6px #00ffcc}
 #breath-bg{width:140px;height:12px;border-radius:6px;background:rgba(0,20,40,.7);border:1.5px solid rgba(0,255,200,.4);overflow:hidden}
 #breath-fill{height:100%;width:100%;border-radius:6px;background:linear-gradient(90deg,#00ffcc,#0088ff);transition:background .3s}
-#underwater-overlay{position:fixed;inset:0;pointer-events:none;z-index:20;background:radial-gradient(ellipse at center,rgba(0,80,160,0) 40%,rgba(0,40,100,.55) 100%);opacity:0;transition:opacity .8s}
-#sink-overlay{position:fixed;inset:0;pointer-events:none;z-index:21;background:rgba(0,20,60,0);transition:background .5s}
+#underwater-overlay{position:fixed;inset:0;pointer-events:none;z-index:20;background:radial-gradient(ellipse at 50% 30%,rgba(0,200,220,0.08) 0%,rgba(0,80,160,0.5) 60%,rgba(0,20,80,0.75) 100%);opacity:0;transition:opacity .6s}
+#sink-overlay{position:fixed;inset:0;pointer-events:none;z-index:21;background:rgba(0,10,40,0);transition:background .4s}
+/* Effet caustiques sous l'eau */
+#caustic-overlay{position:fixed;inset:0;pointer-events:none;z-index:19;opacity:0;transition:opacity .6s;
+  background:repeating-linear-gradient(45deg,rgba(0,200,255,0.04) 0px,rgba(0,200,255,0) 8px,rgba(0,150,200,0.03) 12px,rgba(0,200,255,0) 20px),
+             repeating-linear-gradient(-45deg,rgba(0,255,200,0.03) 0px,rgba(0,255,200,0) 10px,rgba(0,200,255,0.04) 15px,rgba(0,255,200,0) 24px);}
 </style>
 </head>
 <body>
@@ -45,11 +49,18 @@
 <a-sphere position="48 57 -188" radius="14" color="#fff" material="roughness:0.9"></a-sphere>
 <a-sphere position="120 50 -200" radius="16" color="#fff" material="roughness:0.9"></a-sphere>
 <a-sphere position="-120 52 -195" radius="15" color="#fff" material="roughness:0.9"></a-sphere>
-<!-- SURFACE EAU -->
-<a-plane id="waterSurf" width="3000" height="3000" rotation="-90 0 0" position="0 -0.5 0" color="#14b8d4" material="transparent:true;opacity:0.82;roughness:0.04;metalness:0.2" shadow="receive:false"></a-plane>
-<a-cylinder id="lagon" radius="180" height=".3" position="0 -0.38 0" color="#22eedd" material="transparent:true;opacity:0.5;roughness:0.04" shadow="receive:false"></a-cylinder>
-<!-- FOND OCEAN -->
-<a-plane width="3000" height="3000" rotation="-90 0 0" position="0 -22 0" color="#0a4a30" material="roughness:0.95"></a-plane>
+<!-- SURFACE EAU translucide style Vaiana -->
+<a-plane id="waterSurf" width="3000" height="3000" rotation="-90 0 0" position="0 -0.3 0" color="#00d4e8" material="transparent:true;opacity:0.28;roughness:0.02;metalness:0.15;side:double" shadow="receive:false"></a-plane>
+<!-- Lagon turquoise translucide -->
+<a-cylinder id="lagon" radius="90" height=".25" position="0 -0.4 0" color="#00f0d0" material="transparent:true;opacity:0.22;roughness:0.02" shadow="receive:false"></a-cylinder>
+<!-- Zone intermédiaire bleue -->
+<a-cylinder radius="200" height=".2" position="0 -1.5 0" color="#00b8e8" material="transparent:true;opacity:0.32;roughness:0.03" shadow="receive:false"></a-cylinder>
+<!-- Zone profonde bleu marine -->
+<a-cylinder radius="600" height=".2" position="0 -6.0 0" color="#0044aa" material="transparent:true;opacity:0.42;roughness:0.04" shadow="receive:false"></a-cylinder>
+<!-- FOND OCEAN visible depuis la surface -->
+<a-plane id="oceanFloor" width="3000" height="3000" rotation="-90 0 0" position="0 -20 0" color="#0a3a28" material="roughness:0.95"></a-plane>
+<!-- Fond sableux lagon près des îles -->
+<a-cylinder radius="80" height=".1" position="0 -4.5 0" color="#c8b870" material="roughness:0.92"></a-cylinder>
 <!-- Vagues -->
 <a-torus id="w0" radius="72"  radius-tubular=".2" segments-tubular="64" rotation="90 0 0" position="0 -.42 0" color="#fff" material="transparent:true;opacity:0.5"></a-torus>
 <a-torus id="w1" radius="92"  radius-tubular=".2" segments-tubular="64" rotation="90 0 0" position="0 -.42 0" color="#fff" material="transparent:true;opacity:0.42"></a-torus>
@@ -76,6 +87,7 @@
 </div>
 <div id="underwater-overlay"></div>
 <div id="sink-overlay"></div>
+<div id="caustic-overlay"></div>
 <div id="joy"><div id="jnub"></div></div>
 <div id="rjoy"><div id="rjnub"></div></div>
 <div id="btns">
@@ -659,29 +671,115 @@ function initGame(){
   }
 
   function buildUnderwaterWorld(){
-    var U=UW;var DEPTH=-18;
-    mk('plane',{width:'800',height:'800',rotation:'-90 0 0',position:'0 '+DEPTH+' 0',material:'color:#c8d890;roughness:.92'},U);
-    var coralData=[[10,-15,15,'#ff4488'],[18,-15,8,'#ff6600'],[5,-15,22,'#ff1155'],[25,-15,18,'#ee2200'],[-12,-15,10,'#ff44aa'],[-8,-15,20,'#ff7700'],[20,-15,-10,'#cc0088'],[-20,-15,15,'#ff3300'],[15,-15,-18,'#ff5500'],[-15,-15,-12,'#ee1155'],[30,-15,5,'#ff6622'],[-28,-15,8,'#ff2244'],[0,-15,28,'#ff4400'],[22,-15,25,'#dd1166'],[-22,-15,22,'#ff5533']];
-    coralData.forEach(function(c){makeCoral(c[0],c[1],c[2],c[3],U);});
-    for(var i=0;i<40;i++){
-      var ax=(Math.random()-.5)*100,az=(Math.random()-.5)*100,ah=1.2+Math.random()*2.5;
-      var alg=mk('plane',{width:'.18',height:ah.toFixed(2),position:ax.toFixed(1)+' '+(DEPTH+ah/2)+' '+az.toFixed(1),rotation:'0 '+(Math.random()*360)+' 0',material:'side:double;color:#1a8a30;roughness:.7;transparent:true;opacity:.85'},U);
-      alg.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);alg.dataset.brx='0';alg.dataset.bry=(Math.random()*360).toFixed(1);alg.classList.add('wind-leaf');
+    var U=UW;
+    // ── FOND avec topographie : sable près des îles → roche profonde
+    // Fond sableux peu profond autour île principale
+    mk('cylinder',{radius:'75',height:'.3',position:'0 -4.8 0',material:'color:#d4c870;roughness:.92'},U);
+    mk('cylinder',{radius:'65',height:'.3',position:'0 -3.8 0',material:'color:#ddd080;roughness:.9'},U);
+    mk('cylinder',{radius:'50',height:'.3',position:'0 -2.8 0',material:'color:#e8d890;roughness:.88'},U);
+    // Fond profond
+    mk('plane',{width:'3000',height:'3000',rotation:'-90 0 0',position:'0 -20 0',material:'color:#0a2a18;roughness:.96'},U);
+    mk('cylinder',{radius:'600',height:'.2',position:'0 -18 0',material:'color:#1a3a20;roughness:.95'},U);
+    // Zone intermédiaire roche/algues
+    mk('cylinder',{radius:'250',height:'.2',position:'0 -12 0',material:'color:#2a4a28;roughness:.93'},U);
+
+    // ── CORAUX — beaucoup plus, répartis sur 3 zones de profondeur
+    // Zone peu profonde (fond sableux -3 à -5) — coraux colorés et visibles depuis la surface
+    var coralShallow=[
+      [8,-3,12,'#ff44aa'],[15,-3,5,'#ff6600'],[3,-3,20,'#ff1155'],[22,-3,15,'#ffaa00'],
+      [-10,-3,8,'#ff44cc'],[-6,-3,18,'#ff7700'],[18,-3,-8,'#00ddff'],[-16,-3,12,'#ff3300'],
+      [12,-3,-15,'#ff5500'],[-12,-3,-10,'#ee1155'],[25,-4,3,'#ff6622'],[-24,-4,6,'#ff2244'],
+      [0,-3,25,'#ff4400'],[20,-4,22,'#dd1166'],[-20,-4,20,'#ff5533'],[28,-4,-5,'#00ffaa'],
+      [-28,-4,-8,'#ffcc00'],[5,-4,-22,'#ff44ff'],[16,-4,-20,'#00ccff'],[-5,-4,28,'#ff8800'],
+      [35,-5,10,'#ff0044'],[10,-5,35,'#ff6600'],[-35,-5,8,'#aa00ff'],[-10,-5,-30,'#ff4488'],
+      [0,-5,0,'#00ffcc'],[6,-4,6,'#ff3366'],[-8,-4,-6,'#ffaa22'],[14,-4,-2,'#00eebb']
+    ];
+    coralShallow.forEach(function(c){makeCoral(c[0],c[1],c[2],c[3],U);});
+    // Zone intermédiaire (-6 à -12)
+    var coralMid=[
+      [40,-8,20,'#ff1188'],[50,-9,5,'#ff6600'],[30,-8,-30,'#8800ff'],
+      [-40,-8,25,'#00ccff'],[-50,-9,-15,'#ff4400'],[45,-10,-25,'#ff88cc'],
+      [20,-10,-45,'#00ffaa'],[-20,-10,50,'#ffcc00'],[55,-10,30,'#ff2255'],
+      [-55,-10,-30,'#0088ff'],[0,-10,55,'#ff6622'],[-60,-11,10,'#44ffcc']
+    ];
+    coralMid.forEach(function(c){makeCoral(c[0],c[1],c[2],c[3],U);});
+
+    // ── ALGUES — beaucoup plus nombreuses et hautes
+    for(var i=0;i<80;i++){
+      var ax=(Math.random()-.5)*180,az=(Math.random()-.5)*180;
+      var depth=Math.sqrt(ax*ax+az*az);
+      var baseY=depth<70?-3.5:depth<120?-8:-14;
+      var ah=0.8+Math.random()*3.5;
+      var gcols=['#1a9a30','#0a8a20','#2aaa40','#157a25','#0e6018'];
+      var gc=gcols[Math.floor(Math.random()*gcols.length)];
+      var alg=mk('plane',{width:(.12+Math.random()*.18).toFixed(2),height:ah.toFixed(2),
+        position:ax.toFixed(1)+' '+(baseY+ah/2).toFixed(1)+' '+az.toFixed(1),
+        rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',
+        material:'side:double;color:'+gc+';roughness:.7;transparent:true;opacity:.88'},U);
+      alg.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);
+      alg.dataset.brx='0';alg.dataset.bry=(Math.random()*360).toFixed(1);
+      alg.classList.add('wind-leaf');
     }
-    for(var i=0;i<8;i++){var sx=(Math.random()-.5)*60,sz=(Math.random()-.5)*60;mk('cylinder',{radius:'.3',height:'.06',position:sx.toFixed(1)+' '+(DEPTH+.03)+' '+sz.toFixed(1),material:'color:#ff6633;roughness:.7'},U);}
-    for(var i=0;i<12;i++){var shx=(Math.random()-.5)*70,shz=(Math.random()-.5)*70;mk('sphere',{radius:'.12',position:shx.toFixed(1)+' '+(DEPTH+.06)+' '+shz.toFixed(1),scale:'1 .4 1',material:'color:#f0d080;roughness:.6'},U);}
-    for(var i=0;i<10;i++){var rrx=(Math.random()-.5)*80,rrz=(Math.random()-.5)*80;mk('sphere',{radius:(1+Math.random()*2).toFixed(1),position:rrx.toFixed(1)+' '+(DEPTH+1)+' '+rrz.toFixed(1),scale:'1 .6 1',material:'color:#4a3a28;roughness:.97'},U);}
+
+    // ── ÉTOILES DE MER et coquillages sur le fond sableux
+    for(var i=0;i<20;i++){
+      var sx=(Math.random()-.5)*120,sz=(Math.random()-.5)*120;
+      var depth2=Math.sqrt(sx*sx+sz*sz);
+      var sy=depth2<60?-3.8:depth2<90?-6:-10;
+      var starCols=['#ff6633','#ff4400','#ff8822','#ee3311'];
+      mk('cylinder',{radius:(.2+Math.random()*.25).toFixed(2),height:'.04',
+        position:sx.toFixed(1)+' '+sy.toFixed(1)+' '+sz.toFixed(1),
+        scale:'1 1 '+(0.4+Math.random()*.5).toFixed(2),
+        material:'color:'+starCols[Math.floor(Math.random()*starCols.length)]+';roughness:.6;emissive:#ff2200;emissiveIntensity:.12'},U);
+    }
+    // Coquillages
+    for(var i=0;i<25;i++){
+      var shx=(Math.random()-.5)*100,shz=(Math.random()-.5)*100;
+      var shDepth=Math.sqrt(shx*shx+shz*shz);
+      var shy=shDepth<60?-3.9:shDepth<90?-6.5:-11;
+      var shCols=['#f0d880','#e8c860','#fff0c0','#d0b860','#f8e8a0'];
+      mk('sphere',{radius:(.08+Math.random()*.12).toFixed(2),
+        position:shx.toFixed(1)+' '+shy.toFixed(1)+' '+shz.toFixed(1),
+        scale:'1 .45 '+(0.6+Math.random()*.5).toFixed(2),
+        material:'color:'+shCols[Math.floor(Math.random()*shCols.length)]+';roughness:.5'},U);
+    }
+    // Rochers sous-marins
     for(var i=0;i<18;i++){
-      var fish=mk('entity',{},U);
-      var fr=.1+Math.random()*.15,fc=randomFishColor();
-      mk('sphere',{radius:fr.toFixed(3),material:'color:#'+fc+';roughness:.5;emissive:#'+fc+';emissiveIntensity:.3'},fish);
-      mk('cone',{'radius-bottom':(fr*.5).toFixed(3),'radius-top':'.01',height:(fr*1.2).toFixed(3),position:(-fr*1.0).toFixed(3)+' 0 0',rotation:'0 0 90',material:'color:#'+fc+';roughness:.5'},fish);
-      mk('sphere',{radius:(fr*.22).toFixed(3),position:(fr*.5).toFixed(3)+' '+(fr*.2).toFixed(3)+' '+(fr*.55).toFixed(3),material:'color:#111;roughness:.4'},fish);
-      fish.classList.add('fish-anim');fish.dataset.fishPhase=(Math.random()*Math.PI*2).toFixed(3);fish.dataset.fishR=(8+Math.random()*25).toFixed(1);fish.dataset.fishDepth=(-5-Math.random()*12).toFixed(1);fish.dataset.fishSpeed=(.3+Math.random()*.4).toFixed(3);
+      var rrx=(Math.random()-.5)*160,rrz=(Math.random()-.5)*160;
+      var rrDepth=Math.sqrt(rrx*rrx+rrz*rrz);
+      var rry=rrDepth<80?-4:rrDepth<130?-9:-15;
+      mk('sphere',{radius:(0.8+Math.random()*2.5).toFixed(1),
+        position:rrx.toFixed(1)+' '+rry.toFixed(1)+' '+rrz.toFixed(1),
+        scale:(0.8+Math.random()*.6).toFixed(2)+' '+(0.4+Math.random()*.4).toFixed(2)+' '+(0.7+Math.random()*.5).toFixed(2),
+        material:'color:#4a3a28;roughness:.97'},U);
     }
-    mk('point',{position:'0 -10 0',color:'#0088cc',intensity:'1.2',distance:'60'},U);
-    mk('point',{position:'20 -14 20',color:'#00aaff',intensity:'0.8',distance:'40'},U);
-    mk('point',{position:'-20 -14 -20',color:'#00ccaa',intensity:'0.6',distance:'35'},U);
+
+    // ── POISSONS — 30 poissons sur 3 profondeurs
+    for(var i=0;i<30;i++){
+      var fish=mk('entity',{},U);
+      var fr=.08+Math.random()*.2,fc=randomFishColor();
+      mk('sphere',{radius:fr.toFixed(3),material:'color:#'+fc+';roughness:.5;emissive:#'+fc+';emissiveIntensity:.35'},fish);
+      mk('cone',{'radius-bottom':(fr*.55).toFixed(3),'radius-top':'.01',height:(fr*1.4).toFixed(3),
+        position:(-fr*1.1).toFixed(3)+' 0 0',rotation:'0 0 90',material:'color:#'+fc+';roughness:.5'},fish);
+      // Nageoires
+      mk('plane',{width:(fr*1.8).toFixed(3),height:(fr*0.9).toFixed(3),
+        position:'0 '+(fr*.6).toFixed(3)+' 0',rotation:'0 0 30',
+        material:'side:double;color:#'+fc+';transparent:true;opacity:.7'},fish);
+      mk('sphere',{radius:(fr*.2).toFixed(3),position:(fr*.45).toFixed(3)+' '+(fr*.18).toFixed(3)+' '+(fr*.5).toFixed(3),
+        material:'color:#111;roughness:.4'},fish);
+      fish.classList.add('fish-anim');
+      fish.dataset.fishPhase=(Math.random()*Math.PI*2).toFixed(3);
+      fish.dataset.fishR=(5+Math.random()*30).toFixed(1);
+      fish.dataset.fishDepth=(i<10?(-2-Math.random()*3):(i<20?(-5-Math.random()*6):(-10-Math.random()*8))).toFixed(1);
+      fish.dataset.fishSpeed=(.25+Math.random()*.5).toFixed(3);
+    }
+
+    // ── LUMIÈRES sous-marines
+    mk('point',{position:'0 -3 0',color:'#00ffdd',intensity:'1.5',distance:'80'},U);
+    mk('point',{position:'25 -6 25',color:'#00aaff',intensity:'1.0',distance:'50'},U);
+    mk('point',{position:'-25 -6 -25',color:'#00ccaa',intensity:'0.8',distance:'40'},U);
+    mk('point',{position:'0 -12 0',color:'#0044aa',intensity:'0.6',distance:'60'},U);
+    mk('point',{position:'40 -10 -40',color:'#0066cc',intensity:'0.5',distance:'45'},U);
   }
   function randomFishColor(){var cols=['ff8800','ff0044','00ccff','ffff00','ff44aa','88ffcc','ff6622','22ffcc','ff2266'];return cols[Math.floor(Math.random()*cols.length)];}
   function makeCoral(x,y,z,col,par){
@@ -996,12 +1094,12 @@ function initGame(){
     }
   }
 
-  var WATER_SURFACE=-0.48;
+  var WATER_SURFACE=-0.3;  // aligné avec la surface visuelle
   var MAX_BREATH=100;
-  var BREATH_LOSE=7;
-  var BREATH_GAIN=25;
-  var SINK_SPEED=3.5;
-  var SWIM_SPEED=4.5;
+  var BREATH_LOSE=5;   // perd moins vite — plus de temps sous l'eau
+  var BREATH_GAIN=30;
+  var SINK_SPEED=2.5;   // coule moins vite
+  var SWIM_SPEED=5.5;   // nage plus vite
 
   var P={x:0,y:1.5,z:3,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,
          state:'ground',breath:MAX_BREATH,swimBob:0,canSwim:true,sinkTimer:0};
@@ -1107,16 +1205,32 @@ function initGame(){
       if(P.y>=WATER_SURFACE-.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.sinkTimer=0;}
       if(P.breath<=0){P.y=WATER_SURFACE+1;P.vy=3;P.state='surface';P.breath=35;toast('Stitch a failli se noyer !',2500);}
     } else if(P.state==='diving'){
-      P.vy*=.84;
-      if(jLY<-.08) P.vy=Math.min(P.vy+8*dt*(-jLY),5);
-      else if(jLY>.08) P.vy=Math.max(P.vy-8*dt*jLY,-5);
-      P.vy+=0.4*dt;P.y+=P.vy*dt;P.onGround=false;
+      // Plongée libre 3D — nage fluide
+      P.vy*=.88;
+      // Joystick gauche Y = monter/descendre
+      if(jLY<-.06) P.vy=Math.min(P.vy+10*dt*(-jLY),6);
+      else if(jLY>.06) P.vy=Math.max(P.vy-10*dt*jLY,-6);
+      // Flottabilité légère (remonte naturellement vers surface)
+      P.vy+=0.6*dt;
+      P.y+=P.vy*dt;
+      P.onGround=false;
       P.breath=Math.max(0,P.breath-BREATH_LOSE*dt);
-      if(P.y>=WATER_SURFACE-.05){P.y=WATER_SURFACE;P.state='surface';P.vy=0;P.sinkTimer=0;}
-      if(P.y<-21.5){P.y=-21.5;P.vy=Math.max(0,P.vy);}
-      if(P.breath<=0){P.y=WATER_SURFACE+1;P.vy=4;P.state='surface';P.breath=35;toast('Stitch remonte prendre de l air !',2500);}
-      if(gy!==null&&gy>WATER_SURFACE&&P.y<=gy+P.yOff){P.y=gy+P.yOff;P.vy=0;P.state='ground';}
-    }
+
+      // Remontée automatique douce à la surface
+      if(P.y>=WATER_SURFACE-.05){
+        P.y=WATER_SURFACE;P.state='surface';P.vy=0;P.sinkTimer=0;
+      }
+      // Fond de l'océan
+      if(P.y<-19.5){P.y=-19.5;P.vy=Math.max(0.5,P.vy);}
+      // Noyade urgence
+      if(P.breath<=0){
+        P.y=WATER_SURFACE+1;P.vy=5;P.state='surface';P.breath=40;
+        toast('Stitch remonte prendre de l air !',2500);
+      }
+      // Touche le fond d'une île (pas de téléportation)
+      if(gy!==null&&gy>WATER_SURFACE-0.5&&P.y<=gy+P.yOff){
+        P.y=gy+P.yOff;P.vy=0;P.state='ground';
+      }
 
     var PRAD=.48,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
     for(var wi=0;wi<walls.length;wi++){
@@ -1162,6 +1276,7 @@ function initGame(){
     var breathFill=document.getElementById('breath-fill');
     var uwOverlay=document.getElementById('underwater-overlay');
     var sinkOverlay=document.getElementById('sink-overlay');
+    var causticOverlay=document.getElementById('caustic-overlay');
     var inWater=(P.state==='diving'||P.state==='surface'||P.state==='sinking');
     if(inWater){
       breathBar.style.display='flex';
@@ -1169,13 +1284,21 @@ function initGame(){
       breathFill.style.width=(pct*100).toFixed(0)+'%';
       breathFill.style.background=pct>.5?'linear-gradient(90deg,#00ffcc,#0088ff)':pct>.2?'linear-gradient(90deg,#ffcc00,#ff6600)':'linear-gradient(90deg,#ff2200,#ff6600)';
     } else { breathBar.style.display='none'; }
-    uwOverlay.style.opacity=P.state==='diving'?.72:(P.state==='surface'?.18:0);
+    // Overlay bleu sous l'eau — s'intensifie avec la profondeur
+    var divDepth=(P.state==='diving'||P.state==='sinking')?Math.min(1,Math.max(0,(WATER_SURFACE-P.y)/15)):0;
+    uwOverlay.style.opacity=(P.state==='diving'||P.state==='sinking')?(0.35+divDepth*0.45):(P.state==='surface'?0.12:0);
+    causticOverlay.style.opacity=(P.state==='diving'||P.state==='sinking')?(0.6+Math.sin(waveT*1.4)*0.2):0;
     var sinkDepth=(P.state==='sinking'||P.state==='diving')? Math.min(1,Math.max(0,(WATER_SURFACE-P.y)/15)) : 0;
-    sinkOverlay.style.background='rgba(0,20,60,'+(sinkDepth*.6).toFixed(2)+')';
+    sinkOverlay.style.background='rgba(0,10,40,'+(sinkDepth*.5).toFixed(2)+')';
     var scene=document.querySelector('a-scene');
     if(P.state==='diving'||P.state==='sinking'){
-      scene.setAttribute('fog','type:exponential;color:#004466;density:0.035');
-      document.getElementById('skyEl').setAttribute('color','#003355');
+      // Fog bleu progressif selon profondeur
+      var fogDensity=(0.018+divDepth*0.022).toFixed(4);
+      var fogG=Math.max(0,Math.min(255,Math.floor(80-divDepth*60)));
+      var fogB=Math.max(0,Math.min(255,Math.floor(130+divDepth*80)));
+      var fogHex='#00'+fogG.toString(16).padStart(2,'0')+fogB.toString(16).padStart(2,'0');
+      scene.setAttribute('fog','type:exponential;color:'+fogHex+';density:'+fogDensity);
+      document.getElementById('skyEl').setAttribute('color','#001a3a');
     } else {
       scene.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.007');
       document.getElementById('skyEl').setAttribute('color','#4ab8f0');
