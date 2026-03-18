@@ -1231,6 +1231,7 @@ function initGame(){
       if(gy!==null&&gy>WATER_SURFACE-0.5&&P.y<=gy+P.yOff){
         P.y=gy+P.yOff;P.vy=0;P.state='ground';
       }
+    } // fin diving
 
     var PRAD=.48,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
     for(var wi=0;wi<walls.length;wi++){
