@@ -53,7 +53,8 @@
 
 <!-- SURFACE EAU -->
 
-<a-plane id="waterSurf" width="3000" height="3000" rotation="-90 0 0" position="0 -0.5 0" color="#14b8d4" material="transparent:true;opacity:0.82;roughness:0.04;metalness:0.2"></a-plane>
+<a-plane id="waterSurf" width="3000" height="3000" rotation="-90 0 0" position="0 -0.5 0" color="#14b8d4" material="transparent:true;opacity:0.82;roughness:0.04;metalness:0.2" shadow="receive:false"></a-plane>
+<a-cylinder id="lagon" radius="180" height=".3" position="0 -0.38 0" color="#22eedd" material="transparent:true;opacity:0.5;roughness:0.04" shadow="receive:false"></a-cylinder>
 
 <!-- FOND OCEAN visible sous l'eau -->
 
@@ -249,73 +250,85 @@ function initGame(){
     }
   }
 
-  // ══ PONT EN BOIS — planches larges individuelles, bien au-dessus de l'eau ══
+  // ══ PONT EN BOIS — planches d'une corde à l'autre, murs de corde solides ══
   function makeBridge(x1,y1,z1,x2,y2,z2){
     var bdx=x2-x1,bdz=z2-z1;
     var len=Math.sqrt(bdx*bdx+bdz*bdz);
     var ang=Math.atan2(bdx,bdz)*180/Math.PI;
     var perp=new THREE.Vector3(-bdz,0,bdx).normalize();
-    // Pont large : 1.8u (2x ancienne largeur de 0.9)
-    var PLANK_DEPTH=1.8;
-    var PLANK_H=0.1;
-    // Espacement : planche + 10cm de vide
-    var PLANK_STEP=0.45; // largeur planche
-    var GAP=0.1;
-    var nPlanks=Math.floor(len/(PLANK_STEP+GAP));
-    var step=(PLANK_STEP+GAP);
-    // Hauteur minimale : au moins 1.5u au-dessus de la surface de l'eau
+
+    // Distance entre cordes = largeur du pont = 3.0u
+    var ROPE_OFFSET=1.5; // chaque corde à ±1.5 du centre
+    // La planche va d'une corde à l'autre = 3.0u de profondeur
+    var PLANK_DEPTH=ROPE_OFFSET*2; // = 3.0
+    var PLANK_H=0.12;
+    var PLANK_W=0.44;  // largeur sens marche
+    var GAP=0.10;
+    var nPlanks=Math.floor(len/(PLANK_W+GAP));
+
     var WATER_SURFACE_Y=-0.48;
-    var MIN_BRIDGE_H=WATER_SURFACE_Y+1.8; // jamais sous 1.3u au dessus eau
+    var MIN_H=WATER_SURFACE_Y+1.8;
 
-    // Calcule la hauteur de chaque planche en garantissant qu'elle est au-dessus de l'eau
-    function bridgeY(t){
-      // Interpolation lineaire entre y1 et y2, avec légère courbe, clampé au-dessus eau
-      var raw=y1+(y2-y1)*t;
-      return Math.max(MIN_BRIDGE_H, raw);
-    }
+    function bY(t){return Math.max(MIN_H, y1+(y2-y1)*t);}
 
-    // Planches
+    // ── Planches (de corde à corde)
     for(var i=0;i<nPlanks;i++){
       var t=(i+.5)/nPlanks;
-      var px=x1+bdx*t, pz=z1+bdz*t;
-      var py=bridgeY(t);
-      var woodCol=i%2===0?'#a0622a':'#8a5020';
-      mk('box',{width:PLANK_STEP,height:PLANK_H,depth:PLANK_DEPTH,
+      var px=x1+bdx*t, pz=z1+bdz*t, py=bY(t);
+      mk('box',{
+        width:PLANK_W, height:PLANK_H, depth:PLANK_DEPTH,
         position:px.toFixed(2)+' '+py.toFixed(2)+' '+pz.toFixed(2),
         rotation:'0 '+ang.toFixed(1)+' 0',
-        material:'color:'+woodCol+';roughness:.95',shadow:'cast:true;receive:true'});
-      // Plateforme collision — fine, exactement sur la planche
-      addPlatform(px,pz,py,PLANK_STEP*.6,PLANK_DEPTH*.5);
+        material:'color:'+(i%2===0?'#a0622a':'#8a5020')+';roughness:.95',
+        shadow:'cast:true;receive:true'
+      });
+      addPlatform(px,pz,py,PLANK_W*.6,PLANK_DEPTH*.5);
     }
 
-    // Cordes latérales — 2 niveaux de chaque côté
-    var HALF_W=PLANK_DEPTH/2+0.06;
+    // ── Cordes (2 hauteurs × 2 côtés)
     for(var side=-1;side<=1;side+=2){
-      var pOff=perp.clone().multiplyScalar(HALF_W*side);
-      for(var rope=0;rope<2;rope++){
-        var rh=0.6+rope*0.55;
+      var pOff=perp.clone().multiplyScalar(ROPE_OFFSET*side);
+      var ROPE_H=[0.65, 1.25]; // 2 cordes superposées
+      for(var ri=0;ri<ROPE_H.length;ri++){
+        var rh=ROPE_H[ri];
         for(var i=0;i<nPlanks;i++){
-          var t0=i/nPlanks,t1=(i+1)/nPlanks;
-          var ax=x1+bdx*t0+pOff.x, ay=bridgeY(t0)+rh, az=z1+bdz*t0+pOff.z;
-          var bx=x1+bdx*t1+pOff.x, by=bridgeY(t1)+rh, bz=z1+bdz*t1+pOff.z;
-          var dx=bx-ax,dy=by-ay,dz=bz-az,rl=Math.sqrt(dx*dx+dy*dy+dz*dz);
-          mk('cylinder',{radius:'.028',height:rl.toFixed(2),
-            position:((ax+bx)/2).toFixed(2)+' '+((ay+by)/2).toFixed(2)+' '+((az+bz)/2).toFixed(2),
-            rotation:segRot(dx,dy,dz),material:'color:#6a3a10;roughness:.95'});
+          var t0=i/nPlanks, t1=(i+1)/nPlanks;
+          var ax=x1+bdx*t0+pOff.x, ay=bY(t0)+rh, az=z1+bdz*t0+pOff.z;
+          var bx2=x1+bdx*t1+pOff.x, by2=bY(t1)+rh, bz2=z1+bdz*t1+pOff.z;
+          var dx=bx2-ax,dy=by2-ay,dz2=bz2-az,rl=Math.sqrt(dx*dx+dy*dy+dz2*dz2);
+          mk('cylinder',{radius:'.032',height:rl.toFixed(2),
+            position:((ax+bx2)/2).toFixed(2)+' '+((ay+by2)/2).toFixed(2)+' '+((az+bz2)/2).toFixed(2),
+            rotation:segRot(dx,dy,dz2),
+            material:'color:#6a3a10;roughness:.95'});
         }
       }
-      // Barres verticales (montants) tous les 3 pas
+
+      // ── Barreaux verticaux entre les 2 cordes (tous les 3 planches)
       for(var i=1;i<nPlanks-1;i+=3){
         var t=i/nPlanks;
-        var px2=x1+bdx*t+pOff.x, pz2=z1+bdz*t+pOff.z, py2=bridgeY(t);
-        mk('cylinder',{radius:'.035',height:'1.22',
-          position:px2.toFixed(2)+' '+(py2+.61).toFixed(2)+' '+pz2.toFixed(2),
+        var px2=x1+bdx*t+pOff.x, pz2=z1+bdz*t+pOff.z, py2=bY(t);
+        mk('cylinder',{radius:'.04',height:'1.3',
+          position:px2.toFixed(2)+' '+(py2+.65).toFixed(2)+' '+pz2.toFixed(2),
           material:'color:#7a4a10;roughness:.95'});
       }
-      // Poteaux aux extrémités
-      [[x1,bridgeY(0),z1],[x2,bridgeY(1),z2]].forEach(function(p){
-        mk('cylinder',{radius:'.10',height:'3.0',
-          position:(p[0]+pOff.x).toFixed(2)+' '+(p[1]+1.5).toFixed(2)+' '+(p[2]+pOff.z).toFixed(2),
+
+      // ── MURS INVISIBLES le long des cordes (empêche de passer à travers)
+      // Un mur continu le long de chaque côté
+      var wallMX=(x1+x2)/2+pOff.x, wallMZ=(z1+z2)/2+pOff.z;
+      var wallAng=ang; // même angle que le pont
+      // On ajoute des murs AABB par segments
+      for(var i=0;i<nPlanks;i+=2){
+        var t=(i+1)/nPlanks;
+        var wpx=x1+bdx*t+pOff.x, wpz=z1+bdz*t+pOff.z, wpy=bY(t);
+        var segLen=(PLANK_W+GAP)*2+.2;
+        // Mur perpendiculaire au pont, côté corde
+        addWall(wpx,wpz,.15,1.5,wpy);
+      }
+
+      // ── Poteaux aux extrémités
+      [[x1,bY(0),z1],[x2,bY(1),z2]].forEach(function(p){
+        mk('cylinder',{radius:'.12',height:'3.2',
+          position:(p[0]+pOff.x).toFixed(2)+' '+(p[1]+1.6).toFixed(2)+' '+(p[2]+pOff.z).toFixed(2),
           material:'color:#7a4a10;roughness:.95',shadow:'cast:true'});
       });
     }
@@ -855,9 +868,14 @@ function initGame(){
 
     var gy=getGroundY(P.x,P.z);
     var onIsland=(gy!==null);
-    // Nage = dans l'eau ET pas sur une île/pont ET pas en train de plonger déjà
+
+    // Transition vers nage : hors île ET à hauteur eau
     if(!P.diving){
-      P.swimming=(!onIsland&&P.y<=WATER_SURFACE+.12);
+      if(!onIsland && P.y<=WATER_SURFACE+.15){
+        P.swimming=true;
+      } else if(onIsland){
+        P.swimming=false;
+      }
     }
 
     var spd=sprint?9.5:5.2;
@@ -998,16 +1016,19 @@ function initGame(){
   };
   window.doDive=function(e){
     if(e&&e.preventDefault)e.preventDefault();
-    // DIVE = plonger depuis surface eau OU remonter depuis sous l'eau
     if(P.diving){
       // Remonter rapidement
       P.vy=4.5;
-    } else if(P.swimming){
-      // Plonger
-      P.diving=true;P.swimming=false;P.vy=-3.0;
-    } else if(P.onGround&&P.y<-0.1){
-      // Sur pont bas proche de l'eau → plonger aussi
-      P.diving=true;P.swimming=false;P.vy=-2.5;
+    } else {
+      // Forcer la transition nage si hors île même si swimming pas encore true
+      var gy2=getGroundY(P.x,P.z);
+      var canDive=(P.swimming)||(gy2===null && P.y<=WATER_SURFACE+0.8);
+      if(canDive){
+        P.diving=true;
+        P.swimming=false;
+        P.vy=-3.5;
+        P.onGround=false;
+      }
     }
   };
   window.setSprint=function(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;};
