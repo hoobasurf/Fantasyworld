@@ -17,12 +17,10 @@
 .pill{background:rgba(0,10,25,.78);border-radius:18px;padding:5px 12px;font-family:Georgia,serif;font-size:9px;color:#7de8ff;border:1px solid rgba(125,232,255,.25)}
 #toast{position:fixed;top:52px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;z-index:80;background:rgba(0,8,22,.94);border:1.5px solid #7de8ff;border-radius:18px;padding:7px 16px;color:#7de8ff;font-size:10px;font-family:Georgia,serif;white-space:nowrap;pointer-events:none;transition:all .18s}
 #toast.show{transform:translateX(-50%) scale(1);opacity:1}
-/* Jauge de respiration */
 #breath-bar{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:40;display:none;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
 #breath-label{font-family:Georgia,serif;font-size:9px;color:#88ffee;text-shadow:0 0 6px #00ffcc}
 #breath-bg{width:140px;height:12px;border-radius:6px;background:rgba(0,20,40,.7);border:1.5px solid rgba(0,255,200,.4);overflow:hidden}
 #breath-fill{height:100%;width:100%;border-radius:6px;background:linear-gradient(90deg,#00ffcc,#0088ff);transition:background .3s}
-/* Overlay sous-marin */
 #underwater-overlay{position:fixed;inset:0;pointer-events:none;z-index:20;background:radial-gradient(ellipse at center,rgba(0,80,160,0) 40%,rgba(0,40,100,.55) 100%);opacity:0;transition:opacity .8s}
 </style>
 </head>
@@ -56,11 +54,11 @@
 <a-plane id="waterSurf" width="3000" height="3000" rotation="-90 0 0" position="0 -0.5 0" color="#14b8d4" material="transparent:true;opacity:0.82;roughness:0.04;metalness:0.2" shadow="receive:false"></a-plane>
 <a-cylinder id="lagon" radius="180" height=".3" position="0 -0.38 0" color="#22eedd" material="transparent:true;opacity:0.5;roughness:0.04" shadow="receive:false"></a-cylinder>
 
-<!-- FOND OCEAN visible sous l'eau -->
+<!-- FOND OCEAN -->
 
 <a-plane width="3000" height="3000" rotation="-90 0 0" position="0 -22 0" color="#0a4a30" material="roughness:0.95"></a-plane>
 
-<!-- Vagues anneaux -->
+<!-- Vagues -->
 
 <a-torus id="w0" radius="72"  radius-tubular=".2" segments-tubular="64" rotation="90 0 0" position="0 -.42 0" color="#fff" material="transparent:true;opacity:0.5"></a-torus>
 <a-torus id="w1" radius="92"  radius-tubular=".2" segments-tubular="64" rotation="90 0 0" position="0 -.42 0" color="#fff" material="transparent:true;opacity:0.42"></a-torus>
@@ -78,7 +76,7 @@
 <!-- CAMERA -->
 
 <a-entity id="cam-rig" position="0 6 10">
-  <a-camera id="mainCam" look-controls="enabled:false" wasd-controls="enabled:false" fov="62" near=".1" far="700"></a-camera>
+  <a-camera id="mainCam" look-controls="enabled:false" wasd-controls="enabled:false" fov="62" near=".05" far="700"></a-camera>
 </a-entity>
 </a-scene>
 
@@ -141,30 +139,31 @@ function initGame(){
     return best;
   }
 
-  // ══ SABLE CLAIR ══
-  var SAND_COL='#f5e8b0'; // sable fin clair
+  var SAND_COL='#f5e8b0';
   var SAND_WET='#ddd090';
 
-  // ══ PALMIER ══
+  // ══ PALMIER 3x plus fin ══
   function makePalm(x,gy,z,h,lx,lz,par){
     par=par||W;
+    // Tronc 3x plus fin : rayon /3
     var NS=12,pts=[];
     for(var i=0;i<=NS;i++){var t=i/NS;pts.push({x:x+lx*h*t*t*.85,y:gy+h*t,z:z+lz*h*t*t*.85});}
     for(var i=0;i<NS;i++){
       var p0=pts[i],p1=pts[i+1];
       var dx=p1.x-p0.x,dy=p1.y-p0.y,dz=p1.z-p0.z,len=Math.sqrt(dx*dx+dy*dy+dz*dz);
-      var tr=i/NS,rB=Math.max(.03,.105-tr*.06),rT=Math.max(.02,.08-tr*.05);
-      mk('cylinder',{'radius-bottom':rB.toFixed(3),'radius-top':rT.toFixed(3),height:len.toFixed(3),'segments-radial':'8',
+      var tr=i/NS,rB=Math.max(.012,.035-tr*.02),rT=Math.max(.008,.027-tr*.016);
+      mk('cylinder',{'radius-bottom':rB.toFixed(3),'radius-top':rT.toFixed(3),height:len.toFixed(3),'segments-radial':'6',
         position:((p0.x+p1.x)/2).toFixed(2)+' '+((p0.y+p1.y)/2).toFixed(2)+' '+((p0.z+p1.z)/2).toFixed(2),
         rotation:segRot(dx,dy,dz),material:'roughness:.93;color:'+(i%2===0?'#c8a86a':'#b09050'),shadow:'cast:true'},par);
-      if(i%2===0&&i>0)mk('torus',{radius:(rB*1.3).toFixed(3),'radius-tubular':(rB*.28).toFixed(3),'segments-radial':'7',
+      if(i%2===0&&i>0)mk('torus',{radius:(rB*1.2).toFixed(3),'radius-tubular':(rB*.22).toFixed(3),'segments-radial':'6',
         position:p0.x.toFixed(2)+' '+p0.y.toFixed(2)+' '+p0.z.toFixed(2),rotation:segRot(dx,dy,dz),material:'color:#7a5020;roughness:.95'},par);
     }
     var top=pts[NS];
+    // Feuilles plus fines aussi
     for(var i=0;i<9+Math.floor(Math.random()*4);i++){
       var ang=i/(9+3)*Math.PI*2+(Math.random()-.5)*.3;
-      var ll=4+Math.random()*3,lw=.5+Math.random()*.35,droop=.5+Math.random()*.5;
-      var fx=top.x+Math.sin(ang)*1.0,fy=top.y+.15,fz=top.z+Math.cos(ang)*1.0;
+      var ll=3+Math.random()*2.5,lw=.22+Math.random()*.15,droop=.5+Math.random()*.5;
+      var fx=top.x+Math.sin(ang)*.4,fy=top.y+.1,fz=top.z+Math.cos(ang)*.4;
       var brx=(-droop*56).toFixed(1),bry=((ang+Math.PI/2)*180/Math.PI).toFixed(1);
       var gv=.7+Math.random()*.25;
       var lf=mk('plane',{width:ll.toFixed(2),height:lw.toFixed(2),
@@ -176,7 +175,7 @@ function initGame(){
     }
   }
 
-  // ══ FOUGERE / HERBE HAUTE ══
+  // ══ FOUGERE ══
   function makeFern(x,gy,z,par){
     par=par||W;
     var nc=5+Math.floor(Math.random()*4);
@@ -209,7 +208,7 @@ function initGame(){
     mk('sphere',{radius:'.042',position:x+' '+(gy+sh+.04)+' '+z,material:'color:#ffee00;emissive:#ffcc00;emissiveIntensity:.5'},par);
   }
 
-  // ══ MONSTERA (grandes feuilles percées stylisées) ══
+  // ══ MONSTERA ══
   function makeMonstera(x,gy,z,par){
     par=par||W;
     var sh=.9+Math.random()*.5;
@@ -250,19 +249,40 @@ function initGame(){
     }
   }
 
-  // ══ PONT EN BOIS — planches d'une corde à l'autre, murs de corde solides ══
+  // ══ CHEMIN PIETONNIER entre deux points ══
+  function makePath(x1,z1,x2,z2,gy,par){
+    par=par||W;
+    var dx=x2-x1,dz=z2-z1,len=Math.sqrt(dx*dx+dz*dz);
+    var ang=Math.atan2(dx,dz)*180/Math.PI;
+    var mx=(x1+x2)/2,mz=(z1+z2)/2;
+    mk('plane',{width:'.9',height:len.toFixed(2),rotation:'-90 '+ang.toFixed(1)+' 0',
+      position:mx.toFixed(2)+' '+(gy+.015).toFixed(3)+' '+mz.toFixed(2),
+      material:'color:#d4b88a;roughness:.95'},par);
+    // Petits cailloux bords
+    var steps=Math.floor(len/1.2);
+    for(var i=0;i<steps;i++){
+      var t=(i+.5)/steps;
+      var px=x1+dx*t,pz=z1+dz*t;
+      var perp=[-dz/len,dx/len];
+      for(var side=-1;side<=1;side+=2){
+        mk('sphere',{radius:'.07',position:(px+perp[0]*side*.55).toFixed(2)+' '+(gy+.04).toFixed(2)+' '+(pz+perp[1]*side*.55).toFixed(2),
+          material:'color:#c8b890;roughness:.97'},par);
+      }
+    }
+  }
+
+  // ══ PONT EN BOIS — planches d'une corde à l'autre ══
   function makeBridge(x1,y1,z1,x2,y2,z2){
     var bdx=x2-x1,bdz=z2-z1;
     var len=Math.sqrt(bdx*bdx+bdz*bdz);
     var ang=Math.atan2(bdx,bdz)*180/Math.PI;
     var perp=new THREE.Vector3(-bdz,0,bdx).normalize();
 
-    // Distance entre cordes = largeur du pont = 3.0u
-    var ROPE_OFFSET=1.5; // chaque corde à ±1.5 du centre
-    // La planche va d'une corde à l'autre = 3.0u de profondeur
-    var PLANK_DEPTH=ROPE_OFFSET*2; // = 3.0
+    var ROPE_OFFSET=1.5;
+    // CORRECTION : la profondeur de la planche = distance exacte entre les deux cordes
+    var PLANK_DEPTH=ROPE_OFFSET*2; // 3.0 unités, de corde gauche à corde droite
     var PLANK_H=0.12;
-    var PLANK_W=0.44;  // largeur sens marche
+    var PLANK_W=0.44;
     var GAP=0.10;
     var nPlanks=Math.floor(len/(PLANK_W+GAP));
 
@@ -271,10 +291,11 @@ function initGame(){
 
     function bY(t){return Math.max(MIN_H, y1+(y2-y1)*t);}
 
-    // ── Planches (de corde à corde)
+    // ── Planches (largeur = de corde à corde, orientées perpendiculairement au pont)
     for(var i=0;i<nPlanks;i++){
       var t=(i+.5)/nPlanks;
       var px=x1+bdx*t, pz=z1+bdz*t, py=bY(t);
+      // width = sens de marche (PLANK_W), depth = perpendiculaire = PLANK_DEPTH (corde à corde)
       mk('box',{
         width:PLANK_W, height:PLANK_H, depth:PLANK_DEPTH,
         position:px.toFixed(2)+' '+py.toFixed(2)+' '+pz.toFixed(2),
@@ -288,7 +309,7 @@ function initGame(){
     // ── Cordes (2 hauteurs × 2 côtés)
     for(var side=-1;side<=1;side+=2){
       var pOff=perp.clone().multiplyScalar(ROPE_OFFSET*side);
-      var ROPE_H=[0.65, 1.25]; // 2 cordes superposées
+      var ROPE_H=[0.65, 1.25];
       for(var ri=0;ri<ROPE_H.length;ri++){
         var rh=ROPE_H[ri];
         for(var i=0;i<nPlanks;i++){
@@ -302,8 +323,6 @@ function initGame(){
             material:'color:#6a3a10;roughness:.95'});
         }
       }
-
-      // ── Barreaux verticaux entre les 2 cordes (tous les 3 planches)
       for(var i=1;i<nPlanks-1;i+=3){
         var t=i/nPlanks;
         var px2=x1+bdx*t+pOff.x, pz2=z1+bdz*t+pOff.z, py2=bY(t);
@@ -311,269 +330,17 @@ function initGame(){
           position:px2.toFixed(2)+' '+(py2+.65).toFixed(2)+' '+pz2.toFixed(2),
           material:'color:#7a4a10;roughness:.95'});
       }
-
-      // ── MURS INVISIBLES le long des cordes (empêche de passer à travers)
-      // Un mur continu le long de chaque côté
-      var wallMX=(x1+x2)/2+pOff.x, wallMZ=(z1+z2)/2+pOff.z;
-      var wallAng=ang; // même angle que le pont
-      // On ajoute des murs AABB par segments
       for(var i=0;i<nPlanks;i+=2){
         var t=(i+1)/nPlanks;
         var wpx=x1+bdx*t+pOff.x, wpz=z1+bdz*t+pOff.z, wpy=bY(t);
-        var segLen=(PLANK_W+GAP)*2+.2;
-        // Mur perpendiculaire au pont, côté corde
         addWall(wpx,wpz,.15,1.5,wpy);
       }
-
-      // ── Poteaux aux extrémités
       [[x1,bY(0),z1],[x2,bY(1),z2]].forEach(function(p){
         mk('cylinder',{radius:'.12',height:'3.2',
           position:(p[0]+pOff.x).toFixed(2)+' '+(p[1]+1.6).toFixed(2)+' '+(p[2]+pOff.z).toFixed(2),
           material:'color:#7a4a10;roughness:.95',shadow:'cast:true'});
       });
     }
-  }
-
-  // ══ MAISON RÉALISTE GRANDE — style hawaïen, 4x plus grande, détaillée ══
-  var houseExcludeZones=[];
-  function addHouseExclude(x,z,r){houseExcludeZones.push({x:x,z:z,r:r});}
-  function isInHouseZone(x,z){
-    for(var i=0;i<houseExcludeZones.length;i++){
-      var h=houseExcludeZones[i];
-      if(Math.sqrt((x-h.x)*(x-h.x)+(z-h.z)*(z-h.z))<h.r)return true;
-    }
-    return false;
-  }
-
-  function makeHouse(cx,gy,cz,col,rot,par){
-    par=par||W;
-    rot=rot||0;
-    var rad=rot*Math.PI/180;
-    var cs=Math.cos(rad),sn=Math.sin(rad);
-    // Rotation d'un offset local
-    function lp(ox,oz){return{x:cx+ox*cs-oz*sn, z:cz+ox*sn+oz*cs};}
-    function lpos(ox,oy,oz){var p=lp(ox,oz);return p.x.toFixed(2)+' '+(gy+oy).toFixed(2)+' '+p.z.toFixed(2);}
-
-    // Dimensions grandes (4x vs 5.5x6 = ~22x24)
-    var W_=22, D_=24, H_=6.0, ROOF_H=4.5;
-    var FLOOR_H=0.5; // hauteur fondation
-
-    // ── Fondation béton surélevée
-    mk('box',{width:W_+1,height:FLOOR_H,depth:D_+1,
-      position:lpos(0,FLOOR_H/2,0),rotation:'0 '+rot+' 0',
-      material:'color:#c8c0a0;roughness:.95'},par);
-
-    // ── Murs extérieurs (4 faces)
-    // Façade avant
-    mk('box',{width:W_,height:H_,depth:.4,
-      position:lpos(0,FLOOR_H+H_/2,D_/2),rotation:'0 '+rot+' 0',
-      material:'color:'+col+';roughness:.82',shadow:'cast:true;receive:true'},par);
-    // Façade arrière
-    mk('box',{width:W_,height:H_,depth:.4,
-      position:lpos(0,FLOOR_H+H_/2,-D_/2),rotation:'0 '+rot+' 0',
-      material:'color:'+col+';roughness:.82',shadow:'cast:true;receive:true'},par);
-    // Côté gauche
-    mk('box',{width:.4,height:H_,depth:D_,
-      position:lpos(-W_/2,FLOOR_H+H_/2,0),rotation:'0 '+rot+' 0',
-      material:'color:'+col+';roughness:.82',shadow:'cast:true;receive:true'},par);
-    // Côté droit
-    mk('box',{width:.4,height:H_,depth:D_,
-      position:lpos(W_/2,FLOOR_H+H_/2,0),rotation:'0 '+rot+' 0',
-      material:'color:'+col+';roughness:.82',shadow:'cast:true;receive:true'},par);
-    // Plancher intérieur visible
-    mk('box',{width:W_-.5,height:.15,depth:D_-.5,
-      position:lpos(0,FLOOR_H+.08,0),rotation:'0 '+rot+' 0',
-      material:'color:#c8a050;roughness:.85'},par);
-    // Plafond
-    mk('box',{width:W_-.5,height:.15,depth:D_-.5,
-      position:lpos(0,FLOOR_H+H_+.05,0),rotation:'0 '+rot+' 0',
-      material:'color:#d8c080;roughness:.85'},par);
-
-    // ── Toit à 4 pans avec débord large
-    var roofEnt=mk('entity',{position:lpos(0,FLOOR_H+H_,0),rotation:'0 '+rot+' 0'},par);
-    mk('cone',{'radius-bottom':(Math.max(W_,D_)/2+1.2).toFixed(1),'radius-top':'.5',
-      height:ROOF_H.toFixed(1),'segments-radial':'4',
-      position:'0 '+(ROOF_H/2)+' 0',rotation:'0 45 0',
-      material:'color:#6a2a10;roughness:.92',shadow:'cast:true'},roofEnt);
-    // Débord de toit (corniche)
-    mk('box',{width:W_+2.4,height:.22,depth:D_+2.4,
-      position:lpos(0,FLOOR_H+H_+.15,0),rotation:'0 '+rot+' 0',
-      material:'color:#5a2008;roughness:.95'},par);
-
-    // ── Cheminée (2)
-    [[-W_/4,-D_/5],[W_/4,-D_/5]].forEach(function(off){
-      var chp=lp(off[0],off[1]);
-      mk('box',{width:'1.1',height:'2.8',depth:'1.1',
-        position:chp.x+' '+(gy+FLOOR_H+H_+ROOF_H*.3)+' '+chp.z,
-        material:'color:#aa5522;roughness:.95'},par);
-      mk('box',{width:'1.4',height:'.28',depth:'1.4',
-        position:chp.x+' '+(gy+FLOOR_H+H_+ROOF_H*.3+1.55)+' '+chp.z,
-        material:'color:#882211;roughness:.95'},par);
-    });
-
-    // ── Grande véranda avant (rez-de-chaussée)
-    var verandaD=4.5;
-    mk('box',{width:W_+.5,height:.18,depth:verandaD,
-      position:lpos(0,FLOOR_H+.12,D_/2+verandaD/2),rotation:'0 '+rot+' 0',
-      material:'color:#c8a828;roughness:.9',shadow:'receive:true'},par);
-    // Plancher véranda
-    for(var pi=-4;pi<=4;pi++){
-      var col2=pi%2===0?'#c8a020':'#b89018';
-      mk('box',{width:(W_/9-.05).toFixed(2),height:'.12',depth:verandaD-.1,
-        position:lpos(pi*(W_/9),FLOOR_H+.07,D_/2+verandaD/2),rotation:'0 '+rot+' 0',
-        material:'color:'+col2+';roughness:.9'},par);
-    }
-    // Piliers véranda (gros)
-    for(var pi=-3;pi<=3;pi+=1){
-      var pp=lp(pi*(W_/6),D_/2+verandaD-.3);
-      mk('cylinder',{radius:'.18',height:(H_+.12).toFixed(1),
-        position:pp.x+' '+(gy+FLOOR_H+H_/2+.12)+' '+pp.z,
-        material:'color:#d8b828;roughness:.88',shadow:'cast:true'},par);
-    }
-    // Auvent véranda
-    mk('box',{width:W_+1.0,height:'.2',depth:verandaD+.8,
-      position:lpos(0,FLOOR_H+H_-.4,D_/2+verandaD/2+.1),rotation:'0 '+rot+' 0',
-      material:'color:#6a2a10;roughness:.92'},par);
-    // Rambarde véranda (barreaux)
-    for(var ri=-6;ri<=6;ri++){
-      var rp2=lp(ri*(W_/12),D_/2+verandaD+.1);
-      mk('cylinder',{radius:'.05',height:'1.2',
-        position:rp2.x+' '+(gy+FLOOR_H+.7)+' '+rp2.z,
-        material:'color:#b89018;roughness:.9'},par);
-    }
-    // Rail rambarde
-    var rp3=lp(0,D_/2+verandaD+.1);
-    mk('cylinder',{radius:'.04',height:(W_+.6).toFixed(1),
-      position:rp3.x+' '+(gy+FLOOR_H+1.25)+' '+rp3.z,
-      rotation:'0 '+(rot+90)+' 0',material:'color:#c8a020;roughness:.9'},par);
-
-    // ── Entrée / marches
-    for(var si=0;si<3;si++){
-      mk('box',{width:(W_/2).toFixed(1),height:'.18',depth:'1.0',
-        position:lpos(0,si*.18,D_/2+verandaD+.5+si*.5),rotation:'0 '+rot+' 0',
-        material:'color:#c0b090;roughness:.95'},par);
-    }
-
-    // ── Grandes portes doubles (2 jeux)
-    [0].forEach(function(ox){
-      var dp=lp(ox,D_/2+.22);
-      // Encadrement
-      mk('box',{width:'3.2',height:(H_*.75+.3).toFixed(1),depth:'.3',
-        position:dp.x+' '+(gy+FLOOR_H+H_*.75/2+.12)+' '+dp.z,
-        rotation:'0 '+rot+' 0',material:'color:#5a3010;roughness:.85'},par);
-      // Porte gauche
-      mk('box',{width:'1.45',height:(H_*.75).toFixed(1),depth:'.18',
-        position:lpos(ox-0.78,FLOOR_H+H_*.75/2+.12,D_/2+.22),rotation:'0 '+rot+' 0',
-        material:'color:#3a1c08;roughness:.88'},par);
-      // Porte droite
-      mk('box',{width:'1.45',height:(H_*.75).toFixed(1),depth:'.18',
-        position:lpos(ox+0.78,FLOOR_H+H_*.75/2+.12,D_/2+.22),rotation:'0 '+rot+' 0',
-        material:'color:#3a1c08;roughness:.88'},par);
-      // Vitrages
-      mk('box',{width:'1.1',height:(H_*.5).toFixed(1),depth:'.1',
-        position:lpos(ox-0.78,FLOOR_H+H_*.75/2+.3,D_/2+.24),rotation:'0 '+rot+' 0',
-        material:'color:#aaddff;transparent:true;opacity:.65;roughness:.05;metalness:.4'},par);
-      mk('box',{width:'1.1',height:(H_*.5).toFixed(1),depth:'.1',
-        position:lpos(ox+0.78,FLOOR_H+H_*.75/2+.3,D_/2+.24),rotation:'0 '+rot+' 0',
-        material:'color:#aaddff;transparent:true;opacity:.65;roughness:.05;metalness:.4'},par);
-    });
-
-    // ── Fenêtres grandes (3 façade + 2 par côté)
-    // Façade avant
-    [[-6.5,D_/2],[6.5,D_/2],[-6.5,-D_/2],[6.5,-D_/2]].forEach(function(of){
-      var wp=lp(of[0],of[1]);
-      mk('box',{width:'2.5',height:'2.0',depth:'.18',
-        position:wp.x+' '+(gy+FLOOR_H+H_*.6)+' '+wp.z,
-        rotation:'0 '+rot+' 0',
-        material:'color:#aaddff;transparent:true;opacity:.72;roughness:.05;metalness:.35'},par);
-      mk('box',{width:'2.9',height:'2.4',depth:'.14',
-        position:wp.x+' '+(gy+FLOOR_H+H_*.6)+' '+wp.z,
-        rotation:'0 '+rot+' 0',material:'color:#c8a828;roughness:.88'},par);
-    });
-    // Côtés
-    [[-W_/2,4],[W_/2,4],[-W_/2,-4],[W_/2,-4]].forEach(function(of){
-      var wp=lp(of[0],of[1]);
-      mk('box',{width:'.18',height:'2.0',depth:'2.5',
-        position:wp.x+' '+(gy+FLOOR_H+H_*.6)+' '+wp.z,
-        rotation:'0 '+rot+' 0',
-        material:'color:#aaddff;transparent:true;opacity:.72;roughness:.05;metalness:.35'},par);
-      mk('box',{width:'.14',height:'2.4',depth:'2.9',
-        position:wp.x+' '+(gy+FLOOR_H+H_*.6)+' '+wp.z,
-        rotation:'0 '+rot+' 0',material:'color:#c8a828;roughness:.88'},par);
-    });
-
-    // ── Terrasse étage (balcon sur façade)
-    mk('box',{width:(W_*.7).toFixed(1),height:'.18',depth:'3.0',
-      position:lpos(0,FLOOR_H+H_+.15,D_/2-1.2),rotation:'0 '+rot+' 0',
-      material:'color:#c8a828;roughness:.9'},par);
-    // Barreaux balcon
-    for(var bi=-5;bi<=5;bi++){
-      mk('cylinder',{radius:'.05',height:'1.1',
-        position:lpos(bi*(W_*.7/10),FLOOR_H+H_+.7,D_/2+1.3),
-        rotation:'0 '+rot+' 0',material:'color:#a88020;roughness:.9'},par);
-    }
-    mk('cylinder',{radius:'.04',height:(W_*.7+.4).toFixed(1),
-      position:lpos(0,FLOOR_H+H_+1.2,D_/2+1.3),rotation:'0 '+(rot+90)+' 0',
-      material:'color:#c8a020;roughness:.9'},par);
-
-    // ── Jardin propre autour (sans arbres — zone exclusion)
-    mk('cylinder',{radius:(Math.max(W_,D_)/2+5.5).toFixed(1),height:'.04',
-      position:lpos(0,.02,0),material:'color:#b8e870;roughness:.96'},par);
-    // Haies décoratives
-    for(var hi=0;hi<8;hi++){
-      var hang=hi/8*Math.PI*2;
-      var hr=Math.max(W_,D_)/2+3.5;
-      var hx=cx+Math.sin(hang)*hr, hz=cz+Math.cos(hang)*hr;
-      mk('sphere',{radius:'.85',position:hx.toFixed(1)+' '+(gy+.55)+' '+hz.toFixed(1),
-        scale:'1 .7 1',material:'color:#228818;roughness:.9'},par);
-    }
-
-    addWall(cx,cz,W_/2+.5,H_+ROOF_H,gy);
-    addHouseExclude(cx,cz,Math.max(W_,D_)/2+6);
-  }
-
-  // ══ BOUTIQUE ══
-  function makeShop(cx,gy,cz,type,par){
-    par=par||W;
-    var col=type==='surf'?'#2255cc':'#cc8822';
-    var BW=5, BD=5, BH=2.6;
-    // Corps
-    mk('box',{width:BW,height:BH,depth:BD,position:cx+' '+(gy+BH/2+.2)+' '+cz,
-      material:'color:'+col+';roughness:.82',shadow:'cast:true;receive:true'},par);
-    // Fondation
-    mk('box',{width:BW+.6,height:.28,depth:BD+.6,position:cx+' '+(gy+.14)+' '+cz,
-      material:'color:#c0b880;roughness:.95'},par);
-    // Toit plat débordant + store coloré
-    mk('box',{width:BW+1.4,height:.18,depth:BD+1.4,position:cx+' '+(gy+BH+.3)+' '+cz,
-      material:'color:'+(type==='surf'?'#cc3322':'#228844')+';roughness:.9'},par);
-    // Store avant rayé
-    for(var si=0;si<5;si++){
-      mk('box',{width:.95,height:.08,depth:1.6,
-        position:(cx-2.0+si*.95)+' '+(gy+BH+.12)+' '+(cz+BD/2+.75),
-        material:'color:'+(si%2===0?'#eeee00':'#ff2200')+';roughness:.7'},par);
-    }
-    // Enseigne
-    mk('box',{width:3.8,height:.55,depth:.12,position:cx+' '+(gy+BH-.3)+' '+(cz+BD/2+.08),
-      material:'color:#fff5cc;roughness:.7'},par);
-    // Porte ouverte
-    mk('box',{width:1.0,height:2.1,depth:.08,position:cx+' '+(gy+1.25)+' '+(cz+BD/2+.06),
-      material:'color:#3a2010;roughness:.9'},par);
-    mk('box',{width:.85,height:1.6,depth:.06,position:cx+' '+(gy+1.3)+' '+(cz+BD/2+.06),
-      material:'color:#aaddff;transparent:true;opacity:.6;roughness:.1;metalness:.3'},par);
-    // Déco
-    if(type==='surf'){
-      for(var si=0;si<3;si++){
-        mk('box',{width:.22,height:1.9,depth:.06,position:(cx-1.2+si*.65)+' '+(gy+1.1)+' '+(cz+BD/2+.06),
-          rotation:'0 0 '+(si*12-12),material:'color:#'+['ee4411','2244ee','ffcc00'][si]+';roughness:.6'},par);
-      }
-    } else {
-      ['#ff3333','#ffaa00','#22cc22','#ff66aa','#ffff00'].forEach(function(c,fi){
-        mk('sphere',{radius:'.22',position:(cx-1.0+fi*.5)+' '+(gy+.6)+' '+(cz+BD/2+.08),
-          material:'color:'+c+';roughness:.5;emissive:'+c+';emissiveIntensity:.18'},par);
-      });
-    }
-    addWall(cx,cz,BW/2+.4,BH+1,gy);
-    addHouseExclude(cx,cz,BW/2+3);
   }
 
   // ══ ROCHER ══
@@ -600,27 +367,515 @@ function initGame(){
       material:'color:#22ccee;transparent:true;opacity:.68;roughness:.05'},par);
   }
 
+  // ══ PERSONNE (humain stylisé) ══
+  function makePerson(x,gy,z,col,action,rot,par){
+    par=par||W;
+    rot=rot||0;
+    var bodyCol=col||'#f4c08a';
+    var clothCol=['#ff4422','#2255ee','#22bb44','#ff8800','#9922ee','#11aacc'][Math.floor(Math.random()*6)];
+    var hair=['#3a1a0a','#222','#8a5520','#ffcc44','#cc4400'][Math.floor(Math.random()*5)];
+
+    var root=mk('entity',{position:x+' '+gy+' '+z,rotation:'0 '+rot+' 0'},par);
+
+    if(action==='swim'){
+      // Personne allongée dans l'eau, bras écartés
+      // Corps
+      mk('cylinder',{'radius-bottom':'.14','radius-top':'.12',height:'.7',
+        position:'0 .12 0',rotation:'0 0 90',material:'color:'+clothCol+';roughness:.8'},root);
+      // Tête
+      mk('sphere',{radius:'.14',position:'.5 .14 0',material:'color:'+bodyCol+';roughness:.8'},root);
+      // Cheveux
+      mk('sphere',{radius:'.145',scale:'1 .6 1',position:'.5 .2 0',material:'color:'+hair+';roughness:.9'},root);
+      // Bras en nage
+      mk('cylinder',{radius:'.05',height:'.5',position:'.1 .26 .28',rotation:'15 0 -30',material:'color:'+bodyCol+';roughness:.8'},root);
+      mk('cylinder',{radius:'.05',height:'.5',position:'.1 .26 -.28',rotation:'-15 0 30',material:'color:'+bodyCol+';roughness:.8'},root);
+      // Jambes
+      mk('cylinder',{radius:'.06',height:'.38',position:'-.38 .08 .1',rotation:'10 0 90',material:'color:'+clothCol+';roughness:.8'},root);
+      mk('cylinder',{radius:'.06',height:'.38',position:'-.38 .08 -.1',rotation:'-10 0 90',material:'color:'+clothCol+';roughness:.8'},root);
+    } else if(action==='surf'){
+      // Debout sur planche inclinée
+      // Planche de surf
+      mk('box',{width:'.3',height:'.06',depth:'1.8',position:'0 .03 0',material:'color:#ff4422;roughness:.6'},root);
+      // Corps debout
+      mk('cylinder',{'radius-bottom':'.1','radius-top':'.09',height:'.7',
+        position:'0 .72 0',rotation:'0 0 8',material:'color:'+clothCol+';roughness:.8'},root);
+      // Tête
+      mk('sphere',{radius:'.13',position:'-.1 1.14 0',material:'color:'+bodyCol+';roughness:.8'},root);
+      mk('sphere',{radius:'.135',scale:'1 .6 1',position:'-.1 1.2 0',material:'color:'+hair+';roughness:.9'},root);
+      // Bras équilibre
+      mk('cylinder',{radius:'.045',height:'.55',position:'-.28 .88 .32',rotation:'0 0 -42',material:'color:'+bodyCol+';roughness:.8'},root);
+      mk('cylinder',{radius:'.045',height:'.55',position:'.08 .88 -.32',rotation:'0 0 38',material:'color:'+bodyCol+';roughness:.8'},root);
+      // Jambes écartées
+      mk('cylinder',{radius:'.055',height:'.4',position:'-.04 .35 .14',rotation:'12 0 0',material:'color:'+clothCol+';roughness:.8'},root);
+      mk('cylinder',{radius:'.055',height:'.4',position:'-.04 .35 -.14',rotation:'-12 0 0',material:'color:'+clothCol+';roughness:.8'},root);
+    } else if(action==='transat'){
+      // Transat (chaise longue) + personne allongée
+      // Chaise
+      mk('box',{width:'.52',height:'.06',depth:'1.5',position:'0 .32 0',rotation:'-18 0 0',material:'color:#eecc44;roughness:.7'},root);
+      mk('cylinder',{radius:'.04',height:'.35',position:'-.22 .16 .6',material:'color:#c8a020;roughness:.8'},root);
+      mk('cylinder',{radius:'.04',height:'.35',position:'.22 .16 .6',material:'color:#c8a020;roughness:.8'},root);
+      mk('cylinder',{radius:'.04',height:'.35',position:'-.22 .16 -.6',material:'color:#c8a020;roughness:.8'},root);
+      mk('cylinder',{radius:'.04',height:'.35',position:'.22 .16 -.6',material:'color:#c8a020;roughness:.8'},root);
+      // Personne allongée
+      mk('cylinder',{'radius-bottom':'.1','radius-top':'.09',height:'.6',
+        position:'0 .5 .1',rotation:'80 0 0',material:'color:'+clothCol+';roughness:.8'},root);
+      mk('sphere',{radius:'.12',position:'0 .48 -.52',material:'color:'+bodyCol+';roughness:.8'},root);
+      mk('sphere',{radius:'.125',scale:'1 .6 1',position:'0 .54 -.52',material:'color:'+hair+';roughness:.9'},root);
+      // Parasol
+      mk('cylinder',{radius:'.025',height:'1.8',position:'0 .9 -.2',material:'color:#884400;roughness:.9'},root);
+      mk('cone',{'radius-bottom':'.7','radius-top':'.05',height:'.25',position:'0 1.8 -.2',
+        material:'color:#ff5500;roughness:.7',rotation:'0 0 0'},root);
+      // Rayures parasol
+      for(var si=0;si<6;si++){
+        var pang=si/6*Math.PI*2;
+        mk('plane',{width:'.08',height:'.72',position:(Math.sin(pang)*.28).toFixed(2)+' 1.65 '+(-.2+Math.cos(pang)*.28).toFixed(2),
+          rotation:'-75 '+(pang*180/Math.PI).toFixed(1)+' 0',
+          material:'side:double;color:'+(si%2===0?'#ffcc00':'#ff4400')+';roughness:.6'},root);
+      }
+    } else if(action==='walk'){
+      // Personne debout qui se promène
+      mk('cylinder',{'radius-bottom':'.1','radius-top':'.09',height:'.75',
+        position:'0 .65 0',material:'color:'+clothCol+';roughness:.8'},root);
+      mk('sphere',{radius:'.12',position:'0 1.1 0',material:'color:'+bodyCol+';roughness:.8'},root);
+      mk('sphere',{radius:'.125',scale:'1 .6 1',position:'0 1.16 0',material:'color:'+hair+';roughness:.9'},root);
+      mk('cylinder',{radius:'.045',height:'.5',position:'-.16 .78 .12',rotation:'-18 0 18',material:'color:'+bodyCol+';roughness:.8'},root);
+      mk('cylinder',{radius:'.045',height:'.5',position:'.16 .78 -.12',rotation:'18 0 -18',material:'color:'+bodyCol+';roughness:.8'},root);
+      mk('cylinder',{radius:'.055',height:'.44',position:'-.06 .25 .09',rotation:'-10 0 0',material:'color:'+clothCol+';roughness:.8'},root);
+      mk('cylinder',{radius:'.055',height:'.44',position:'.06 .25 -.09',rotation:'10 0 0',material:'color:'+clothCol+';roughness:.8'},root);
+    } else if(action==='market'){
+      // Vendeur derrière étal
+      mk('cylinder',{'radius-bottom':'.1','radius-top':'.09',height:'.75',
+        position:'0 .65 0',material:'color:'+clothCol+';roughness:.8'},root);
+      mk('sphere',{radius:'.12',position:'0 1.1 0',material:'color:'+bodyCol+';roughness:.8'},root);
+      mk('sphere',{radius:'.125',scale:'1 .6 1',position:'0 1.16 0',material:'color:'+hair+';roughness:.9'},root);
+      // Chapeau
+      mk('cylinder',{'radius-bottom':'.18','radius-top':'.14',height:'.16',position:'0 1.23 0',material:'color:#cc8822;roughness:.85'},root);
+      mk('cylinder',{radius:'.22',height:'.04',position:'0 1.14 0',material:'color:#cc8822;roughness:.85'},root);
+      // Bras tendus
+      mk('cylinder',{radius:'.045',height:'.48',position:'-.22 .85 .16',rotation:'-35 0 20',material:'color:'+bodyCol+';roughness:.8'},root);
+      mk('cylinder',{radius:'.045',height:'.48',position:'.22 .85 .16',rotation:'-35 0 -20',material:'color:'+bodyCol+';roughness:.8'},root);
+      mk('cylinder',{radius:'.055',height:'.44',position:'-.06 .25 0',material:'color:'+clothCol+';roughness:.8'},root);
+      mk('cylinder',{radius:'.055',height:'.44',position:'.06 .25 0',material:'color:'+clothCol+';roughness:.8'},root);
+    }
+    return root;
+  }
+
+  // ══ ETAL DE MARCHE ══
+  function makeMarketStall(x,gy,z,type,rot,par){
+    par=par||W;
+    rot=rot||0;
+    var rad=rot*Math.PI/180,cs=Math.cos(rad),sn=Math.sin(rad);
+    function lp(ox,oz){return{x:x+ox*cs-oz*sn,z:z+ox*sn+oz*cs};}
+    function lpos(ox,oy,oz){var p=lp(ox,oz);return p.x.toFixed(2)+' '+(gy+oy).toFixed(2)+' '+p.z.toFixed(2);}
+
+    // Poteaux
+    var cols2=['#9a5510','#8a4a08'];
+    [[-0.9,-.8],[0.9,-.8],[-0.9,.8],[0.9,.8]].forEach(function(off){
+      var pp=lp(off[0],off[1]);
+      mk('cylinder',{radius:'.04',height:'1.8',position:pp.x.toFixed(2)+' '+(gy+.9)+' '+pp.z.toFixed(2),
+        material:'color:#8a5010;roughness:.9'},par);
+    });
+    // Toit en paille
+    var roofCols=['#cc8800','#bb7700','#dd9900'];
+    mk('box',{width:'2.2',height:'.08',depth:'1.8',position:lpos(0,1.82,0),rotation:'0 '+rot+' 0',
+      material:'color:#cc9922;roughness:.9'},par);
+    // Franges toit
+    for(var fi=-4;fi<=4;fi++){
+      mk('cylinder',{radius:'.012',height:'.22',position:lpos(fi*.24,1.68,.92),rotation:'0 '+rot+' 0',
+        material:'color:#aa7700;roughness:.9'},par);
+      mk('cylinder',{radius:'.012',height:'.22',position:lpos(fi*.24,1.68,-.92),rotation:'0 '+rot+' 0',
+        material:'color:#aa7700;roughness:.9'},par);
+    }
+    // Table/étal
+    mk('box',{width:'1.8',height:'.06',depth:'1.4',position:lpos(0,.9,0),rotation:'0 '+rot+' 0',
+      material:'color:#c89820;roughness:.88'},par);
+    mk('box',{width:'1.9',height:'.08',depth:'1.5',position:lpos(0,.86,0),rotation:'0 '+rot+' 0',
+      material:'color:#b08010;roughness:.9'},par);
+
+    if(type==='fruits'){
+      var fruitCols=['#ff4400','#ff8800','#ffcc00','#ee2200','#22cc00','#cc44ff','#ff66aa'];
+      var fruitNames=['tomate','orange','mangue','pomme','lime','raisin','goyave'];
+      for(var fi=0;fi<14;fi++){
+        var fx=(Math.random()-.5)*1.4,fz=(Math.random()-.5)*1.1;
+        var fc=fruitCols[Math.floor(Math.random()*fruitCols.length)];
+        var fr=.07+Math.random()*.06;
+        var fp=lp(fx,fz);
+        mk('sphere',{radius:fr.toFixed(3),position:fp.x.toFixed(2)+' '+(gy+.94+fr*.5).toFixed(2)+' '+fp.z.toFixed(2),
+          material:'color:'+fc+';roughness:.5;emissive:'+fc+';emissiveIntensity:.08'},par);
+      }
+      // Tas de noix de coco
+      for(var ci=0;ci<4;ci++){
+        var cp=lp(-.6+ci*.28,.0);
+        mk('sphere',{radius:'.1',position:cp.x.toFixed(2)+' '+(gy+.95)+' '+cp.z.toFixed(2),
+          scale:'1 1.1 1',material:'color:#6a3a10;roughness:.9'},par);
+      }
+    } else if(type==='poisson'){
+      // Poissons séchés
+      for(var pi=0;pi<6;pi++){
+        var pp2=lp(-.7+pi*.28,0);
+        mk('box',{width:'.22',height:'.04',depth:'.35',position:pp2.x.toFixed(2)+' '+(gy+.96)+' '+pp2.z.toFixed(2),
+          material:'color:#ddaa66;roughness:.7'},par);
+      }
+    } else if(type==='artisanat'){
+      // Colliers, tissus
+      mk('plane',{width:'1.5',height:'.6',position:lpos(0,.94,0),rotation:'-88 '+rot+' 0',
+        material:'color:#ff8822;roughness:.7'},par);
+      for(var ai=0;ai<5;ai++){
+        var ap=lp(-.6+ai*.3,0);
+        mk('cylinder',{radius:'.04',height:'.3',position:ap.x.toFixed(2)+' '+(gy+1.08)+' '+ap.z.toFixed(2),
+          material:'color:#ffcc44;roughness:.5;emissive:#ffaa00;emissiveIntensity:.2'},par);
+      }
+    }
+
+    // Nappe colorée
+    var nappeCol=['#ff4422','#2255cc','#ffcc00','#22cc55'][Math.floor(Math.random()*4)];
+    mk('plane',{width:'1.75',height:'1.35',position:lpos(0,.92,0),rotation:'-88 '+rot+' 0',
+      material:'color:'+nappeCol+';roughness:.75;transparent:true;opacity:.6'},par);
+  }
+
+  // ══ CASE HAWAIIENNE (paille + bois) ══
+  function makeHawaiianHut(cx,gy,cz,rot,par){
+    par=par||W;
+    rot=rot||0;
+    var rad=rot*Math.PI/180,cs=Math.cos(rad),sn=Math.sin(rad);
+    function lp(ox,oz){return{x:cx+ox*cs-oz*sn,z:cz+ox*sn+oz*cs};}
+    function lpos(ox,oy,oz){var p=lp(ox,oz);return p.x.toFixed(2)+' '+(gy+oy).toFixed(2)+' '+p.z.toFixed(2);}
+
+    var BW=3.8,BD=3.2,BH=2.2;
+
+    // Fondation en bois
+    mk('box',{width:BW+.4,height:'.25',depth:BD+.4,position:lpos(0,.12,0),rotation:'0 '+rot+' 0',
+      material:'color:#a07030;roughness:.92'},par);
+    // Pilotis
+    [[-BW/2+.3,-BD/2+.3],[BW/2-.3,-BD/2+.3],[-BW/2+.3,BD/2-.3],[BW/2-.3,BD/2-.3]].forEach(function(off){
+      var pp=lp(off[0],off[1]);
+      mk('cylinder',{radius:'.1',height:'1.0',position:pp.x.toFixed(2)+' '+(gy+.5)+' '+pp.z.toFixed(2),
+        material:'color:#7a4a18;roughness:.92'},par);
+    });
+    // Murs en bambou / planches
+    var wallCol='#c8a050';
+    // Façade
+    mk('box',{width:BW,height:BH,depth:'.18',position:lpos(0,BH/2+.25,BD/2),rotation:'0 '+rot+' 0',
+      material:'color:'+wallCol+';roughness:.88'},par);
+    // Arrière
+    mk('box',{width:BW,height:BH,depth:'.18',position:lpos(0,BH/2+.25,-BD/2),rotation:'0 '+rot+' 0',
+      material:'color:'+wallCol+';roughness:.88'},par);
+    // Côtés
+    mk('box',{width:'.18',height:BH,depth:BD,position:lpos(-BW/2,BH/2+.25,0),rotation:'0 '+rot+' 0',
+      material:'color:'+wallCol+';roughness:.88'},par);
+    mk('box',{width:'.18',height:BH,depth:BD,position:lpos(BW/2,BH/2+.25,0),rotation:'0 '+rot+' 0',
+      material:'color:'+wallCol+';roughness:.88'},par);
+    // Lignes de bambou verticaux (déco)
+    for(var bi=-3;bi<=3;bi++){
+      var bp=lp(bi*.55,BD/2+.18);
+      mk('cylinder',{radius:'.038',height:BH,position:bp.x.toFixed(2)+' '+(gy+BH/2+.25)+' '+bp.z.toFixed(2),
+        material:'color:#7a5018;roughness:.9'},par);
+      var bp2=lp(bi*.55,-BD/2-.18);
+      mk('cylinder',{radius:'.038',height:BH,position:bp2.x.toFixed(2)+' '+(gy+BH/2+.25)+' '+bp2.z.toFixed(2),
+        material:'color:#7a5018;roughness:.9'},par);
+    }
+    // Porte
+    mk('box',{width:'.9',height:1.5,depth:'.12',position:lpos(0,BH*.35+.25,BD/2+.1),rotation:'0 '+rot+' 0',
+      material:'color:#5a3008;roughness:.9'},par);
+    // Fenêtre avec volet
+    mk('plane',{width:'.7',height:'.5',position:lpos(1.1,BH*.6+.25,BD/2+.12),rotation:'0 '+rot+' 0',
+      material:'color:#aaddff;transparent:true;opacity:.6;roughness:.1'},par);
+    mk('plane',{width:'.7',height:'.5',position:lpos(-1.1,BH*.6+.25,BD/2+.12),rotation:'0 '+rot+' 0',
+      material:'color:#aaddff;transparent:true;opacity:.6;roughness:.1'},par);
+
+    // Toit en chaume épais (3 couches)
+    var roofH=2.0;
+    for(var rl=0;rl<3;rl++){
+      var scale=1.0+rl*.12,yOff=rl*.18;
+      mk('cone',{'radius-bottom':((Math.max(BW,BD)/2+.8+rl*.2)).toFixed(2),'radius-top':'.08',
+        height:(roofH-yOff*.5).toFixed(2),'segments-radial':'4',
+        position:lpos(0,BH+.25+roofH/2+yOff*.5,0),rotation:'0 '+(rot+45)+' 0',
+        material:'color:'+(rl===0?'#7a5c1a':rl===1?'#8a6c28':'#9a7c38')+';roughness:.98'},par);
+    }
+    // Franges de chaume
+    for(var fi=0;fi<16;fi++){
+      var fang=fi/16*Math.PI*2;
+      var fr=Math.max(BW,BD)/2+.7;
+      var fp=lp(Math.sin(fang)*fr,Math.cos(fang)*fr);
+      mk('cylinder',{radius:'.025',height:'.4',position:fp.x.toFixed(2)+' '+(gy+BH+.15+.25)+' '+fp.z.toFixed(2),
+        material:'color:#aa8822;roughness:.97'},par);
+    }
+    // Véranda mini
+    mk('box',{width:BW+.2,height:'.1',depth:'.9',position:lpos(0,.28,BD/2+.45),rotation:'0 '+rot+' 0',
+      material:'color:#b08828;roughness:.9'},par);
+
+    addWall(cx,cz,BW/2+.3,BH+roofH,gy);
+  }
+
+  // ══ FONTAINE CENTRALE ══
+  function makeFountain(x,gy,z,par){
+    par=par||W;
+    // Base ronde
+    mk('cylinder',{radius:'2.2',height:'.35',position:x+' '+(gy+.17)+' '+z,
+      material:'color:#c0b8a0;roughness:.88'},par);
+    // Bassin
+    mk('torus',{radius:'1.8','radius-tubular':'.22','segments-radial':'6',rotation:'90 0 0',
+      position:x+' '+(gy+.52)+' '+z,material:'color:#c0b8a0;roughness:.85'},par);
+    mk('cylinder',{radius:'1.78',height:'.42',position:x+' '+(gy+.72)+' '+z,
+      material:'color:#22ccee;transparent:true;opacity:.75;roughness:.04'},par);
+    // Colonne centrale
+    mk('cylinder',{radius:'.22',height:'2.2',position:x+' '+(gy+1.1+.52)+' '+z,
+      material:'color:#d0c8b0;roughness:.85'},par);
+    mk('sphere',{radius:'.38',position:x+' '+(gy+2.5)+' '+z,
+      material:'color:#d8d0b8;roughness:.82'},par);
+    // Jets d'eau
+    for(var ji=0;ji<6;ji++){
+      var jang=ji/6*Math.PI*2;
+      var jr=.28;
+      mk('cylinder',{radius:'.03',height:'.7',
+        position:(x+Math.sin(jang)*jr).toFixed(2)+' '+(gy+2.8).toFixed(2)+' '+(z+Math.cos(jang)*jr).toFixed(2),
+        rotation:(20).toFixed(0)+' '+(jang*180/Math.PI).toFixed(1)+' 0',
+        material:'color:#88ddff;transparent:true;opacity:.78;roughness:.04'},par);
+    }
+    // Petits oiseaux sur le bord
+    for(var bi=0;bi<3;bi++){
+      var bang=bi/3*Math.PI*2+.5;
+      mk('sphere',{radius:'.06',position:(x+Math.sin(bang)*1.7).toFixed(2)+' '+(gy+.96).toFixed(2)+' '+(z+Math.cos(bang)*1.7).toFixed(2),
+        material:'color:#2255cc;roughness:.6'},par);
+    }
+    addWall(x,z,2.4,2.5,gy);
+  }
+
+  // ══ EGLISE HAWAIIENNE ══
+  function makeChurch(cx,gy,cz,rot,par){
+    par=par||W;
+    rot=rot||0;
+    var rad=rot*Math.PI/180,cs=Math.cos(rad),sn=Math.sin(rad);
+    function lp(ox,oz){return{x:cx+ox*cs-oz*sn,z:cz+ox*sn+oz*cs};}
+    function lpos(ox,oy,oz){var p=lp(ox,oz);return p.x.toFixed(2)+' '+(gy+oy).toFixed(2)+' '+p.z.toFixed(2);}
+
+    var BW=5.5,BD=9,BH=3.5;
+    // Corps
+    mk('box',{width:BW,height:BH,depth:BD,position:lpos(0,BH/2+.15,0),rotation:'0 '+rot+' 0',
+      material:'color:#e8e0cc;roughness:.88'},par);
+    // Fondation
+    mk('box',{width:BW+.4,height:'.25',depth:BD+.4,position:lpos(0,.12,0),rotation:'0 '+rot+' 0',
+      material:'color:#c0b890;roughness:.9'},par);
+    // Piliers façade
+    [-1.8,0,1.8].forEach(function(ox){
+      var pp=lp(ox,BD/2+.1);
+      mk('cylinder',{radius:'.15',height:BH,position:pp.x.toFixed(2)+' '+(gy+BH/2+.15)+' '+pp.z.toFixed(2),
+        material:'color:#d8d0b8;roughness:.88'},par);
+    });
+    // Toit triangulaire façade + arrière
+    mk('cone',{'radius-bottom':(BW/2+.5).toFixed(1),'radius-top':'.12',height:'2.2','segments-radial':'4',
+      position:lpos(0,BH+1.25,0),rotation:'0 '+(rot+45)+' 0',
+      material:'color:#8a5a22;roughness:.9'},par);
+    // Tour clocher
+    mk('box',{width:'1.8',height:BH+1.8,depth:'1.8',position:lpos(0,BH+.9+.15,BD/2+.8),rotation:'0 '+rot+' 0',
+      material:'color:#e0d8c4;roughness:.88'},par);
+    // Toit clocher pointu
+    mk('cone',{'radius-bottom':'1.3','radius-top':'.06',height:'2.5','segments-radial':'4',
+      position:lpos(0,BH+2.8+.15+1.25,BD/2+.8),rotation:'0 '+(rot+45)+' 0',
+      material:'color:#8a5a22;roughness:.9'},par);
+    // Croix
+    mk('cylinder',{radius:'.04',height:'1.1',position:lpos(0,BH+5.5+.15,BD/2+.8),
+      material:'color:#f8f8f0;roughness:.8'},par);
+    mk('cylinder',{radius:'.04',height:'.55',position:lpos(0,BH+5.9+.15,BD/2+.8),rotation:'0 0 90',
+      material:'color:#f8f8f0;roughness:.8'},par);
+    // Grande porte
+    mk('box',{width:'1.2',height:'2.1',depth:'.15',position:lpos(0,1.2+.15,BD/2+.12),rotation:'0 '+rot+' 0',
+      material:'color:#4a2808;roughness:.88'},par);
+    mk('box',{width:'.95',height:'1.6',depth:'.1',position:lpos(0,1.4+.15,BD/2+.14),rotation:'0 '+rot+' 0',
+      material:'color:#aaddff;transparent:true;opacity:.5;roughness:.1'},par);
+    // Rosace
+    mk('torus',{radius:'.45','radius-tubular':'.06','segments-radial':'12',
+      position:lpos(0,BH-.5,BD/2+.2),rotation:'0 '+rot+' 0',
+      material:'color:#c8a840;roughness:.7'},par);
+    mk('circle',{radius:'.38',position:lpos(0,BH-.5,BD/2+.22),rotation:'0 '+rot+' 0',
+      material:'color:#aaddff;transparent:true;opacity:.65;roughness:.1'},par);
+    // Fenêtres en arche
+    [[-BD/3,BH*.6],[BD/3,BH*.6]].forEach(function(off){
+      var wp=lp(BW/2+.1,off[0]);
+      mk('plane',{width:'.18',height:'.8',position:wp.x.toFixed(2)+' '+(gy+off[1]).toFixed(2)+' '+wp.z.toFixed(2),
+        rotation:'0 '+(rot+90)+' 0',material:'color:#aaddff;transparent:true;opacity:.65;roughness:.1'},par);
+      var wp2=lp(-BW/2-.1,off[0]);
+      mk('plane',{width:'.18',height:'.8',position:wp2.x.toFixed(2)+' '+(gy+off[1]).toFixed(2)+' '+wp2.z.toFixed(2),
+        rotation:'0 '+(rot+90)+' 0',material:'color:#aaddff;transparent:true;opacity:.65;roughness:.1'},par);
+    });
+    // Escaliers entrée
+    for(var si=0;si<3;si++){
+      mk('box',{width:BW-.2,height:'.14',depth:'.7',position:lpos(0,si*.14+.15,BD/2+si*.38+.55),rotation:'0 '+rot+' 0',
+        material:'color:#d0c8b0;roughness:.9'},par);
+    }
+    addWall(cx,cz,BW/2+.4,BH+4,gy);
+  }
+
+  // ══ COLLINE + VILLAGE HAWAIIEN ══
+  function buildHill(par){
+    par=par||W;
+    var HILL_CX=0, HILL_CZ=-22; // Centre colline
+    var HILL_BASE_Y=0.0;
+    var HILL_TOP_Y=14.0;
+    var HILL_R=24;
+
+    // ── COLLINE (empilement de sphères aplaties + cylindres)
+    // Base large
+    mk('sphere',{radius:HILL_R.toFixed(0),position:HILL_CX+' '+(HILL_BASE_Y-18)+' '+HILL_CZ,
+      scale:'1 .85 1',material:'color:#3a7a20;roughness:.95',shadow:'cast:true;receive:true'},par);
+    // Couche herbe
+    mk('sphere',{radius:(HILL_R*.78).toFixed(0),position:HILL_CX+' '+(HILL_BASE_Y-12)+' '+HILL_CZ,
+      scale:'1 .82 1',material:'color:#2a7018;roughness:.95'},par);
+    // Couche roche milieu
+    mk('sphere',{radius:(HILL_R*.55).toFixed(0),position:HILL_CX+' '+(HILL_BASE_Y-4)+' '+HILL_CZ,
+      scale:'1 .8 1',material:'color:#5a4a30;roughness:.97'},par);
+    // Couche herbe haute
+    mk('sphere',{radius:(HILL_R*.38).toFixed(0),position:HILL_CX+' '+(HILL_BASE_Y+3)+' '+HILL_CZ,
+      scale:'1 .75 1',material:'color:#3a8a22;roughness:.95'},par);
+    // Sommet arrondi
+    mk('sphere',{radius:(HILL_R*.22).toFixed(0),position:HILL_CX+' '+(HILL_BASE_Y+9)+' '+HILL_CZ,
+      scale:'1 .7 1',material:'color:#2a7a18;roughness:.94'},par);
+    // Plateau sommet
+    mk('cylinder',{radius:'10',height:'.4',position:HILL_CX+' '+HILL_TOP_Y+' '+HILL_CZ,
+      material:'color:#2a8018;roughness:.94'},par);
+
+    addPlatform(HILL_CX,HILL_CZ,HILL_TOP_Y,10,10);
+
+    // ── ROCHERS sur la colline
+    var hillRocks=[
+      [HILL_CX-8,4,HILL_CZ-5,1.4,.52],[HILL_CX+7,5,HILL_CZ+4,1.2,.5],
+      [HILL_CX-5,7,HILL_CZ+8,1.8,.48],[HILL_CX+9,8,HILL_CZ-6,1.1,.55],
+      [HILL_CX-10,6,HILL_CZ-2,1.6,.5],[HILL_CX+3,9,HILL_CZ-9,2.0,.46],
+      [HILL_CX-3,3,HILL_CZ+12,1.4,.52],[HILL_CX+11,3,HILL_CZ+7,1.3,.5],
+      [HILL_CX-12,2,HILL_CZ+5,1.8,.48],[HILL_CX+6,11,HILL_CZ+3,0.9,.55],
+      [HILL_CX-2,12,HILL_CZ-4,1.2,.5],[HILL_CX+4,11,HILL_CZ-5,1.0,.52]
+    ];
+    hillRocks.forEach(function(r){makeRock(r[0],r[1],r[2],r[3],r[4],par);});
+
+    // ── CHEMINS piétons en spirale sur la colline
+    // Chemin bas → mi-colline
+    var pathPts=[];
+    for(var pi=0;pi<=20;pi++){
+      var t=pi/20;
+      var ang=-Math.PI/2+t*Math.PI*1.8;
+      var r2=HILL_R*(1.0-t*.65);
+      var py=HILL_BASE_Y+t*t*HILL_TOP_Y*.85;
+      pathPts.push({x:HILL_CX+Math.cos(ang)*r2,y:py,z:HILL_CZ+Math.sin(ang)*r2});
+    }
+    for(var pi=0;pi<pathPts.length-1;pi++){
+      var p0=pathPts[pi],p1=pathPts[pi+1];
+      var dx=p1.x-p0.x,dz=p1.z-p0.z,len=Math.sqrt(dx*dx+dz*dz);
+      if(len<.1)continue;
+      var ang2=Math.atan2(dx,dz)*180/Math.PI;
+      mk('plane',{width:'.7',height:len.toFixed(2),rotation:'-90 '+ang2.toFixed(1)+' 0',
+        position:((p0.x+p1.x)/2).toFixed(2)+' '+(p0.y+.05).toFixed(2)+' '+((p0.z+p1.z)/2).toFixed(2),
+        material:'color:#c4a878;roughness:.95'},par);
+    }
+    // Chemin direct plage → colline
+    makePath(0,0, HILL_CX,HILL_CZ+HILL_R+2, HILL_BASE_Y, par);
+    // Chemins entre palmiers autour
+    for(var ci=0;ci<4;ci++){
+      var ang3=ci/4*Math.PI*2;
+      var r3=12;
+      makePath(HILL_CX+Math.sin(ang3)*r3, HILL_CZ+Math.cos(ang3)*r3,
+               HILL_CX+Math.sin(ang3+.8)*r3, HILL_CZ+Math.cos(ang3+.8)*r3,
+               HILL_BASE_Y, par);
+    }
+
+    // ── PLACE DU VILLAGE au sommet
+    var VX=HILL_CX, VZ=HILL_CZ, VY=HILL_TOP_Y+.2;
+
+    // Sol place (terre battue)
+    mk('cylinder',{radius:'8',height:'.08',position:VX+' '+VY+' '+VZ,
+      material:'color:#d4b070;roughness:.96'},par);
+    // Pavés stylisés
+    for(var pi=0;pi<3;pi++){
+      mk('torus',{radius:(2+pi*1.8).toFixed(1),'radius-tubular':'.06','segments-radial':'16',
+        rotation:'90 0 0',position:VX+' '+(VY+.04)+' '+VZ,
+        material:'color:#c4a060;roughness:.96'},par);
+    }
+
+    // FONTAINE centrale
+    makeFountain(VX, VY, VZ, par);
+
+    // EGLISE au nord
+    makeChurch(VX, VY, VZ-6.5, 0, par);
+
+    // CASES autour de la place
+    var hutPositions=[
+      [VX+6.5, VZ+2, 35],
+      [VX-6.5, VZ+2, -35],
+      [VX+5.5, VZ-4.5, 80],
+      [VX-5.5, VZ-4.5, -80],
+      [VX+3, VZ+6, 15],
+      [VX-3, VZ+6, -15],
+    ];
+    hutPositions.forEach(function(h){
+      makeHawaiianHut(h[0], VY, h[1], h[2], par);
+    });
+
+    // MARCHE (étals)
+    var stallPositions=[
+      [VX+3.5, VZ+3.0, 'fruits', 20],
+      [VX-3.5, VZ+3.0, 'artisanat', -20],
+      [VX+4.0, VZ-1.5, 'poisson', 55],
+      [VX-4.0, VZ-1.5, 'artisanat', -55],
+    ];
+    stallPositions.forEach(function(s){
+      makeMarketStall(s[0], VY, s[1], s[2], s[3], par);
+    });
+
+    // GENS au marché
+    makePerson(VX+3.5,VY,VZ+4.5,'#f4c08a','market',200,par);
+    makePerson(VX-3.2,VY,VZ+4.8,'#d4906a','market',160,par);
+    makePerson(VX+4.2,VY,VZ-0.5,'#e8b07a','market',90,par);
+    makePerson(VX-4.2,VY,VZ-0.5,'#c07858','market',-90,par);
+    // Visiteurs qui se promènent sur la place
+    makePerson(VX+1.8,VY,VZ+2.5,'#f0c8a0','walk',45,par);
+    makePerson(VX-2.0,VY,VZ+2.0,'#e0b090','walk',-30,par);
+    makePerson(VX+1.0,VY,VZ-2.8,'#d8a880','walk',180,par);
+    makePerson(VX-1.5,VY,VZ-3.0,'#f8d8b0','walk',160,par);
+    makePerson(VX+3.0,VY,VZ-3.2,'#e0c0a0','walk',120,par);
+
+    // PALMIERS fin (3x plus fins) autour du village
+    var hillPalmAngles=[0,.5,1.1,1.7,2.3,2.9,3.5,4.1,4.7,5.3,5.9];
+    hillPalmAngles.forEach(function(ang){
+      var r4=7+Math.random()*2;
+      var px=VX+Math.cos(ang)*r4, pz=VZ+Math.sin(ang)*r4;
+      makePalm(px,VY,pz,4+Math.random()*2,Math.cos(ang)*.3,Math.sin(ang)*.3,par);
+    });
+    // Végétation du sommet
+    for(var vi=0;vi<8;vi++){
+      var vang=vi/8*Math.PI*2,vr=8+Math.random()*2;
+      var vx=VX+Math.cos(vang)*vr,vz=VZ+Math.sin(vang)*vr;
+      makeFern(vx,VY,vz,par);
+      if(vi%2===0)makeHibiscus(vx+.5,VY,vz+.3,par);
+    }
+
+    // ── PALMIERS FINS sur les pentes de la colline
+    var slopePalms=[[HILL_CX-9,3,HILL_CZ+4],[HILL_CX+8,4,HILL_CZ+6],[HILL_CX-6,5,HILL_CZ-8],
+                    [HILL_CX+10,4,HILL_CZ-4],[HILL_CX-11,3,HILL_CZ-6],[HILL_CX+5,6,HILL_CZ-10],
+                    [HILL_CX-4,5,HILL_CZ+10],[HILL_CX+12,3,HILL_CZ+2],[HILL_CX-2,8,HILL_CZ-12]];
+    slopePalms.forEach(function(p){
+      makePalm(p[0],p[1],p[2],4.5+Math.random()*2.5,(Math.random()-.5)*.4,(Math.random()-.5)*.4,par);
+    });
+  }
+
   // ══ MONDE SOUS-MARIN ══
   function buildUnderwaterWorld(){
     var U=UW;
     var DEPTH=-18;
-    // Fond sableux
     mk('plane',{width:'800',height:'800',rotation:'-90 0 0',position:'0 '+DEPTH+' 0',
       material:'color:#c8d890;roughness:.92'},U);
-    // Corail varié
     var coralData=[
       [10,-15,15,'#ff4488'],[18,-15,8,'#ff6600'],[5,-15,22,'#ff1155'],[25,-15,18,'#ee2200'],
       [-12,-15,10,'#ff44aa'],[-8,-15,20,'#ff7700'],[20,-15,-10,'#cc0088'],[-20,-15,15,'#ff3300'],
       [15,-15,-18,'#ff5500'],[-15,-15,-12,'#ee1155'],[30,-15,5,'#ff6622'],[-28,-15,8,'#ff2244'],
       [0,-15,28,'#ff4400'],[22,-15,25,'#dd1166'],[-22,-15,22,'#ff5533'],
-      // coraux en arrière
       [40,-17,20,'#ff2288'],[45,-17,-5,'#ff6600'],[-40,-17,15,'#ee0044'],[-38,-17,-10,'#ff8800'],
+      [8,-16,-20,'#ff88aa'],[14,-16,30,'#ee4400'],[-14,-16,-25,'#ff6655'],[32,-16,-18,'#cc2288'],
+      [-30,-16,25,'#ff3366'],[25,-16,-30,'#ee8800'],[50,-17,10,'#ff4422'],[-50,-17,-12,'#ee0066'],
     ];
     coralData.forEach(function(c){makeCoral(c[0],c[1],c[2],c[3],U);});
     // Algues
-    for(var i=0;i<30;i++){
-      var ax=(Math.random()-.5)*80, az=(Math.random()-.5)*80;
-      var ah=1.2+Math.random()*2.2;
+    for(var i=0;i<40;i++){
+      var ax=(Math.random()-.5)*100, az=(Math.random()-.5)*100;
+      var ah=1.2+Math.random()*2.5;
       var alg=mk('plane',{width:'.18',height:ah.toFixed(2),
         position:ax.toFixed(1)+' '+(DEPTH+ah/2)+' '+az.toFixed(1),
         rotation:'0 '+(Math.random()*360)+' 0',
@@ -629,21 +884,47 @@ function initGame(){
       alg.dataset.brx='0';alg.dataset.bry=(Math.random()*360).toFixed(1);
       alg.classList.add('wind-leaf');
     }
-    // Poissons (sphères colorées animées)
+    // Starfish
+    for(var i=0;i<8;i++){
+      var sx=(Math.random()-.5)*60, sz=(Math.random()-.5)*60;
+      mk('cylinder',{radius:'.3',height:'.06',position:sx.toFixed(1)+' '+(DEPTH+.03)+' '+sz.toFixed(1),
+        material:'color:#ff6633;roughness:.7'},U);
+    }
+    // Coquillages
     for(var i=0;i<12;i++){
-      var fish=mk('sphere',{radius:(.15+Math.random()*.12).toFixed(3),
-        position:((Math.random()-.5)*50).toFixed(1)+' '+(-8-Math.random()*8).toFixed(1)+' '+((Math.random()-.5)*50).toFixed(1),
-        material:'color:#'+randomFishColor()+';roughness:.5;emissive:#'+randomFishColor()+';emissiveIntensity:.3'},U);
+      var shx=(Math.random()-.5)*70,shz=(Math.random()-.5)*70;
+      mk('sphere',{radius:'.12',position:shx.toFixed(1)+' '+(DEPTH+.06)+' '+shz.toFixed(1),
+        scale:'1 .4 1',material:'color:#f0d080;roughness:.6'},U);
+    }
+    // Rochers sous-marins
+    for(var i=0;i<10;i++){
+      var rrx=(Math.random()-.5)*80,rrz=(Math.random()-.5)*80;
+      mk('sphere',{radius:(1+Math.random()*2).toFixed(1),position:rrx.toFixed(1)+' '+(DEPTH+1)+' '+rrz.toFixed(1),
+        scale:'1 .6 1',material:'color:#4a3a28;roughness:.97'},U);
+    }
+    // Poissons
+    for(var i=0;i<18;i++){
+      var fish=mk('entity',{},U);
+      var fr=.1+Math.random()*.15,fc=randomFishColor();
+      // Corps
+      var fBody=mk('sphere',{radius:fr.toFixed(3),material:'color:#'+fc+';roughness:.5;emissive:#'+fc+';emissiveIntensity:.3'},fish);
+      // Queue
+      mk('cone',{'radius-bottom':(fr*.5).toFixed(3),'radius-top':'.01',height:(fr*1.2).toFixed(3),
+        position:(-fr*1.0).toFixed(3)+' 0 0',rotation:'0 0 90',material:'color:#'+fc+';roughness:.5'},fish);
+      // Oeil
+      mk('sphere',{radius:(fr*.22).toFixed(3),position:(fr*.5).toFixed(3)+' '+(fr*.2).toFixed(3)+' '+(fr*.55).toFixed(3),
+        material:'color:#111;roughness:.4'},fish);
       fish.classList.add('fish-anim');
       fish.dataset.fishPhase=(Math.random()*Math.PI*2).toFixed(3);
-      fish.dataset.fishR=(8+Math.random()*20).toFixed(1);
-      fish.dataset.fishDepth=(-8-Math.random()*8).toFixed(1);
+      fish.dataset.fishR=(8+Math.random()*25).toFixed(1);
+      fish.dataset.fishDepth=(-5-Math.random()*12).toFixed(1);
+      fish.dataset.fishSpeed=(.3+Math.random()*.4).toFixed(3);
     }
-    // Lumière sous-marine
     mk('point',{position:'0 -10 0',color:'#0088cc',intensity:'1.2',distance:'60'},U);
     mk('point',{position:'20 -14 20',color:'#00aaff',intensity:'0.8',distance:'40'},U);
+    mk('point',{position:'-20 -14 -20',color:'#00ccaa',intensity:'0.6',distance:'35'},U);
   }
-  function randomFishColor(){var cols=['ff8800','ff0044','00ccff','ffff00','ff44aa','88ffcc'];return cols[Math.floor(Math.random()*cols.length)];}
+  function randomFishColor(){var cols=['ff8800','ff0044','00ccff','ffff00','ff44aa','88ffcc','ff6622','22ffcc','ff2266'];return cols[Math.floor(Math.random()*cols.length)];}
   function makeCoral(x,y,z,col,par){
     par=par||UW;
     var h=1.5+Math.random()*2.5,nb=4+Math.floor(Math.random()*5);
@@ -657,6 +938,12 @@ function initGame(){
         rotation:(Math.random()*30-15).toFixed(1)+' '+(ang*180/Math.PI).toFixed(1)+' 0',
         material:'color:'+col+';roughness:.5;emissive:'+col+';emissiveIntensity:.3'},par);
     }
+    // Bulles de corail
+    for(var bb=0;bb<3;bb++){
+      var bang=Math.random()*Math.PI*2,br2=.1+Math.random()*.2;
+      mk('sphere',{radius:'.08',position:(x+Math.sin(bang)*br2).toFixed(2)+' '+(y+h+.5+Math.random()*.5).toFixed(2)+' '+(z+Math.cos(bang)*br2).toFixed(2),
+        material:'color:'+col+';roughness:.4;emissive:'+col+';emissiveIntensity:.4'},par);
+    }
   }
 
   // ══════════════════════════════════════
@@ -666,10 +953,8 @@ function initGame(){
   // — ILE PRINCIPALE —
   (function(){
     var GY=0.0;
-    // Sol herbe
     mk('plane',{width:'64',height:'64',rotation:'-90 0 0',position:'0 .01 0',
       src:'#tGrass',repeat:'8 8',material:'roughness:.88',shadow:'receive:true'});
-    // Sable clair (pas de texture = couleur pure)
     mk('ring',{'radius-inner':'28','radius-outer':'68','segments-theta':'64',
       rotation:'-90 0 0',position:'0 .005 0',
       material:'color:'+SAND_COL+';roughness:.92',shadow:'receive:true'});
@@ -678,44 +963,91 @@ function initGame(){
     addPlatform(0,0,GY,67,67);
     islandDefs.push({cx:0,cz:0,y:GY,label:'ILE PRINCIPALE'});
 
-    // Palmiers (évitent les maisons)
-    var palmRings=[[14,4.8,3],[22,4.5,4],[30,4.0,4]];
+    // ── COLLINE + VILLAGE HAWAIIEN (remplace les maisons)
+    buildHill();
+
+    // ── PALMIERS 3x plus fins autour de l'île
+    var palmRings=[[14,3.5,6],[22,3.2,7],[30,2.8,8],[38,2.5,10],[50,2.2,12],[60,2.0,14]];
     palmRings.forEach(function(rd,ri){
-      var cnt=Math.floor(2*Math.PI*rd[0]/rd[1]);
+      var spacing=rd[1];
+      var cnt=Math.floor(2*Math.PI*rd[0]/spacing);
       for(var j=0;j<cnt;j++){
         var ang=j/cnt*Math.PI*2+ri*.55;
         var px=Math.sin(ang)*rd[0],pz=Math.cos(ang)*rd[0];
-        if(isInHouseZone(px,pz))continue;
-        makePalm(px,GY,pz,5.5+Math.random()*4,Math.sin(ang)*(.5+Math.random()*.7),Math.cos(ang)*(.5+Math.random()*.7));
+        makePalm(px,GY,pz,4.5+Math.random()*3,Math.sin(ang)*(.2+Math.random()*.4),Math.cos(ang)*(.2+Math.random()*.4));
       }
     });
-    for(var i=0;i<10;i++){
-      var ang=Math.random()*Math.PI*2,r=3+Math.random()*13;
+    // Palmiers épars
+    for(var i=0;i<16;i++){
+      var ang=Math.random()*Math.PI*2,r=3+Math.random()*20;
+      // Evite la zone colline
+      if(r<26&&Math.abs(Math.atan2(Math.sin(ang),Math.cos(ang))+Math.PI/2)<1.0)continue;
       var px=Math.sin(ang)*r,pz=Math.cos(ang)*r;
-      if(isInHouseZone(px,pz))continue;
-      makePalm(px,GY,pz,5+Math.random()*4,(Math.random()-.5)*.7,(Math.random()-.5)*.7);
+      makePalm(px,GY,pz,4+Math.random()*3,(Math.random()-.5)*.3,(Math.random()-.5)*.3);
     }
-    // Maisons — bien espacées, loin des palmiers centraux
-    makeHouse(42,GY,12,'#e87040',0);
-    makeHouse(-40,GY,18,'#4488cc',180);
-    makeHouse(12,GY,-42,'#ddcc44',90);
-    makeHouse(-38,GY,-20,'#dd4488',-90);
-    // Boutiques
-    makeShop(32,GY,28,'surf');
-    makeShop(-34,GY,26,'fruits');
-    // Végétation (hors zones maisons)
+
+    // ── CHEMINS PIÉTONS sur la plage
+    makePath(-15,40, 15,40, GY);
+    makePath(-30,52, 30,52, GY);
+    makePath(-10,20, 10,20, GY);
+    makePath(-20,30, -5,12, GY);
+    makePath(5,12, 20,30, GY);
+
+    // ── PERSONNES SUR LA PLAGE ══
+    // Nageurs dans l'eau
+    makePerson(18,-0.28,-54,'#f4c08a','swim', 0);
+    makePerson(-22,-0.28,-52,'#d4906a','swim',15);
+    makePerson(8,-0.28,60,'#e8b07a','swim',200);
+    makePerson(-10,-0.28,58,'#f0c8a0','swim',180);
+    makePerson(30,-0.28,48,'#c07858','swim',160);
+    makePerson(-35,-0.28,42,'#f8d8b0','swim',190);
+    makePerson(12,-0.28,-60,'#e0c0a0','swim',10);
+    makePerson(-5,-0.28,65,'#d0a880','swim',170);
+
+    // Surfeurs (un peu plus loin dans l'eau)
+    makePerson(50,-0.18,-40,'#f4c08a','surf',35);
+    makePerson(-48,-0.18,-38,'#d4906a','surf',-40);
+    makePerson(55,-0.18,20,'#e8b07a','surf',10);
+    makePerson(-52,-0.18,25,'#f0c8a0','surf',-15);
+    makePerson(42,-0.18,38,'#c07858','surf',55);
+    makePerson(-44,-0.18,35,'#e8b880','surf',-50);
+
+    // Transats sur la plage
+    makePerson(30,GY,50,'#f4c08a','transat',30);
+    makePerson(-28,GY,52,'#d4906a','transat',-20);
+    makePerson(22,GY,56,'#e8b07a','transat',10);
+    makePerson(-18,GY,54,'#f0c8a0','transat',-35);
+    makePerson(38,GY,44,'#c07858','transat',40);
+    makePerson(-40,GY,42,'#f8e0b0','transat',-25);
+    makePerson(10,GY,60,'#e0b888','transat',5);
+    makePerson(-8,GY,62,'#d8a870','transat',-10);
+    makePerson(48,GY,30,'#f4d0a0','transat',60);
+    makePerson(-46,GY,32,'#e8c890','transat',-55);
+
+    // Promeneurs sur la plage
+    makePerson(40,GY,18,'#f4c08a','walk',90);
+    makePerson(-38,GY,20,'#d4906a','walk',-90);
+    makePerson(16,GY,45,'#e8b07a','walk',45);
+    makePerson(-14,GY,44,'#f0c8a0','walk',-45);
+    makePerson(26,GY,35,'#c07858','walk',20);
+    makePerson(-24,GY,36,'#f8d8b0','walk',-20);
+    makePerson(5,GY,42,'#e0c0a0','walk',5);
+    makePerson(-6,GY,40,'#d0a880','walk',-5);
+
+    // ── VEGETATION
     var vegSpots=[[4,10],[7,8],[-5,11],[-9,6],[12,4],[0,15],[-3,-12],[11,15],[-11,17],[5,-16]];
     vegSpots.forEach(function(p){
-      if(!isInHouseZone(p[0],p[1])){makeMonstera(p[0],GY,p[1]);makeHibiscus(p[0]+1.2,GY,p[1]+.8);makeFern(p[0]-.8,GY,p[1]-.5);}
+      makeMonstera(p[0],GY,p[1]);makeHibiscus(p[0]+1.2,GY,p[1]+.8);makeFern(p[0]-.8,GY,p[1]-.5);
     });
-    [[6,12],[9,-9],[-8,14],[13,11],[-12,9],[2,-13]].forEach(function(p){if(!isInHouseZone(p[0],p[1]))makeStrelitzia(p[0],GY,p[1]);});
-    // Lianes
+    [[6,12],[9,-9],[-8,14],[13,11],[-12,9],[2,-13]].forEach(function(p){makeStrelitzia(p[0],GY,p[1]);});
     makeLiane(-6,GY+5,8,-12,GY+6,2);
     makeLiane(9,GY+5,-6,15,GY+6,-10);
+
     // Rochers plage
     [[38,8,2.8,.45],[36,-14,2.4,.5],[34,-26,2.0,.55],[-36,12,2.5,.44],[-38,-16,2.2,.52],
      [-44,4,4.0,.46],[40,18,3.0,.45],[24,36,1.8,.5],[18,-42,1.6,.55],[-20,-40,2.0,.48]].forEach(function(r){makeRock(r[0],GY,r[1],r[2],r[3]);});
-    // Fusée (loin des maisons)
+
+    // Fusée
     mk('cylinder',{position:'-4 1.9 7.5','radius-bottom':'.6','radius-top':'.25',height:'3.4',
       material:'color:#b8b8c0;roughness:.4;metalness:.3',rotation:'.65 0 .38',shadow:'cast:true'});
     mk('cone',{position:'-4.9 3.6 6.5','radius-bottom':'.25','radius-top':'.02',height:'1.2',
@@ -723,7 +1055,7 @@ function initGame(){
     addWall(-4,8,1.6,4,GY);
   })();
 
-  // — ILE VOLCANIQUE (grande, irrégulière) —
+  // — ILE VOLCANIQUE —
   (function(){
     var CX=-165,CZ=-140,GY=0.1;
     mk('cylinder',{radius:'58',height:'1.5',position:CX+' -.4 '+CZ,material:'color:#2a2010;roughness:.95'});
@@ -732,7 +1064,6 @@ function initGame(){
       position:CX+' .04 '+CZ,material:'color:'+SAND_COL+';roughness:.93'});
     addPlatform(CX,CZ,GY,57,57);
     islandDefs.push({cx:CX,cz:CZ,y:GY,label:'ILE VOLCANIQUE'});
-    // Montagne double
     mk('cone',{'radius-bottom':'22','radius-top':'4',height:'34',position:CX+' 17 '+CZ,material:'color:#553322;roughness:.95',shadow:'cast:true'});
     mk('cone',{'radius-bottom':'14','radius-top':'2',height:'22',position:(CX+10)+' 14 '+(CZ-6),material:'color:#4a2a18;roughness:.95',shadow:'cast:true'});
     mk('sphere',{radius:'4',position:CX+' 35 '+CZ,material:'color:#ff4400;emissive:#cc2200;emissiveIntensity:.75;roughness:.35'});
@@ -740,15 +1071,27 @@ function initGame(){
     makeCascade(CX-12,11,CZ-9,11);
     makeCascade(CX+8,8,CZ+12,7);
     [[CX-20,CZ+12],[CX+16,CZ-10],[CX-10,CZ-20],[CX+22,CZ+14]].forEach(function(p){
-      makePalm(p[0],GY,p[1],6+Math.random()*3,(Math.random()-.5)*.6,(Math.random()-.5)*.6);
+      makePalm(p[0],GY,p[1],5+Math.random()*3,(Math.random()-.5)*.4,(Math.random()-.5)*.4);
       makeHibiscus(p[0]+1,GY,p[1]+1);makeFern(p[0]-1,GY,p[1]-1);
     });
-    makeHouse(CX+22,GY,CZ+12,'#cc5533',0);
-    makeShop(CX-24,GY,CZ+18,'fruits');
     [[CX+32,CZ+6,3,.5],[CX-30,CZ-10,2.5,.45],[CX+26,CZ-22,2,.5]].forEach(function(r){makeRock(r[0],GY,r[1],r[2],r[3]);});
+    // Village volcanique + gens
+    makeHawaiianHut(CX+22,GY,CZ+12,0);
+    makeHawaiianHut(CX-18,GY,CZ+8,45);
+    makeMarketStall(CX+8,GY,CZ+16,'fruits',0);
+    makePerson(CX+8,GY,CZ+18,'#e8b07a','market',180);
+    makePerson(CX+22,GY,CZ+6,'#f4c08a','walk',45);
+    makePerson(CX-20,GY,CZ+5,'#d4906a','walk',-30);
+    makePerson(CX+15,GY,CZ-5,'#f0c8a0','transat',10);
+    // Transats plage volcanique
+    makePerson(CX+35,GY,CZ+20,'#e8c08a','transat',30);
+    makePerson(CX-32,GY,CZ+22,'#f0d0a0','transat',-20);
+    // Surfeurs
+    makePerson(CX+50,-0.2,CZ+30,'#f4c08a','surf',30);
+    makePerson(CX-48,-0.2,CZ+28,'#d4906a','surf',-35);
   })();
 
-  // — ILE TROPICALE (grande, verte) —
+  // — ILE TROPICALE —
   (function(){
     var CX=165,CZ=-125,GY=0.1;
     mk('cylinder',{radius:'48',height:'1.3',position:CX+' -.3 '+CZ,material:'color:#2a5a10;roughness:.95'});
@@ -762,25 +1105,48 @@ function initGame(){
     mk('sphere',{radius:'11',position:(CX+9)+' 7 '+(CZ-7),scale:'1 .52 1',material:'color:#2a8a10;roughness:.9'});
     makeCascade(CX-7,8,CZ-5,8);
     makeCascade(CX+5,6,CZ+9,6);
-    for(var i=0;i<16;i++){
+    for(var i=0;i<18;i++){
       var ang=Math.random()*Math.PI*2,r=5+Math.random()*35;
-      var px=CX+Math.sin(ang)*r,pz=CZ+Math.cos(ang)*r;
-      if(isInHouseZone(px,pz))continue;
-      makePalm(px,GY,pz,6+Math.random()*5,(Math.random()-.5)*.7,(Math.random()-.5)*.7);
+      makePalm(CX+Math.sin(ang)*r,GY,CZ+Math.cos(ang)*r,5+Math.random()*4,(Math.random()-.5)*.4,(Math.random()-.5)*.4);
     }
     [[CX+14,CZ+10],[CX-12,CZ+14],[CX+22,CZ-12],[CX-18,CZ-10]].forEach(function(p){makeMonstera(p[0],GY,p[1]);makeHibiscus(p[0]+1,GY,p[1]+.5);});
     [[CX+10,CZ+14],[CX-9,CZ+17],[CX+24,CZ-14]].forEach(function(p){makeStrelitzia(p[0],GY,p[1]);});
     makeLiane(CX-6,GY+5,CZ+9,CX-13,GY+6,CZ+3);
     makeLiane(CX+9,GY+6,CZ-6,CX+16,GY+5,CZ-13);
-    makeHouse(CX+22,GY,CZ+14,'#44cc66',0);
-    makeHouse(CX-16,GY,CZ+18,'#aa44cc',180);
-    makeShop(CX+28,GY,CZ+2,'surf');
+    // Village tropical
+    makeHawaiianHut(CX+16,GY,CZ+14,0);
+    makeHawaiianHut(CX-14,GY,CZ+12,60);
+    makeHawaiianHut(CX+20,GY,CZ-8,-40);
+    makeHawaiianHut(CX-18,GY,CZ-10,120);
+    makeMarketStall(CX+6,GY,CZ+16,'fruits',10);
+    makeMarketStall(CX-6,GY,CZ+14,'artisanat',-10);
+    makeFountain(CX,GY,CZ+5);
+    makePerson(CX+6,GY,CZ+18,'#f4c08a','market',180);
+    makePerson(CX-6,GY,CZ+16,'#d4906a','market',180);
+    makePerson(CX+8,GY,CZ+8,'#e8b07a','walk',45);
+    makePerson(CX-8,GY,CZ+8,'#f0c8a0','walk',-45);
+    makePerson(CX+2,GY,CZ+12,'#c07858','walk',20);
+    makePerson(CX-2,GY,CZ+10,'#f8d8b0','walk',-20);
+    // Transats + surfeurs plage tropicale
+    makePerson(CX+32,GY,CZ+22,'#e8c08a','transat',30);
+    makePerson(CX-30,GY,CZ+24,'#f0d0a0','transat',-20);
+    makePerson(CX+28,GY,CZ-28,'#f4c0a0','transat',50);
+    makePerson(CX+38,-0.2,CZ+35,'#f4c08a','surf',30);
+    makePerson(CX-36,-0.2,CZ+32,'#d4906a','surf',-35);
+    makePerson(CX+42,-0.2,CZ-30,'#e8c08a','surf',15);
+    // Nageurs
+    makePerson(CX+52,-0.28,CZ+10,'#f4c08a','swim',30);
+    makePerson(CX-50,-0.28,CZ+12,'#d4906a','swim',-30);
+    makePerson(CX+48,-0.28,CZ-15,'#e8b07a','swim',15);
     [[CX+30,CZ+12,2.5,.48],[CX-32,CZ-10,2,.5],[CX+24,CZ-30,2.2,.45]].forEach(function(r){makeRock(r[0],GY,r[1],r[2],r[3]);});
+    makePath(CX,CZ-4, CX+14,CZ+10, GY);
+    makePath(CX,CZ-4, CX-14,CZ+12, GY);
+    makePath(CX-14,CZ+12, CX-6,CZ+14, GY);
   })();
 
-  // PONTS — points d'attache à y=1.5 (bien au-dessus de l'eau à y=-0.48)
-  makeBridge(62,1.5,0,  119,1.5,-125); // principale → tropicale
-  makeBridge(0,1.5,-66,  -112,1.5,-140); // principale → volcanique
+  // PONTS
+  makeBridge(62,1.5,0,  119,1.5,-125);
+  makeBridge(0,1.5,-66,  -112,1.5,-140);
 
   // MONDE SOUS-MARIN
   buildUnderwaterWorld();
@@ -803,17 +1169,16 @@ function initGame(){
       var gy=getGroundY(P.x,P.z);
       if(gy!==null)P.y=gy+P.yOff;
     },200);
-    toast('Bienvenue ! Explore les iles et plonge sous l eau !',5000);
+    toast('Bienvenue ! Explore les iles, plonge sous l eau !',5000);
   });
 
   // ══════════════════════════════════════
   // JOUEUR
   // ══════════════════════════════════════
   var WATER_SURFACE=-0.48;
-  var DIVE_SPEED=3.5;
   var MAX_BREATH=100;
-  var BREATH_LOSE=8; // par seconde sous l'eau
-  var BREATH_GAIN=25; // par seconde à la surface
+  var BREATH_LOSE=7;
+  var BREATH_GAIN=25;
 
   var P={x:0,y:1.5,z:3,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,
          swimming:false,diving:false,breath:MAX_BREATH,swimBob:0};
@@ -822,7 +1187,7 @@ function initGame(){
   var waveT=0,lastT=performance.now();
   var windLeaves=null,fishEls=null;
 
-  function getGroundY(px,pz){
+  function getGroundY2(px,pz){
     var best=null;
     for(var i=0;i<platforms.length;i++){
       var pl=platforms[i];
@@ -832,6 +1197,8 @@ function initGame(){
     }
     return best;
   }
+  // override global
+  getGroundY=getGroundY2;
 
   function loop(){
     requestAnimationFrame(loop);
@@ -847,14 +1214,19 @@ function initGame(){
       lf.setAttribute('rotation',(brx+s).toFixed(1)+' '+bry+' '+Math.cos(waveT*.75+ph).toFixed(1));
     });
 
-    // Poissons
+    // Poissons avec rotation
     if(!fishEls)fishEls=document.querySelectorAll('.fish-anim');
     fishEls.forEach(function(fish){
       var ph=parseFloat(fish.dataset.fishPhase||0);
       var r=parseFloat(fish.dataset.fishR||10);
       var dep=parseFloat(fish.dataset.fishDepth||-10);
-      var fx=Math.sin(waveT*.4+ph)*r, fz=Math.cos(waveT*.3+ph)*r;
-      fish.setAttribute('position',fx.toFixed(2)+' '+(dep+Math.sin(waveT*.8+ph)*.5).toFixed(2)+' '+fz.toFixed(2));
+      var spd=parseFloat(fish.dataset.fishSpeed||.35);
+      var t=waveT*spd;
+      var fx=Math.sin(t+ph)*r, fz=Math.cos(t+ph)*r;
+      var fy=dep+Math.sin(waveT*.8+ph)*.8;
+      var ang=Math.atan2(Math.cos(t+ph),-Math.sin(t+ph));
+      fish.setAttribute('position',fx.toFixed(2)+' '+fy.toFixed(2)+' '+fz.toFixed(2));
+      fish.setAttribute('rotation','0 '+(ang*180/Math.PI).toFixed(1)+' 0');
     });
 
     // INPUT
@@ -866,20 +1238,22 @@ function initGame(){
     fwd-=jLY;lat+=jLX;
     var moveMag=Math.sqrt(fwd*fwd+lat*lat);
 
-    var gy=getGroundY(P.x,P.z);
+    var gy=getGroundY2(P.x,P.z);
     var onIsland=(gy!==null);
 
-    // Transition vers nage : hors île ET à hauteur eau
+    // ── PLONGÉE LIBRE ──
+    // On peut plonger dès qu'on est dans l'eau (même si on marche sur une île basse)
+    // Transition nage : hors île ET à hauteur eau
     if(!P.diving){
-      if(!onIsland && P.y<=WATER_SURFACE+.15){
+      if(!onIsland && P.y<=WATER_SURFACE+.2){
         P.swimming=true;
-      } else if(onIsland){
+      } else if(onIsland && P.y>WATER_SURFACE+.3){
         P.swimming=false;
       }
     }
 
     var spd=sprint?9.5:5.2;
-    if(P.swimming||P.diving)spd*=.6;
+    if(P.swimming||P.diving)spd*=.65;
 
     if(moveMag>.05){
       var mx=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);
@@ -891,33 +1265,55 @@ function initGame(){
       P.yaw+=dyw*Math.min(1,dt*14);
     } else {P.vx=0;P.vz=0;}
 
-    // Physique
+    // ── PHYSIQUE ──
     if(P.diving){
-      // Sous l'eau : flottabilité + gravité nulle
-      P.vy*=.88;
-      // Monter/descendre avec joystick gauche vertical
-      if(jLY<-.1) P.vy=Math.min(P.vy+5*dt,3.0);
-      else if(jLY>.1) P.vy=Math.max(P.vy-5*dt,-3.0);
-      else P.vy+=.4*dt; // légère remontée naturelle
+      // Nage sous-marine libre : déplacement 3D complet
+      P.vy*=.85;
+
+      // Descendre/monter avec joystick gauche (jLY) ou caméra pitch
+      // Montée avec joystick gauche vers le haut (jLY<0)
+      if(jLY<-.08) P.vy=Math.min(P.vy+6*dt*(-jLY)*2,4.5);
+      else if(jLY>.08) P.vy=Math.max(P.vy-6*dt*jLY*2,-4.5);
+
+      // Légère remontée naturelle (flottabilité)
+      P.vy+=0.3*dt;
+
+      // Le joueur peut aussi monter/descendre avec la caméra (pitch)
+      // Si on regarde vers le bas, on descend ; vers le haut, on monte
+      if(moveMag>.05){
+        var pitchDive=(CAM.pitch-.18)*3; // pitch normal = neutre
+        P.vy+=pitchDive*spd*dt*0.4;
+      }
+
       P.y+=P.vy*dt;
-      if(P.y>WATER_SURFACE-.05){P.y=WATER_SURFACE-.05;P.diving=false;P.swimming=true;}
-      if(P.y<-22){P.y=-22;}
+
+      // Remontée à la surface
+      if(P.y>=WATER_SURFACE-.05){
+        P.y=WATER_SURFACE-.05;
+        P.diving=false;
+        P.swimming=true;
+        P.vy=0;
+      }
+      // Fond de l'océan
+      if(P.y<-21.5){P.y=-21.5;P.vy=Math.max(0,P.vy);}
       P.onGround=false;
-      // Respiration
+
+      // Respiration sous l'eau
       P.breath=Math.max(0,P.breath-BREATH_LOSE*dt);
     } else if(P.swimming){
       P.swimBob+=dt;
+      // Nage de surface — peut aller vers la plongée si DIVE pressé
       P.y=WATER_SURFACE+Math.sin(P.swimBob*2.4)*.08;
       P.vy=0;P.onGround=true;
-      // Récup respiration
       P.breath=Math.min(MAX_BREATH,P.breath+BREATH_GAIN*dt);
     } else {
+      // Gravité terrestre
       P.vy-=22*dt;if(P.vy<-20)P.vy=-20;
       P.y+=P.vy*dt;
-      var floorY=(gy!==null)?gy+P.yOff:P.yOff;
       if(gy!==null&&P.y<=gy+P.yOff){P.y=gy+P.yOff;P.vy=0;P.onGround=true;}
       else P.onGround=false;
-      // Récup totale
+      // Tombe dans l'eau
+      if(P.y<=WATER_SURFACE+.15&&gy===null){P.swimming=true;}
       P.breath=Math.min(MAX_BREATH,P.breath+BREATH_GAIN*dt);
     }
 
@@ -933,7 +1329,7 @@ function initGame(){
 
     // Stitch
     var stEl=document.getElementById('stitch-root');
-    var tiltF=P.diving&&moveMag>.05?-22:(P.swimming&&moveMag>.05?-12:0);
+    var tiltF=P.diving&&moveMag>.05?-28:(P.swimming&&moveMag>.05?-14:0);
     stEl.setAttribute('position',P.x.toFixed(2)+' '+P.y.toFixed(2)+' '+P.z.toFixed(2));
     stEl.setAttribute('rotation',tiltF+' '+(P.yaw*180/Math.PI).toFixed(1)+' 0');
 
@@ -944,15 +1340,18 @@ function initGame(){
       while(cd>Math.PI)cd-=Math.PI*2;while(cd<-Math.PI)cd+=Math.PI*2;
       CAM.yaw+=cd*dt*2.2;
     }
-    if(Math.abs(rjLY)>.04)CAM.pitch=Math.max(.05,Math.min(.55,CAM.pitch+rjLY*dt*1.5));
-    var cr=CAM.dist*Math.cos(CAM.pitch);
+    if(Math.abs(rjLY)>.04)CAM.pitch=Math.max(.04,Math.min(.7,CAM.pitch+rjLY*dt*1.5));
+
+    // En plongée, la caméra suit mieux verticalement
+    var camDistActual=P.diving?5.5:CAM.dist;
+    var cr=camDistActual*Math.cos(CAM.pitch);
     var cX=P.x+Math.sin(CAM.yaw)*cr,cZ=P.z+Math.cos(CAM.yaw)*cr;
-    var cY=P.y+CAM.dist*Math.sin(CAM.pitch)+1.8;
+    var cY=P.y+camDistActual*Math.sin(CAM.pitch)+(P.diving?1.2:1.8);
     var camRig=document.getElementById('cam-rig');
     var cp=camRig.getAttribute('position');
-    var lf=Math.min(1,dt*18);
-    camRig.setAttribute('position',(cp.x+(cX-cp.x)*lf).toFixed(2)+' '+(cp.y+(cY-cp.y)*lf*.8).toFixed(2)+' '+(cp.z+(cZ-cp.z)*lf).toFixed(2));
-    document.getElementById('mainCam').components.camera.camera.lookAt(P.x,P.y+.9,P.z);
+    var lf2=Math.min(1,dt*18);
+    camRig.setAttribute('position',(cp.x+(cX-cp.x)*lf2).toFixed(2)+' '+(cp.y+(cY-cp.y)*lf2*.8).toFixed(2)+' '+(cp.z+(cZ-cp.z)*lf2).toFixed(2));
+    document.getElementById('mainCam').components.camera.camera.lookAt(P.x,P.y+(P.diving?.5:.9),P.z);
 
     // Vagues
     ['w0','w1','w2'].forEach(function(id,i){
@@ -976,11 +1375,11 @@ function initGame(){
       breathBar.style.display='none';
     }
     // Overlay sous-marin
-    uwOverlay.style.opacity=P.diving?.75:(P.swimming?.25:0);
-    // Fog sous-marin
+    uwOverlay.style.opacity=P.diving?.72:(P.swimming?.18:0);
+    // Fog
     var scene=document.querySelector('a-scene');
     if(P.diving){
-      scene.setAttribute('fog','type:exponential;color:#004466;density:0.04');
+      scene.setAttribute('fog','type:exponential;color:#004466;density:0.035');
       document.getElementById('skyEl').setAttribute('color','#003355');
     } else {
       scene.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.007');
@@ -996,37 +1395,42 @@ function initGame(){
         var id=islandDefs[i];
         if(Math.sqrt((P.x-id.cx)*(P.x-id.cx)+(P.z-id.cz)*(P.z-id.cz))<60){zone='🏝 '+id.label;break;}
       }
+      if(P.y>3)zone='🏔 COLLINE';
     }
     document.getElementById('zL').textContent=zone;
 
-    // Alerte noyade
     if(P.breath<15&&P.diving&&Math.floor(waveT*2)%2===0){
       document.getElementById('zL').style.color='#ff2200';
     } else {
       document.getElementById('zL').style.color='#7de8ff';
     }
-    if(P.breath<=0){P.y=WATER_SURFACE+1;P.vy=2;P.breath=30;toast('Stitch refait surface !',2000);}
+    if(P.breath<=0){P.y=WATER_SURFACE+1;P.vy=2;P.diving=false;P.swimming=true;P.breath=35;toast('Stitch refait surface !',2000);}
   }
   loop();
 
   window.doJump=function(e){
     if(e&&e.preventDefault)e.preventDefault();
-    // JUMP = seulement sauter sur le sol (jamais plonger)
-    if(P.onGround&&!P.diving){P.vy=8.5;P.onGround=false;}
+    if(P.onGround&&!P.diving&&!P.swimming){P.vy=8.5;P.onGround=false;}
   };
   window.doDive=function(e){
     if(e&&e.preventDefault)e.preventDefault();
     if(P.diving){
-      // Remonter rapidement
-      P.vy=4.5;
+      // REMONTER
+      P.vy=5.5;
+    } else if(P.swimming){
+      // PLONGER depuis la surface
+      P.diving=true;
+      P.swimming=false;
+      P.vy=-4.0;
+      P.onGround=false;
+      P.y=WATER_SURFACE-.2;
     } else {
-      // Forcer la transition nage si hors île même si swimming pas encore true
-      var gy2=getGroundY(P.x,P.z);
-      var canDive=(P.swimming)||(gy2===null && P.y<=WATER_SURFACE+0.8);
-      if(canDive){
+      // Si dans l'eau mais pas encore swimming, forcer
+      var gy3=getGroundY2(P.x,P.z);
+      if(gy3===null && P.y<=WATER_SURFACE+1.0){
+        P.swimming=true;
         P.diving=true;
-        P.swimming=false;
-        P.vy=-3.5;
+        P.vy=-4.0;
         P.onGround=false;
       }
     }
