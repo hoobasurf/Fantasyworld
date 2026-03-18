@@ -131,13 +131,15 @@ function initGame(){
 
   function makePalm(x,gy,z,h,lx,lz,par){
     par=par||W;
+    // Collision tronc
+    addWall(x,z,0.35,h*0.6,gy);
     var NS=12,pts=[];
     for(var i=0;i<=NS;i++){var t=i/NS;pts.push({x:x+lx*h*t*t*.85,y:gy+h*t,z:z+lz*h*t*t*.85});}
     for(var i=0;i<NS;i++){
       var p0=pts[i],p1=pts[i+1];
       var dx=p1.x-p0.x,dy=p1.y-p0.y,dz=p1.z-p0.z,len=Math.sqrt(dx*dx+dy*dy+dz*dz);
       var tr=i/NS;
-      var rB=Math.max(.004,.012-tr*.007),rT=Math.max(.003,.009-tr*.005);
+      var rB=Math.max(.002,.006-tr*.004),rT=Math.max(.001,.004-tr*.003);
       mk('cylinder',{'radius-bottom':rB.toFixed(4),'radius-top':rT.toFixed(4),height:len.toFixed(3),'segments-radial':'6',
         position:((p0.x+p1.x)/2).toFixed(2)+' '+((p0.y+p1.y)/2).toFixed(2)+' '+((p0.z+p1.z)/2).toFixed(2),
         rotation:segRot(dx,dy,dz),material:'roughness:.93;color:'+(i%2===0?'#c8a86a':'#b09050'),shadow:'cast:true'},par);
@@ -632,11 +634,12 @@ function initGame(){
     makePerson(VX+1.8,VY,VZ+3.5,'#f0c8a0','walk',45,par);
     makePerson(VX-2.0,VY,VZ+3.0,'#e0b090','walk',-30,par);
     makePerson(VX+1.0,VY,VZ-2.8,'#d8a880','walk',180,par);
-    var hillPalmAngles=[0,.5,1.1,1.7,2.3,2.9,3.5,4.1,4.7,5.3];
+    // 5 palmiers autour du village seulement
+    var hillPalmAngles=[0,1.25,2.5,3.8,5.1];
     hillPalmAngles.forEach(function(ang){
-      var r4=8+Math.random()*2;
+      var r4=8.5+Math.random()*1.5;
       var px=VX+Math.cos(ang)*r4, pz=VZ+Math.sin(ang)*r4;
-      makePalm(px,VY,pz,4+Math.random()*2,Math.cos(ang)*.3,Math.sin(ang)*.3,par);
+      makePalm(px,VY,pz,4+Math.random()*2,Math.cos(ang)*.25,Math.sin(ang)*.25,par);
     });
     for(var vi=0;vi<12;vi++){
       var vang=vi/12*Math.PI*2,vr=7+Math.random()*2.5;
@@ -645,7 +648,8 @@ function initGame(){
       if(vi%3===0) makeBirdOfParadise(vx+.5,VY,vz+.3,par);
       if(vi%4===0) makeGiantHibiscus(vx-.4,VY,vz-.3,par);
     }
-    var slopePalms=[[HILL_CX-9,3,HILL_CZ+4],[HILL_CX+8,4,HILL_CZ+6],[HILL_CX-6,5,HILL_CZ-8],[HILL_CX+10,4,HILL_CZ-4],[HILL_CX-11,3,HILL_CZ-6],[HILL_CX+5,6,HILL_CZ-10],[HILL_CX-4,5,HILL_CZ+10],[HILL_CX+12,3,HILL_CZ+2],[HILL_CX-2,8,HILL_CZ-12]];
+    // 4 palmiers seulement sur les pentes
+    var slopePalms=[[HILL_CX-9,3,HILL_CZ+4],[HILL_CX+8,4,HILL_CZ+6],[HILL_CX-6,5,HILL_CZ-8],[HILL_CX+10,4,HILL_CZ-4]];
     slopePalms.forEach(function(p){
       makePalm(p[0],p[1],p[2],4.5+Math.random()*2.5,(Math.random()-.5)*.4,(Math.random()-.5)*.4,par);
       makeTallGrass(p[0]+1,p[1],p[2]-.5,par);
@@ -696,23 +700,14 @@ function initGame(){
     addPlatform(0,0,GY,67,67);
     islandDefs.push({cx:0,cz:0,y:GY,label:'ILE PRINCIPALE'});
     buildHill();
-    var palmRings=[[14,3.5,6],[22,3.2,7],[30,2.8,8],[38,2.5,10],[50,2.2,12],[60,2.0,14]];
-    palmRings.forEach(function(rd,ri){
-      var spacing=rd[1];
-      var cnt=Math.floor(2*Math.PI*rd[0]/spacing);
-      for(var j=0;j<cnt;j++){
-        var ang=j/cnt*Math.PI*2+ri*.55;
-        var px=Math.sin(ang)*rd[0],pz=Math.cos(ang)*rd[0];
-        if(rd[0]<26&&pz<-10)continue;
-        makePalm(px,GY,pz,4.5+Math.random()*3,Math.sin(ang)*(.2+Math.random()*.4),Math.cos(ang)*(.2+Math.random()*.4));
-      }
+    // Palmiers épars — seulement 12 sur toute l'île principale
+    var palmSpots=[
+      [18,12],[38,8],[-22,15],[-44,20],[55,-18],[28,-30],
+      [-16,48],[32,44],[-50,10],[60,5],[-30,-22],[12,55]
+    ];
+    palmSpots.forEach(function(p){
+      makePalm(p[0],GY,p[1],5+Math.random()*2.5,(Math.random()-.5)*.25,(Math.random()-.5)*.25);
     });
-    for(var i=0;i<16;i++){
-      var ang=Math.random()*Math.PI*2,r=3+Math.random()*20;
-      if(r<26&&Math.cos(ang)<-.3)continue;
-      var px=Math.sin(ang)*r,pz=Math.cos(ang)*r;
-      makePalm(px,GY,pz,4+Math.random()*3,(Math.random()-.5)*.3,(Math.random()-.5)*.3);
-    }
     for(var gi=0;gi<35;gi++){
       var gang=Math.random()*Math.PI*2,gr=4+Math.random()*55;
       if(gr<26&&Math.cos(gang)<-.3)continue;
@@ -721,10 +716,8 @@ function initGame(){
       if(Math.random()>.65) makeBirdOfParadise(gx+.5,GY,gz+.3);
       if(Math.random()>.7) makeGiantHibiscus(gx-.4,GY,gz-.2);
     }
-    makeSandPath(-15,40, 15,40, GY,W,1.2);
-    makeSandPath(-30,52, 30,52, GY,W,1.2);
-    makeSandPath(-20,30, -5,12, GY,W,1.0);
-    makeSandPath(5,12, 20,30, GY,W,1.0);
+    // Un seul chemin principal de la plage vers la colline
+    makeSandPath(0, 0, 0, -45, GY, W, 1.8);
     makePerson(18,-0.28,-54,'#f4c08a','swim',0);
     makePerson(-22,-0.28,-52,'#d4906a','swim',15);
     makePerson(8,-0.28,60,'#e8b07a','swim',200);
@@ -760,7 +753,7 @@ function initGame(){
     mk('sphere',{radius:'4',position:CX+' 35 '+CZ,material:'color:#ff4400;emissive:#cc2200;emissiveIntensity:.75;roughness:.35'});
     mk('sphere',{radius:'2.8',position:CX+' 36.2 '+CZ,material:'color:#ff8800;emissive:#cc4400;emissiveIntensity:.8;roughness:.25'});
     makeCascade(CX-12,11,CZ-9,11);makeCascade(CX+8,8,CZ+12,7);
-    [[CX-20,CZ+12],[CX+16,CZ-10],[CX-10,CZ-20],[CX+22,CZ+14]].forEach(function(p){
+    [[CX-20,CZ+12],[CX+16,CZ-10],[CX+22,CZ+14]].forEach(function(p){
       makePalm(p[0],GY,p[1],5+Math.random()*3,(Math.random()-.5)*.4,(Math.random()-.5)*.4);
       makeBirdOfParadise(p[0]+.5,GY,p[1]+.3);makeGiantHibiscus(p[0]-.4,GY,p[1]-.2);makeTallGrass(p[0]+.8,GY,p[1]);
     });
@@ -786,10 +779,11 @@ function initGame(){
     mk('sphere',{radius:'18',position:CX+' 8 '+CZ,scale:'1 .55 1',material:'color:#3a9a18;roughness:.9',shadow:'cast:true'});
     mk('sphere',{radius:'11',position:(CX+9)+' 7 '+(CZ-7),scale:'1 .52 1',material:'color:#2a8a10;roughness:.9'});
     makeCascade(CX-7,8,CZ-5,8);makeCascade(CX+5,6,CZ+9,6);
-    for(var i=0;i<18;i++){
-      var ang=Math.random()*Math.PI*2,r=5+Math.random()*35;
-      makePalm(CX+Math.sin(ang)*r,GY,CZ+Math.cos(ang)*r,5+Math.random()*4,(Math.random()-.5)*.4,(Math.random()-.5)*.4);
-    }
+    // 8 palmiers épars île tropicale
+    var tropPalmSpots=[[CX+12,CZ+8],[CX-10,CZ+15],[CX+28,CZ-8],[CX-22,CZ-12],[CX+35,CZ+5],[CX-30,CZ+8],[CX+8,CZ-28],[CX-15,CZ+30]];
+    tropPalmSpots.forEach(function(p){
+      makePalm(p[0],GY,p[1],5+Math.random()*3,(Math.random()-.5)*.3,(Math.random()-.5)*.3);
+    });
     for(var gi=0;gi<20;gi++){
       var gang=Math.random()*Math.PI*2,gr=4+Math.random()*38;
       var gx=CX+Math.sin(gang)*gr,gz=CZ+Math.cos(gang)*gr;
@@ -916,34 +910,55 @@ function initGame(){
 
   function animateStitch(dt2, moveMag2, state, sprint2){
     if(!Object.keys(BONES).length) return;
+    // Animation native : on l'utilise UNIQUEMENT si elle existe ET qu'on marche
+    // Mais on superpose toujours l'animation procédurale des pieds/bras
     if(stitchMixer && nativeAction){
       if(state === 'ground' && moveMag2 > 0.05){
-        var walkSpeed = sprint2 ? 1.9 : 1.0;
+        var walkSpeed = sprint2 ? 2.5 : 1.4;
         stitchMixer.update(dt2 * walkSpeed);
         nativeAction.timeScale = 1;
-        ANIM_T += dt2 * (sprint2 ? 6.0 : 3.8);
-        return;
       } else {
         nativeAction.timeScale = 0;
         nativeAction.time = 0;
         stitchMixer.update(0);
       }
     }
+    // Animation procédurale — TOUJOURS active pour garantir le mouvement visible
     ANIM_T += dt2 * 2.5;
     var s = Math.sin(ANIM_T);
     var c = Math.cos(ANIM_T);
     if(state === 'ground' && moveMag2 > 0.05){
-      var freq  = sprint2 ? 6.5 : 4.0;
-      var ampL  = sprint2 ? 0.60 : 0.45;
-      var ampA  = sprint2 ? 0.55 : 0.38;
+      var freq  = sprint2 ? 9.0 : 6.0;
+      var ampL  = sprint2 ? 1.2 : 0.95; // jambes très amples
+      var ampA  = sprint2 ? 1.0 : 0.75; // bras très amples
       ANIM_T += dt2 * (freq - 2.5);
       var sw = Math.sin(ANIM_T);
-      rb('hipL', sw * ampL, 0, 0); rb('hipR', -sw * ampL, 0, 0);
-      rb('legL', Math.max(0, sw) * 0.55, 0, 0); rb('legR', Math.max(0, -sw) * 0.55, 0, 0);
-      rb('heelL', -sw * 0.2, 0, 0); rb('heelR', sw * 0.2, 0, 0);
-      rb('armL', -sw * ampA, 0, sw * 0.07); rb('armR', sw * ampA, 0, -sw * 0.07);
-      rb('foreArmL', Math.max(0,-sw)*0.38, 0, 0); rb('foreArmR', Math.max(0, sw)*0.38, 0, 0);
-      rb('spine0', 0, -sw*0.07, sw*0.04); rb('shoulders', 0, sw*0.05, 0);
+      // Hanches/cuisses — grand balancement
+      rb('hipL',   sw * ampL, 0, 0);
+      rb('hipR',  -sw * ampL, 0, 0);
+      // Genoux — pliage exagéré
+      rb('legL',  Math.max(0,  sw) * 0.9, 0, 0);
+      rb('legR',  Math.max(0, -sw) * 0.9, 0, 0);
+      // ForeLeg (tibia) — extension avant/arrière
+      rb('foreLegL', Math.max(0,-sw)*0.65, 0, 0);
+      rb('foreLegR', Math.max(0, sw)*0.65, 0, 0);
+      // Talons/pieds — rotation du pied en fin de pas
+      rb('heelL', -sw * 0.55, 0, 0);
+      rb('heelR',  sw * 0.55, 0, 0);
+      // Step (pointe du pied)
+      rb('stepL',  sw * 0.4, 0, 0);
+      rb('stepR', -sw * 0.4, 0, 0);
+      // Bras opposés — très visibles
+      rb('armL',  -sw * ampA, 0,  sw * 0.12);
+      rb('armR',   sw * ampA, 0, -sw * 0.12);
+      rb('foreArmL', Math.max(0,-sw)*0.65, 0, 0);
+      rb('foreArmR', Math.max(0, sw)*0.65, 0, 0);
+      // Tronc oscille
+      rb('spine0', 0, -sw*0.12, sw*0.08);
+      rb('shoulders', 0, sw*0.10, 0);
+      // Oreilles qui battent en courant
+      rb('earAL', Math.abs(sw)*0.2, 0, 0);
+      rb('earAR', Math.abs(sw)*0.2, 0, 0);
     } else if(state === 'air'){
       rb('hipL', -0.30, 0, 0); rb('hipR', -0.30, 0, 0);
       rb('legL', 0.65, 0, 0); rb('legR', 0.65, 0, 0);
