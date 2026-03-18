@@ -1003,257 +1003,266 @@ function initGame(){
   // ══════════════════════════════════════
   // STITCH
   // ══════════════════════════════════════
-  // ══ ANIMATION PROCÉDURALE STITCH ══
-  var BONES = {}; // os détectés par catégorie
-  var ANIM_T = 0; // temps animation marche
+  // ══ ANIMATION STITCH — bones exacts du GLB stitch2_2.glb ══
+  // Noms réels extraits du fichier GLB (suffixe _Stitch_Armature)
+  var SFX = '_Stitch_Armature'; // suffixe commun
+  var BONES = {};   // os par clé fonctionnelle
+  var BONE_REST = {}; // rotations au repos
+  var ANIM_T = 0;
+  var stitchMixer = null;   // AnimationMixer Three.js
+  var nativeClip = null;    // AnimationClip natif du GLB
+  var nativeAction = null;  // AnimationAction en cours
 
-  // Noms possibles des os dans différents exports GLB
-  var BONE_NAMES = {
-    // Jambe gauche
-    legL:   ['mixamorigLeftUpLeg','LeftUpLeg','LeftHip','Hips.L','leg.L','thigh_l','LeftLeg','l_thigh','LThigh','Hip_L','Leg_L','leg_L','left_leg','leftLeg','LeftLegBone'],
-    kneeL:  ['mixamorigLeftLeg','LeftLeg','knee.L','calf_l','LeftKnee','l_knee','LKnee','Knee_L','calf_L','left_knee','leftKnee'],
-    footL:  ['mixamorigLeftFoot','LeftFoot','foot.L','foot_l','LeftFoot','l_foot','LFoot','Foot_L','left_foot'],
-    // Jambe droite
-    legR:   ['mixamorigRightUpLeg','RightUpLeg','RightHip','Hips.R','leg.R','thigh_r','RightLeg','r_thigh','RThigh','Hip_R','Leg_R','leg_R','right_leg','rightLeg','RightLegBone'],
-    kneeR:  ['mixamorigRightLeg','RightLeg','knee.R','calf_r','RightKnee','r_knee','RKnee','Knee_R','calf_R','right_knee','rightKnee'],
-    footR:  ['mixamorigRightFoot','RightFoot','foot.R','foot_r','RightFoot','r_foot','RFoot','Foot_R','right_foot'],
+  // Correspondance clé → nom exact du bone dans le GLB
+  var BONE_MAP = {
+    root:      'ROOT'+SFX,
+    spine0:    'Spine_start'+SFX,
+    spine1:    'Spine.001'+SFX,
+    spine2:    'Spine.002'+SFX,
+    spine3:    'Spine.003'+SFX,
+    shoulders: 'Shoulders'+SFX,
+    neck:      'Neck'+SFX,
+    head:      'Head'+SFX,
     // Bras gauche
-    armL:   ['mixamorigLeftArm','LeftArm','UpperArm.L','upper_arm_l','LeftShoulder2','LeftUpperArm','l_upperarm','LUpperArm','Arm_L','arm_L','left_arm','leftArm','LeftArmBone','Shoulder_L'],
-    foreL:  ['mixamorigLeftForeArm','LeftForeArm','ForeArm.L','forearm_l','LeftForearm','l_forearm','LForearm','ForeArm_L','left_forearm'],
+    shoulderL: 'Shoulder.L'+SFX,
+    armL:      'Arm.L'+SFX,
+    foreArmL:  'ForeArm.L'+SFX,
+    wristL:    'Wrist.L'+SFX,
     // Bras droit
-    armR:   ['mixamorigRightArm','RightArm','UpperArm.R','upper_arm_r','RightShoulder2','RightUpperArm','r_upperarm','RUpperArm','Arm_R','arm_R','right_arm','rightArm','RightArmBone','Shoulder_R'],
-    foreR:  ['mixamorigRightForeArm','RightForeArm','ForeArm.R','forearm_r','RightForearm','r_forearm','RForearm','ForeArm_R','right_forearm'],
-    // Hanche / Spine
-    hips:   ['mixamorigHips','Hips','hips','pelvis','Pelvis','Hip','root','Root','Spine','spine'],
-    spine:  ['mixamorigSpine','Spine','spine','Spine1','torso','Torso','Body','body'],
-    head:   ['mixamorigHead','Head','head','Head_M','head_jnt'],
+    shoulderR: 'Shoulder.R'+SFX,
+    armR:      'Arm.R'+SFX,
+    foreArmR:  'ForeArm.R'+SFX,
+    wristR:    'Wrist.R'+SFX,
+    // Jambe gauche (cuisse → genou → pied)
+    hipL:      'Hip.L'+SFX,
+    legL:      'Leg.L'+SFX,
+    foreLegL:  'ForeLeg.L'+SFX,
+    heelL:     'Heel.L'+SFX,
+    stepL:     'Step.L'+SFX,
+    // Jambe droite
+    hipR:      'Hip.R'+SFX,
+    legR:      'Leg.R'+SFX,
+    foreLegR:  'ForeLeg.R'+SFX,
+    heelR:     'Heel.R'+SFX,
+    stepR:     'Step.R'+SFX,
+    // Queue / extras
+    butt:      'Butt'+SFX,
+    tail:      'Tail'+SFX,
+    // Oreilles
+    earAL:     'Ear_A.L'+SFX,
+    earAR:     'Ear_A.R'+SFX,
   };
 
-  function findBone(root, names) {
+  function findBoneByName(root, name){
     var found = null;
-    root.traverse(function(o) {
+    root.traverse(function(o){
       if(found) return;
-      if(!o.isBone && o.type!=='Bone') return;
-      var nm = o.name.toLowerCase();
-      for(var i=0;i<names.length;i++){
-        if(nm === names[i].toLowerCase() || nm.indexOf(names[i].toLowerCase())!==-1){
-          found = o; return;
-        }
-      }
+      if(o.name === name) found = o;
     });
     return found;
   }
 
-  // Stocker rotations originales pour les restaurer
-  var BONE_REST = {};
   function saveBoneRest(key, bone){
     if(!bone) return;
-    BONE_REST[key] = bone.rotation.clone();
+    BONE_REST[key] = {x:bone.rotation.x, y:bone.rotation.y, z:bone.rotation.z};
   }
 
-  var stitchModel=document.getElementById('stitch-model');
-  stitchModel.addEventListener('model-loaded',function(){
-    var mesh=stitchModel.getObject3D('mesh');
-    if(!mesh)return;
+  // Appliquer rotation RELATIVE à la pose au repos
+  function rb(key, rx, ry, rz){
+    var b = BONES[key]; if(!b) return;
+    var r = BONE_REST[key] || {x:0,y:0,z:0};
+    b.rotation.x = r.x + (rx||0);
+    b.rotation.y = r.y + (ry||0);
+    b.rotation.z = r.z + (rz||0);
+  }
 
-    // Scale Stitch
-    var box=new THREE.Box3().setFromObject(mesh);
-    var h=box.max.y-box.min.y;
-    if(h>.05){var sc=1.4/h;stitchModel.setAttribute('scale',sc+' '+sc+' '+sc);}
+  // Remettre un bone à sa pose de repos
+  function resetBone(key){
+    var b = BONES[key]; if(!b) return;
+    var r = BONE_REST[key] || {x:0,y:0,z:0};
+    b.rotation.x = r.x; b.rotation.y = r.y; b.rotation.z = r.z;
+  }
+
+  var stitchModel = document.getElementById('stitch-model');
+  stitchModel.addEventListener('model-loaded', function(){
+    var mesh = stitchModel.getObject3D('mesh');
+    if(!mesh) return;
+
+    // Mise à l'échelle
+    var box = new THREE.Box3().setFromObject(mesh);
+    var h = box.max.y - box.min.y;
+    if(h > .05){ var sc = 1.4/h; stitchModel.setAttribute('scale', sc+' '+sc+' '+sc); }
 
     setTimeout(function(){
-      var mesh2=stitchModel.getObject3D('mesh');
-      if(!mesh2)return;
-      var b2=new THREE.Box3().setFromObject(mesh2);
-      P.yOff=Math.abs(b2.min.y)+.06;
-      var gy=getGroundY(P.x,P.z);
-      if(gy!==null)P.y=gy+P.yOff;
+      var mesh2 = stitchModel.getObject3D('mesh');
+      if(!mesh2) return;
+      var b2 = new THREE.Box3().setFromObject(mesh2);
+      P.yOff = Math.abs(b2.min.y) + .06;
+      var gy0 = getGroundY(P.x, P.z);
+      if(gy0 !== null) P.y = gy0 + P.yOff;
 
-      // ── Détection des os ──
-      for(var key in BONE_NAMES){
-        BONES[key] = findBone(mesh2, BONE_NAMES[key]);
+      // ── Récupérer tous les bones par nom exact ──
+      for(var key in BONE_MAP){
+        BONES[key] = findBoneByName(mesh2, BONE_MAP[key]);
         saveBoneRest(key, BONES[key]);
       }
-
-      // Log pour debug
       var found = Object.keys(BONES).filter(function(k){return !!BONES[k];});
-      var notFound = Object.keys(BONES).filter(function(k){return !BONES[k];});
-      console.log('Bones trouvés:', found.map(function(k){return k+':'+BONES[k].name;}));
-      if(notFound.length) console.log('Bones manquants:', notFound);
+      console.log('Bones Stitch trouvés: ' + found.length + '/' + Object.keys(BONE_MAP).length, found);
 
-      // Si aucun bone trouvé → fallback: liste tous les bones disponibles
-      if(found.length === 0){
-        var allBones = [];
-        mesh2.traverse(function(o){if(o.isBone||o.type==='Bone') allBones.push(o.name);});
-        console.log('Tous les bones du GLB:', allBones);
-        // Tenter assignation intelligente par position/nom partiel
-        if(allBones.length > 0) assignBonesByPosition(mesh2, allBones);
+      // ── Récupérer l'animation native du GLB (Stitch_Anim) ──
+      // L'animation est stockée sur le groupe racine de la scène A-Frame
+      var sceneObj = document.querySelector('a-scene').object3D;
+      var clips = [];
+      sceneObj.traverse(function(o){
+        if(o.animations && o.animations.length) clips = clips.concat(o.animations);
+      });
+      // Aussi chercher sur le mesh directement
+      if(mesh2.animations && mesh2.animations.length) clips = clips.concat(mesh2.animations);
+
+      if(clips.length > 0){
+        nativeClip = clips[0];
+        stitchMixer = new THREE.AnimationMixer(mesh2);
+        nativeAction = stitchMixer.clipAction(nativeClip);
+        nativeAction.setLoop(THREE.LoopRepeat, Infinity);
+        nativeAction.timeScale = 0; // on contrôle la vitesse manuellement
+        nativeAction.play();
+        console.log('Animation native trouvée:', nativeClip.name, '— durée:', nativeClip.duration.toFixed(2)+'s');
+      } else {
+        console.log('Pas d animation native, animation procédurale uniquement');
       }
 
-    },200);
-    toast('Bienvenue ! Explore les iles ! Saute du pont dans l eau !',5000);
+    }, 300);
+    toast('Bienvenue ! Explore les iles ! Saute du pont dans l eau !', 5000);
   });
 
-  // ── Assignation de bones par position (fallback) ──
-  function assignBonesByPosition(root, allBones){
-    // Collecter tous les bones avec leur position monde
-    var boneObjs = [];
-    root.traverse(function(o){
-      if(o.isBone||o.type==='Bone'){
-        var wp = new THREE.Vector3();
-        o.getWorldPosition(wp);
-        boneObjs.push({bone:o, name:o.name, wx:wp.x, wy:wp.y, wz:wp.z});
-      }
-    });
-    if(boneObjs.length < 2) return;
+  // ── Interpolation douce entre deux valeurs ──
+  function lerp(a, b, t){ return a + (b-a)*t; }
 
-    // Trier par hauteur
-    boneObjs.sort(function(a,b){return b.wy-a.wy;});
-    var maxY = boneObjs[0].wy, minY = boneObjs[boneObjs.length-1].wy;
-    var rangeY = maxY - minY || 1;
-
-    // Séparer gauche/droite et haut/bas
-    var lefts  = boneObjs.filter(function(b){return b.wx < -0.01;});
-    var rights = boneObjs.filter(function(b){return b.wx >  0.01;});
-    var mids   = boneObjs.filter(function(b){return Math.abs(b.wx) <= 0.01;});
-
-    function byHeight(arr, ratio){ // ratio 0=bas, 1=haut
-      if(!arr.length) return null;
-      var target = minY + rangeY*ratio;
-      arr.sort(function(a,b){return Math.abs(a.wy-target)-Math.abs(b.wy-target);});
-      return arr[0].bone;
-    }
-
-    // Jambes : bas du modèle, côtés
-    if(!BONES.legL)  BONES.legL  = byHeight(lefts, 0.25);
-    if(!BONES.legR)  BONES.legR  = byHeight(rights, 0.25);
-    if(!BONES.kneeL) BONES.kneeL = byHeight(lefts.filter(function(b){return b.wy < (minY+rangeY*.3);}), 0.1);
-    if(!BONES.kneeR) BONES.kneeR = byHeight(rights.filter(function(b){return b.wy < (minY+rangeY*.3);}), 0.1);
-    // Bras : milieu-haut, côtés
-    if(!BONES.armL)  BONES.armL  = byHeight(lefts.filter(function(b){return b.wy > minY+rangeY*.5;}), 0.7);
-    if(!BONES.armR)  BONES.armR  = byHeight(rights.filter(function(b){return b.wy > minY+rangeY*.5;}), 0.7);
-    // Hanche/tronc : milieu
-    if(!BONES.hips)  BONES.hips  = byHeight(mids, 0.4);
-    if(!BONES.spine) BONES.spine = byHeight(mids.length>1?mids:boneObjs, 0.55);
-
-    // Sauvegarder les nouvelles rotations rest
-    for(var key in BONES) saveBoneRest(key, BONES[key]);
-    var found2 = Object.keys(BONES).filter(function(k){return !!BONES[k];});
-    console.log('Bones assignés par position:', found2.length);
-  }
-
-  // ── Appliquer rotation relative sur un bone ──
-  function rotBone(key, rx, ry, rz){
-    var b = BONES[key];
-    if(!b) return;
-    var rest = BONE_REST[key];
-    if(rest){
-      b.rotation.x = rest.x + rx;
-      b.rotation.y = rest.y + ry;
-      b.rotation.z = rest.z + rz;
-    } else {
-      b.rotation.x = rx;
-      b.rotation.y = ry;
-      b.rotation.z = rz;
-    }
-  }
-
-  // ── Remettre bones au repos ──
-  function resetBones(){
-    for(var key in BONES){
-      var b = BONES[key];
-      if(!b) continue;
-      var rest = BONE_REST[key];
-      if(rest){b.rotation.copy(rest);}
-    }
-  }
-
-  // ── Animer Stitch selon l'état ──
+  // ── Animation principale : choisit native ou procédurale ──
   function animateStitch(dt2, moveMag2, state, sprint2){
-    var hasBones = Object.values(BONES).some(function(b){return !!b;});
-    if(!hasBones) return; // pas de bones détectés
+    if(!Object.keys(BONES).length) return;
 
-    if(state==='ground' && moveMag2 > 0.05){
-      // ── MARCHE / COURSE ──
-      var freq = sprint2 ? 6.0 : 3.8;
-      var amp  = sprint2 ? 0.55 : 0.42;
-      ANIM_T += dt2 * freq;
+    // ── Animation native du GLB (marche/course) ──
+    if(stitchMixer && nativeAction){
+      if(state === 'ground' && moveMag2 > 0.05){
+        // Avancer le temps de l'animation proportionnellement à la vitesse
+        var walkSpeed = sprint2 ? 1.9 : 1.0;
+        stitchMixer.update(dt2 * walkSpeed);
+        nativeAction.timeScale = 1; // actif
+        ANIM_T += dt2 * (sprint2 ? 6.0 : 3.8);
+        return; // laisser l'animation native gérer tout
+      } else {
+        // Hors marche : geler l'animation native à frame 0
+        nativeAction.timeScale = 0;
+        nativeAction.time = 0;
+        stitchMixer.update(0);
+      }
+    }
 
-      var s = Math.sin(ANIM_T);
-      var c = Math.cos(ANIM_T);
+    // ── Animation procédurale pour les autres états ──
+    ANIM_T += dt2 * 2.5;
+    var s = Math.sin(ANIM_T);
+    var c = Math.cos(ANIM_T);
 
-      // Jambes (balancement avant/arrière)
-      rotBone('legL',   s * amp,    0, 0);
-      rotBone('legR',  -s * amp,    0, 0);
-      // Genoux (plient toujours vers l'avant, plus fort en course)
-      var kneeAmp = sprint2 ? 0.5 : 0.32;
-      rotBone('kneeL',  Math.max(0, s) * kneeAmp * 1.8 + kneeAmp*0.2, 0, 0);
-      rotBone('kneeR',  Math.max(0,-s) * kneeAmp * 1.8 + kneeAmp*0.2, 0, 0);
-      // Pieds
-      rotBone('footL', -s * 0.18, 0, 0);
-      rotBone('footR',  s * 0.18, 0, 0);
+    if(state === 'ground' && moveMag2 > 0.05){
+      // Fallback si pas d'animation native
+      var freq  = sprint2 ? 6.5 : 4.0;
+      var ampL  = sprint2 ? 0.60 : 0.45; // jambes
+      var ampA  = sprint2 ? 0.55 : 0.38; // bras
+      ANIM_T += dt2 * (freq - 2.5); // ajustement car on a déjà +2.5 ci-dessus
+      var sw = Math.sin(ANIM_T);
 
-      // Bras (opposés aux jambes)
-      var armAmp = sprint2 ? 0.6 : 0.38;
-      rotBone('armL',  -s * armAmp, 0, s * 0.08);
-      rotBone('armR',   s * armAmp, 0, -s * 0.08);
-      rotBone('foreL',  Math.max(0,-s) * 0.4, 0, 0);
-      rotBone('foreR',  Math.max(0, s) * 0.4, 0, 0);
+      // Hanches/cuisses
+      rb('hipL',   sw * ampL, 0, 0);
+      rb('hipR',  -sw * ampL, 0, 0);
+      // Genoux (plient vers l'avant sur la phase de levée)
+      rb('legL',  Math.max(0,  sw) * 0.55, 0, 0);
+      rb('legR',  Math.max(0, -sw) * 0.55, 0, 0);
+      // Pieds / talons
+      rb('heelL', -sw * 0.2, 0, 0);
+      rb('heelR',  sw * 0.2, 0, 0);
+      // Bras opposés
+      rb('armL',  -sw * ampA, 0,  sw * 0.07);
+      rb('armR',   sw * ampA, 0, -sw * 0.07);
+      rb('foreArmL', Math.max(0,-sw)*0.38, 0, 0);
+      rb('foreArmR', Math.max(0, sw)*0.38, 0, 0);
+      // Tronc/hanche légère oscillation
+      rb('spine0', 0, -sw*0.07, sw*0.04);
+      rb('shoulders', 0, sw*0.05, 0);
 
-      // Hanche légère oscillation latérale
-      rotBone('hips', 0, 0, s * 0.06);
-      // Tronc légère contre-rotation
-      rotBone('spine', 0, -s * 0.08, 0);
+    } else if(state === 'air'){
+      // SAUT : jambes repliées, bras levés
+      rb('hipL',  -0.30, 0, 0);
+      rb('hipR',  -0.30, 0, 0);
+      rb('legL',   0.65, 0, 0);
+      rb('legR',   0.65, 0, 0);
+      rb('armL',  -0.70, 0, -0.45);
+      rb('armR',  -0.70, 0,  0.45);
+      rb('foreArmL', 0.4, 0, 0);
+      rb('foreArmR', 0.4, 0, 0);
+      rb('spine0',  0.12, 0, 0);
+      // Oreilles qui flottent vers le haut
+      rb('earAL', -0.3, 0, -0.15);
+      rb('earAR', -0.3, 0,  0.15);
 
-    } else if(state==='air'){
-      // ── SAUT ──
-      ANIM_T += dt2 * 2;
-      rotBone('legL',  -0.35, 0, 0);
-      rotBone('legR',  -0.35, 0, 0);
-      rotBone('kneeL',  0.6,  0, 0);
-      rotBone('kneeR',  0.6,  0, 0);
-      rotBone('armL',  -0.6,  0, -0.4);
-      rotBone('armR',  -0.6,  0,  0.4);
-      rotBone('hips',   0.15, 0, 0);
+    } else if(state === 'surface'){
+      // NAGE SURFACE : bras qui rament alternativement
+      rb('armL',   s * 0.8 - 0.3, 0, -0.35);
+      rb('armR',  -s * 0.8 - 0.3, 0,  0.35);
+      rb('foreArmL', Math.max(0, s)*0.5, 0, 0);
+      rb('foreArmR', Math.max(0,-s)*0.5, 0, 0);
+      // Jambes qui battent (petits coups de pied)
+      rb('hipL',   s * 0.3, 0, 0);
+      rb('hipR',  -s * 0.3, 0, 0);
+      rb('legL',   Math.max(0,-s)*0.2, 0, 0);
+      rb('legR',   Math.max(0, s)*0.2, 0, 0);
+      rb('spine0',  0.28, 0, 0);
+      rb('head',   -0.15, 0, 0); // tête levée hors de l'eau
 
-    } else if(state==='surface'){
-      // ── NAGE SURFACE ──
-      ANIM_T += dt2 * 2.5;
-      var s2 = Math.sin(ANIM_T);
-      rotBone('armL',   s2 * 0.7 - 0.5, 0, -0.3);
-      rotBone('armR',  -s2 * 0.7 - 0.5, 0,  0.3);
-      rotBone('legL',   s2 * 0.4, 0, 0);
-      rotBone('legR',  -s2 * 0.4, 0, 0);
-      rotBone('hips',   0.3, 0, 0);
+    } else if(state === 'diving'){
+      // PLONGÉE : corps allongé, bras devant, jambes qui battent
+      rb('spine0',  0.18, 0, 0);
+      rb('spine1',  0.12, 0, 0);
+      rb('shoulders', 0.08, 0, 0);
+      rb('armL',   -0.95 + s*0.15, 0, -0.18);
+      rb('armR',   -0.95 - s*0.15, 0,  0.18);
+      rb('foreArmL', 0.1, 0, 0);
+      rb('foreArmR', 0.1, 0, 0);
+      // Jambes battent en alternance
+      rb('hipL',   s * 0.32, 0, 0);
+      rb('hipR',  -s * 0.32, 0, 0);
+      rb('legL',   Math.max(0,-s)*0.22, 0, 0);
+      rb('legR',   Math.max(0, s)*0.22, 0, 0);
+      rb('tail',   s*0.15, 0, 0);
 
-    } else if(state==='diving'){
-      // ── PLONGÉE ──
-      ANIM_T += dt2 * 2.0;
-      var s3 = Math.sin(ANIM_T);
-      rotBone('armL',  -0.8 + s3 * 0.2, 0, -0.2);
-      rotBone('armR',  -0.8 - s3 * 0.2, 0,  0.2);
-      rotBone('legL',   s3 * 0.35, 0, 0);
-      rotBone('legR',  -s3 * 0.35, 0, 0);
-      rotBone('kneeL',  0.2, 0, 0);
-      rotBone('kneeR',  0.2, 0, 0);
-      rotBone('hips',   0.2, 0, 0);
-
-    } else if(state==='sinking'){
-      // ── COULE (bras en l'air!) ──
-      ANIM_T += dt2 * 1.5;
-      var s4 = Math.sin(ANIM_T);
-      rotBone('armL',  -1.1 + s4 * 0.15, 0, -0.15);
-      rotBone('armR',  -1.1 - s4 * 0.15, 0,  0.15);
-      rotBone('legL',   s4 * 0.2 - 0.1, 0, 0);
-      rotBone('legR',  -s4 * 0.2 - 0.1, 0, 0);
+    } else if(state === 'sinking'){
+      // COULE : bras levés en panique, jambes qui se débattent
+      var panic = Math.sin(ANIM_T * 1.8);
+      rb('armL',  -1.2 + panic*0.25, 0, -0.25 + panic*0.1);
+      rb('armR',  -1.2 - panic*0.25, 0,  0.25 - panic*0.1);
+      rb('foreArmL',  0.6, 0, 0);
+      rb('foreArmR',  0.6, 0, 0);
+      rb('hipL',   panic * 0.35, 0, 0);
+      rb('hipR',  -panic * 0.35, 0, 0);
+      rb('legL',   Math.max(0,-panic)*0.3, 0, 0);
+      rb('legR',   Math.max(0, panic)*0.3, 0, 0);
+      rb('head',  -0.2, 0, 0); // tête levée pour respirer
 
     } else {
-      // ── IDLE (repos) — légère respiration ──
-      ANIM_T += dt2 * 1.2;
-      var breathe = Math.sin(ANIM_T * 0.7) * 0.04;
-      rotBone('spine', breathe, 0, 0);
-      rotBone('armL',  0, 0, -0.05 + Math.sin(ANIM_T*0.5)*0.03);
-      rotBone('armR',  0, 0,  0.05 - Math.sin(ANIM_T*0.5)*0.03);
+      // IDLE : respiration calme + légère oscillation des oreilles
+      var breathe = Math.sin(ANIM_T * 0.65) * 0.035;
+      var earWave  = Math.sin(ANIM_T * 0.4) * 0.06;
+      rb('spine0',  breathe, 0, 0);
+      rb('spine1',  breathe * 0.5, 0, 0);
+      rb('shoulders', breathe * 0.3, 0, 0);
+      // Bras légèrement écartés, petite oscillation
+      rb('armL',  0, 0, -0.06 + Math.sin(ANIM_T*0.45)*0.025);
+      rb('armR',  0, 0,  0.06 - Math.sin(ANIM_T*0.45)*0.025);
+      // Oreilles qui bougent légèrement
+      rb('earAL', earWave, 0, 0);
+      rb('earAR', earWave, 0, 0);
+      // Clignement de queue
+      rb('tail', Math.sin(ANIM_T*0.7)*0.1, 0, 0);
     }
   }
 
