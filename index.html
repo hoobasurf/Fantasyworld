@@ -837,7 +837,8 @@ function initGame(){
     // ══ CONTRÔLES MOUVEMENT ══
     var fwd=0,lat=0;
     if(KY['KeyW']||KY['KeyZ']||KY['ArrowUp'])fwd=1;
-    if(KY['KeyS']||KY['ArrowDown'])fwd=-1;
+    // KeyS recule seulement sur terre — sous l'eau c'est pour descendre
+    if((KY['KeyS']||KY['ArrowDown'])&&P.state!=='diving'&&P.state!=='surface'&&P.state!=='sinking')fwd=-1;
     if(KY['KeyD']||KY['ArrowRight'])lat=1;
     if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft'])lat=-1;
     fwd-=jLY;lat+=jLX;
@@ -872,25 +873,20 @@ function initGame(){
       }
       // Entrée dans l'eau
       if(P.y<=WATER_SURFACE+.1&&gy===null){
-        if(P.vy<-2){
-          P.state='diving';P.vy=Math.max(P.vy*0.3,-3.5);P.y=WATER_SURFACE-.5;
-          toast('Splash ! Espace=remonter · S/↓=plonger · F=nage rapide',3500);
-        } else {P.state='surface';P.y=WATER_SURFACE;P.vy=0;}
+        P.state='surface';P.y=WATER_SURFACE;P.vy=0;
         P.breath=MAX_BREATH;P.swimMode=false;
+        toast('Dans l eau ! DIVE ou F pour plonger',2500);
       }
     } else if(P.state==='surface'){
-      // ═══ SURFACE (style oasis) ═══
+      // ═══ SURFACE ═══
       P.swimBob+=dt;
       P.breath=Math.min(MAX_BREATH,P.breath+BREATH_GAIN*dt);
-      // Stitch flotte, oscillation douce
       P.y=WATER_SURFACE+Math.sin(P.swimBob*2.2)*.06;
       P.vy=0;P.onGround=true;P.sinkTimer=0;
-      // Plonger avec S/↓ (style oasis)
-      if(KY['KeyS']||KY['ArrowDown']){
-        P.state='diving';P.vy=-3;P.y=WATER_SURFACE-.5;P.onGround=false;
-        toast('Stitch plonge ! Espace=remonter · S=descendre',2500);
+      // S / ↓ / joystick bas → plonger
+      if(KY['KeyS']||KY['ArrowDown']||jLY>0.25){
+        P.state='diving';P.vy=-5;P.y=WATER_SURFACE-1.0;P.onGround=false;
       }
-      // Sortir de l'eau si on arrive sur une île
       if(gy!==null&&gy>WATER_SURFACE-.2){P.state='ground';P.y=gy+P.yOff;P.sinkTimer=0;P.swimMode=false;}
     } else if(P.state==='sinking'){
       // ═══ SINKING = noyade (style oasis) ═══
@@ -901,28 +897,25 @@ function initGame(){
       if(P.y>=WATER_SURFACE-.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.sinkTimer=0;}
       if(P.breath<=0){P.y=WATER_SURFACE+.5;P.vy=4;P.state='surface';P.breath=30;toast('Stitch reprend son souffle !',2000);}
     } else if(P.state==='diving'){
-      // ═══ DIVING — nage libre 3D (style oasis) ═══
-      P.vy*=.82;
-      // Joystick droit Y = contrôle vertical
-      if(Math.abs(rjLY)>.06)P.vy=Math.max(-5,Math.min(5,P.vy-rjLY*8*dt));
-      // S/↓ = descendre (style oasis)
-      if(KY['KeyS']||KY['ArrowDown'])P.vy=Math.max(P.vy-1,-6);
-      // Flottabilité légère (remonte doucement)
-      P.vy+=0.3*dt;
+      // ═══ DIVING — nage libre 3D ═══
+      P.vy*=.84;
+      // Joystick droit Y = haut/bas
+      if(Math.abs(rjLY)>.06)P.vy=Math.max(-6,Math.min(5,P.vy-rjLY*10*dt));
+      // S / ↓ = descendre — annule la flottabilité
+      var goingDown=KY['KeyS']||KY['ArrowDown']||jLY>0.25;
+      if(goingDown) P.vy=Math.max(P.vy-2.5*dt,-6);
+      // Flottabilité SEULEMENT si on n'appuie pas vers le bas
+      if(!goingDown) P.vy+=0.4*dt;
       P.y+=P.vy*dt;
       P.onGround=false;
-      // Perte de souffle
       P.breath=Math.max(0,P.breath-BREATH_LOSE*dt);
-      // Remontée douce à la surface
+      // Remonter à la surface
       if(P.y>=WATER_SURFACE-.08){
         P.y=WATER_SURFACE;P.state='surface';P.vy=0;
         toast('Stitch reprend son souffle !',2000);
       }
-      // Fond océan
       if(P.y<-19.5){P.y=-19.5;P.vy=Math.max(.3,P.vy);}
-      // Plus d'air
       if(P.breath<=0){P.vy=5;P.state='surface';P.breath=30;toast('Plus d air ! Stitch remonte !',2500);}
-      // Sol île sous l'eau
       if(gy!==null&&gy>WATER_SURFACE-0.5&&P.y<=gy+P.yOff){P.y=gy+P.yOff;P.vy=0;P.state='ground';P.swimMode=false;}
     }
 
@@ -1104,9 +1097,14 @@ function initGame(){
 
   window.doDive=function(e){
     if(e&&e.preventDefault)e.preventDefault();
-    if(P.state==='diving'){P.vy=6;} // remonter vite
-    else if(P.state==='surface'){P.state='diving';P.vy=-5;P.onGround=false;P.y=WATER_SURFACE-.5;toast('Stitch plonge !',2500);}
-    else if(P.state==='air'){var gy3=getGroundY2(P.x,P.z);if(gy3===null&&P.y<WATER_SURFACE+4){P.state='diving';P.vy=-4;}}
+    if(P.state==='surface'){
+      P.state='diving';P.vy=-6;P.y=WATER_SURFACE-1.2;P.onGround=false;
+    } else if(P.state==='diving'){
+      // DIVE en plongeant = remonter vite
+      P.vy=6;
+    } else if(P.state==='air'){
+      var gy3=getGroundY2(P.x,P.z);if(gy3===null&&P.y<WATER_SURFACE+4){P.state='diving';P.vy=-4;}
+    }
   };
 
   // Toggle swimMode (nage rapide/lente, style oasis btnD)
