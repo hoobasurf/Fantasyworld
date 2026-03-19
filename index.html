@@ -46,13 +46,14 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 <a-light type="hemisphere" color="#88ccff" ground-color="#446622" intensity=".8"></a-light>
 <a-light type="ambient" id="ambientLight" color="#ffeedd" intensity=".3"></a-light>
 
-<!-- Lumières sous-marines permanentes — toujours actives -->
+<!-- Lumières sous-marines permanentes — bien réparties et puissantes -->
 
-<a-light type="point" id="uwLight1" position="0 -3 0" color="#00ffee" intensity="3.5" distance="80"></a-light>
-<a-light type="point" id="uwLight2" position="20 -5 20" color="#00aaff" intensity="2.0" distance="60"></a-light>
-<a-light type="point" id="uwLight3" position="-20 -5 -20" color="#00ccaa" intensity="1.8" distance="55"></a-light>
-<a-light type="point" id="uwLight4" position="0 -8 15" color="#22ffdd" intensity="2.2" distance="70"></a-light>
-<a-light type="point" id="uwLight5" position="-15 -4 0" color="#00ddff" intensity="1.8" distance="55"></a-light>
+<a-light type="point" id="uwLight1" position="0 -2 0" color="#00ffee" intensity="4.5" distance="100"></a-light>
+<a-light type="point" id="uwLight2" position="15 -3 15" color="#00ccff" intensity="3.5" distance="80"></a-light>
+<a-light type="point" id="uwLight3" position="-15 -3 -15" color="#22ffdd" intensity="3.0" distance="75"></a-light>
+<a-light type="point" id="uwLight4" position="0 -6 20" color="#00eeff" intensity="3.0" distance="80"></a-light>
+<a-light type="point" id="uwLight5" position="-20 -4 5" color="#44ffcc" intensity="2.8" distance="70"></a-light>
+<a-light type="point" id="uwLight6" position="20 -4 -10" color="#00ddff" intensity="2.8" distance="70"></a-light>
 
 <!-- Nuages -->
 
@@ -827,7 +828,16 @@ function initGame(){
 
     // Stitch rotation
     var stEl=document.getElementById('stitch-root');
-    var tiltX=(P.state==='diving')?(82+Math.max(-10,Math.min(10,-P.vy*3))):(P.state==='surface')?12:0;
+    // En diving : Stitch nage à plat ventre — rotation X vers l'avant seulement
+    // On utilise Z=0, X=70-80 pour incliner vers l'avant (ventre vers le bas visuel)
+    // MAIS le modèle GLB est orienté différemment : on teste X négatif
+    var tiltX=0,tiltZ=0;
+    if(P.state==='diving'){
+      // Stitch allongé sur le ventre qui descend — inclinaison douce vers l'avant
+      tiltX=Math.max(-15,Math.min(15,P.vy*4)); // incline selon vitesse verticale
+    } else if(P.state==='surface'){
+      tiltX=8; // légèrement incliné sur l'eau
+    }
     stEl.setAttribute('position',P.x.toFixed(2)+' '+P.y.toFixed(2)+' '+P.z.toFixed(2));
     stEl.setAttribute('rotation',tiltX.toFixed(1)+' '+(P.yaw*180/Math.PI).toFixed(1)+' 0');
     animateStitch(dt,moveMag,P.state,sprint);
@@ -836,15 +846,20 @@ function initGame(){
     if(Math.abs(rjLX)>.04)CAM.yaw+=rjLX*dt*2.5;
     else if(moveMag>.1){var tc=P.yaw+Math.PI,cd=tc-CAM.yaw;while(cd>Math.PI)cd-=Math.PI*2;while(cd<-Math.PI)cd+=Math.PI*2;CAM.yaw+=cd*dt*2.2;}
     if(Math.abs(rjLY)>.04)CAM.pitch=Math.max(.06,Math.min(.75,CAM.pitch+rjLY*dt*1.5));
-    var camDist=(P.state==='diving')?4.5:CAM.dist;
-    var camPitch=P.state==='diving'?Math.max(.15,Math.min(.5,CAM.pitch)):CAM.pitch;
+    var camDist=CAM.dist;
+    var camPitch=CAM.pitch;
+    if(P.state==='diving'){
+      camDist=5.5;
+      camPitch=Math.max(.28,Math.min(.55,CAM.pitch)); // angle légèrement plongeant
+    }
     var cr=camDist*Math.cos(camPitch);
     var cX=P.x+Math.sin(CAM.yaw)*cr,cZ=P.z+Math.cos(CAM.yaw)*cr;
-    var cY=P.y+camDist*Math.sin(camPitch)+(P.state==='diving'?1.2:1.8);
+    var cY=P.y+camDist*Math.sin(camPitch)+(P.state==='diving'?2.0:1.8);
     var camRig=document.getElementById('cam-rig');
-    var cp=camRig.getAttribute('position'),lf2=Math.min(1,dt*12);
+    var cp=camRig.getAttribute('position'),lf2=Math.min(1,dt*10);
     camRig.setAttribute('position',(cp.x+(cX-cp.x)*lf2).toFixed(2)+' '+(cp.y+(cY-cp.y)*lf2).toFixed(2)+' '+(cp.z+(cZ-cp.z)*lf2).toFixed(2));
-    document.getElementById('mainCam').components.camera.camera.lookAt(P.x,P.y+(P.state==='diving'?.3:.9),P.z);
+    var lookY=P.y+(P.state==='diving'?-0.2:.9);
+    document.getElementById('mainCam').components.camera.camera.lookAt(P.x,lookY,P.z);
 
     // Vagues
     ['w0','w1','w2'].forEach(function(id,i){var wEl=document.getElementById(id);if(!wEl)return;wEl.setAttribute('scale',(1+Math.sin(waveT*.8+i*1.4)*.05)+' 1 '+(1+Math.sin(waveT*.8+i*1.4)*.05));wEl.setAttribute('position','0 '+(-.42+Math.sin(waveT*1.6+i*1.4)*.04).toFixed(3)+' 0');});
@@ -870,9 +885,9 @@ function initGame(){
     if(P.state==='diving'){
       waterOv.className='underwater';
       causticOv.style.opacity='0.6';
-      ambLightEl.setAttribute('intensity','3.0');
-      ambLightEl.setAttribute('color','#aaddff');
-      scnEl.setAttribute('fog','type:exponential;color:#006688;density:0.004');
+      ambLightEl.setAttribute('intensity','3.5');
+      ambLightEl.setAttribute('color','#88eeff');
+      scnEl.setAttribute('fog','type:exponential;color:#004455;density:0.018');
       document.getElementById('skyEl').setAttribute('color','#003355');
       diveHint.style.display='block';
       diveHint.textContent='🌊 ⬆ SURF = remonter  ·  ⬇ PLONGE = descendre';
