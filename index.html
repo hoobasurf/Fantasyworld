@@ -64,7 +64,7 @@
 <!-- FOND OCEAN -->
 <a-plane id="oceanFloor" width="3000" height="3000" rotation="-90 0 0" position="0 -20 0" color="#0a3a28" material="roughness:0.95"></a-plane>
 <!-- Fond sableux lagon -->
-<a-cylinder radius="80" height=".1" position="0 -4.5 0" color="#c8b870" material="roughness:0.92"></a-cylinder>
+<a-cylinder radius="80" height=".1" position="0 -2.2 0" color="#c8b870" material="roughness:0.92"></a-cylinder>
 <!-- Vagues -->
 <a-torus id="w0" radius="72"  radius-tubular=".2" segments-tubular="64" rotation="90 0 0" position="0 -.42 0" color="#fff" material="transparent:true;opacity:0.5"></a-torus>
 <a-torus id="w1" radius="92"  radius-tubular=".2" segments-tubular="64" rotation="90 0 0" position="0 -.42 0" color="#fff" material="transparent:true;opacity:0.42"></a-torus>
@@ -100,8 +100,10 @@
 <div id="joy"><div id="jnub"></div></div>
 <div id="rjoy"><div id="rjnub"></div></div>
 <div id="btns">
-  <div class="btn" style="border-color:#7de8ff;color:#7de8ff" ontouchstart="doJump(event)" onclick="doJump()">⬆<br>JUMP</div>
-  <div class="btn" style="border-color:#00ffcc;color:#00ffcc" id="diveBtn" ontouchstart="doDive(event)" onclick="doDive()">🤿<br>DIVE</div>
+  <div class="btn" style="border-color:#7de8ff;color:#7de8ff" ontouchstart="doJump(event)" onclick="doJump()">⬆<br>SURF</div>
+  <div class="btn" style="border-color:#00ffcc;color:#00ffcc" id="diveBtn"
+    ontouchstart="doDown(event)" ontouchend="stopDown(event)"
+    onmousedown="doDown()" onmouseup="stopDown()">⬇<br>PLONGE</div>
   <div class="btn" style="border-color:#ffd700;color:#ffd700" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">⚡<br>RUN</div>
 </div>
 <div id="toast"></div>
@@ -714,7 +716,7 @@ function initGame(){
     mk('cylinder',{radius:'58',height:'.5',position:'165 -4.5 -125',material:'color:#dcd290;roughness:.88'},UW);
 
     var coralDefs=[
-      [8,-2.5,12,'#ff44aa'],[14,-2.5,5,'#ff6600'],[5,-2.5,20,'#ff1166'],[22,-3,14,'#ffaa00'],[-9,-2.5,8,'#ff44cc'],[-6,-2.5,18,'#ff7700'],[18,-3,-7,'#00ddff'],[-15,-3,11,'#ff3300'],[11,-3,-13,'#ff5566'],[-11,-3,-9,'#ee1188'],[24,-3.5,3,'#ff6622'],[-21,-3.5,6,'#ff2255'],[3,-2.5,24,'#ff4400'],[19,-3.5,22,'#dd1188'],[-19,-3.5,19,'#ff5533'],[27,-4,1,'#00ffaa'],[-26,-4,-7,'#ffcc00'],[9,-3.5,-21,'#ff44ff'],[15,-3.5,-19,'#00ccff'],[-5,-3.5,28,'#ff8800'],[32,-4.5,9,'#ff0044'],[9,-4.5,34,'#ff6600'],[-33,-4.5,7,'#aa00ff'],[4,-3.5,4,'#00ffcc'],[6,-3,6,'#ff3366'],[-8,-3,-6,'#ffaa22'],[36,-5,13,'#ff2288'],[-36,-5,-11,'#00ccff'],
+      [8,-1.5,12,'#ff44aa'],[14,-1.5,5,'#ff6600'],[5,-1.5,20,'#ff1166'],[22,-1.8,14,'#ffaa00'],[-9,-1.5,8,'#ff44cc'],[-6,-1.5,18,'#ff7700'],[18,-2,7,'#00ddff'],[-15,-2,11,'#ff3300'],[11,-2,-13,'#ff5566'],[-11,-2,-9,'#ee1188'],[24,-2,3,'#ff6622'],[-21,-2,6,'#ff2255'],[3,-1.5,24,'#ff4400'],[19,-2,22,'#dd1188'],[-19,-2,19,'#ff5533'],[27,-2.5,1,'#00ffaa'],[-26,-2.5,-7,'#ffcc00'],[9,-2,-21,'#ff44ff'],[15,-2,-19,'#00ccff'],[-5,-2,28,'#ff8800'],[32,-3,9,'#ff0044'],[9,-3,34,'#ff6600'],[-33,-3,7,'#aa00ff'],[4,-2,4,'#00ffcc'],[6,-1.5,6,'#ff3366'],[-8,-1.5,-6,'#ffaa22'],[36,-3,13,'#ff2288'],[-36,-3,-11,'#00ccff'],
       [-157,-3,-132,'#ff44aa'],[-164,-3,-150,'#ff6600'],[-172,-3,-137,'#00ddff'],[-150,-3,-147,'#ff2266'],[-160,-4,-130,'#ff8800'],[-174,-4,-144,'#aa00ff'],[-145,-3.5,-128,'#ff44cc'],[-168,-3.5,-155,'#ffcc00'],[-140,-4,-138,'#00ffaa'],[-180,-4.5,-135,'#ff6622'],
       [157,-3,-117,'#ff1155'],[164,-3,-135,'#ffaa00'],[177,-3,-122,'#00ffcc'],[150,-3,-132,'#ff6622'],[167,-4,-120,'#ff44cc'],[172,-4,-140,'#ffcc00'],[145,-3.5,-118,'#ff2288'],[180,-3.5,-128,'#00ccff'],[142,-4,-122,'#ff3366'],[182,-4.5,-115,'#aa00ff']
     ];
@@ -725,13 +727,13 @@ function initGame(){
     for(var i=0;i<150;i++){
       var ax=(Math.random()-.5)*400,az=(Math.random()-.5)*400;
       var dist=Math.sqrt(ax*ax+az*az);
-      var baseY=dist<50?-2.8:dist<90?-5.5:dist<150?-9:-14;
+      var baseY=dist<50?-1.5:dist<90?-4:dist<150?-8:-13;
       var ah=0.6+Math.random()*(dist<70?2.8:4.2);
       if(Math.random()>.35) makeSeaweed(ax,baseY,az,ah);
       else{var gc2=['#1a9a30','#0a8a20','#2aaa40','#157a25'][Math.floor(Math.random()*4)];var lf=mk('plane',{width:(.1+Math.random()*.2).toFixed(2),height:ah.toFixed(2),position:ax.toFixed(1)+' '+(baseY+ah/2).toFixed(1)+' '+az.toFixed(1),rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',material:'side:double;color:'+gc2+';roughness:.7;transparent:true;opacity:.9'},UW);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='0';lf.dataset.bry=(Math.random()*360).toFixed(1);lf.classList.add('wind-leaf');}
     }
 
-    [[9,-2.9,7],[16,-2.9,3],[-7,-2.9,13],[21,-3.8,19],[-16,-3.8,9],[4,-2.9,26],[29,-4.5,11],[-157,-2.9,-131],[162,-2.9,-118]].forEach(function(s){makeSeaStar(s[0],s[1],s[2]);});
+    [[9,-1.6,7],[16,-1.6,3],[-7,-1.6,13],[21,-2.2,19],[-16,-2.2,9],[4,-1.6,26],[29,-3,11],[-157,-1.6,-131],[162,-1.6,-118]].forEach(function(s){makeSeaStar(s[0],s[1],s[2]);});
 
     for(var i=0;i<45;i++){var rx=(Math.random()-.5)*350,rz=(Math.random()-.5)*350;var rd=Math.sqrt(rx*rx+rz*rz);var ry=rd<50?-3.8:rd<90?-6.5:rd<150?-11:-16;var rs=(0.5+Math.random()*3.2).toFixed(1);mk('sphere',{radius:rs,position:rx.toFixed(1)+' '+ry+' '+rz.toFixed(1),scale:(0.8+Math.random()*.9).toFixed(2)+' '+(0.3+Math.random()*.5).toFixed(2)+' '+(0.7+Math.random()*.9).toFixed(2),material:'color:'+(rd<100?'#4a4030':'#2a3028')+';roughness:.97'},UW);}
 
@@ -1009,7 +1011,7 @@ function initGame(){
       if(P.y<=WATER_SURFACE+.1&&gy===null){
         P.state='surface';P.y=WATER_SURFACE;P.vy=0;
         P.breath=MAX_BREATH;P.swimMode=false;
-        toast('Dans l eau ! DIVE ou F pour plonger',2500);
+        toast('Dans l eau ! Appuie PLONGE pour descendre !',2500);
       }
     } else if(P.state==='surface'){
       // ═══ SURFACE ═══
@@ -1018,7 +1020,7 @@ function initGame(){
       P.y=WATER_SURFACE+Math.sin(P.swimBob*2.2)*.06;
       P.vy=0;P.onGround=true;P.sinkTimer=0;
       // S / ↓ / joystick bas → plonger
-      if(KY['KeyS']||KY['ArrowDown']||jLY>0.25){
+      if(KY['KeyS']||KY['ArrowDown']||jLY>0.25||window._goDown){
         P.state='diving';P.vy=-5;P.y=WATER_SURFACE-1.0;P.onGround=false;
       }
       if(gy!==null&&gy>WATER_SURFACE-.2){P.state='ground';P.y=gy+P.yOff;P.sinkTimer=0;P.swimMode=false;}
@@ -1036,7 +1038,7 @@ function initGame(){
       // Joystick droit Y = haut/bas
       if(Math.abs(rjLY)>.06)P.vy=Math.max(-6,Math.min(5,P.vy-rjLY*10*dt));
       // S / ↓ = descendre — annule la flottabilité
-      var goingDown=KY['KeyS']||KY['ArrowDown']||jLY>0.25;
+      var goingDown=KY['KeyS']||KY['ArrowDown']||jLY>0.25||window._goDown;
       if(goingDown) P.vy=Math.max(P.vy-2.5*dt,-6);
       // Flottabilité SEULEMENT si on n'appuie pas vers le bas
       if(!goingDown) P.vy+=0.4*dt;
@@ -1065,7 +1067,7 @@ function initGame(){
 
     // Position Stitch
     var stEl=document.getElementById('stitch-root');
-    var tiltX=(P.state==='diving')?(-82+Math.max(-15,Math.min(15,P.vy*4))):(P.state==='surface')?-18:(P.state==='sinking')?-55:0;
+    var tiltX=(P.state==='diving')?(82+Math.max(-12,Math.min(12,-P.vy*3))):(P.state==='surface')?15:(P.state==='sinking')?55:0;
     stEl.setAttribute('position',P.x.toFixed(2)+' '+P.y.toFixed(2)+' '+P.z.toFixed(2));
     stEl.setAttribute('rotation',tiltX.toFixed(1)+' '+(P.yaw*180/Math.PI).toFixed(1)+' 0');
     animateStitch(dt,moveMag,P.state,sprint);
@@ -1185,7 +1187,7 @@ function initGame(){
     } else if(P.state==='diving'||P.state==='sinking'){
       diveHint.style.display='block';
       var modeLabel=P.swimMode?'🏊 NAGE RAPIDE':'🤿 NAGE LENTE';
-      diveHint.textContent='🌊 Espace=remonter · S=descendre · F='+modeLabel;
+      diveHint.textContent='🌊 ⬆ SURF = remonter · ⬇ PLONGE = descendre';
       if(P.breath<15&&Math.floor(waveT*2)%2===0){diveHint.style.color='#ff3300';}
       else{diveHint.style.color='#88ffee';}
     } else {diveHint.style.display='none';}
@@ -1217,11 +1219,22 @@ function initGame(){
   loop();
 
   // ══ CONTRÔLES ══
+  window._goDown=false;
+  window.doDown=function(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    window._goDown=true;
+    // Si en surface, plonger immédiatement
+    if(P.state==='surface'){P.state='diving';P.vy=-6;P.y=WATER_SURFACE-1.0;P.onGround=false;}
+    // Si en diving, descendre fort
+    else if(P.state==='diving'){P.vy=Math.max(P.vy-3,-7);}
+  };
+  window.stopDown=function(e){if(e&&e.preventDefault)e.preventDefault();window._goDown=false;};
+
   window.doJump=function(e){
     if(e&&e.preventDefault)e.preventDefault();
     if(P.state==='diving'||P.state==='sinking'){
-      // Remonter (style oasis : Espace = vy up)
-      P.vy=Math.min(P.vy+2.2,8);
+      // Remonter vers la surface
+      P.vy=Math.min(P.vy+3.5,8);
     } else if(P.onGround&&P.state==='ground'){
       P.vy=8.5;P.onGround=false;P.state='air';
     } else if(P.state==='surface'){
