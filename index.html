@@ -72,11 +72,11 @@
 <a-entity id="world"></a-entity>
 <a-entity id="underwater-world"></a-entity>
 <!-- STITCH -->
-<a-entity id="stitch-root" position="0 2 3">
+<a-entity id="stitch-root" position="0 2 50">
   <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false"></a-gltf-model>
 </a-entity>
 <!-- CAMERA -->
-<a-entity id="cam-rig" position="0 6 10">
+<a-entity id="cam-rig" position="0 6 58">
   <a-camera id="mainCam" look-controls="enabled:false" wasd-controls="enabled:false" fov="62" near=".05" far="700"></a-camera>
 </a-entity>
 </a-scene>
@@ -907,11 +907,11 @@ function initGame(){
   var MAX_BREATH=100,BREATH_LOSE=5,BREATH_GAIN=30;
   var SINK_SPEED=2.5,SWIM_SPEED=5.5;
 
-  var P={x:0,y:1.5,z:3,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,
+  var P={x:0,y:1.5,z:50,vx:0,vy:0,vz:0,yaw:0,onGround:false,yOff:.7,
          state:'ground',breath:MAX_BREATH,swimBob:0,canSwim:true,sinkTimer:0,
          swimMode:false}; // ← swimMode : nage rapide (comme oasis)
 
-  var CAM={yaw:Math.PI,pitch:.18,dist:6.5};
+  var CAM={yaw:0,pitch:.22,dist:7.0};
   var jLX=0,jLY=0,jid=-1,rjLX=0,rjLY=0,rjid=-1,KY={},sprint=false;
   var waveT=0,lastT=performance.now();
   var windLeaves=null,fishEls=null;
