@@ -46,14 +46,14 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 <a-light type="hemisphere" color="#88ccff" ground-color="#446622" intensity=".8"></a-light>
 <a-light type="ambient" id="ambientLight" color="#ffeedd" intensity=".3"></a-light>
 
-<!-- Lumières sous-marines permanentes — bien réparties et puissantes -->
+<!-- Lumières sous-marines — distance:0 = portée illimitée -->
 
-<a-light type="point" id="uwLight1" position="0 -2 0" color="#00ffee" intensity="4.5" distance="100"></a-light>
-<a-light type="point" id="uwLight2" position="15 -3 15" color="#00ccff" intensity="3.5" distance="80"></a-light>
-<a-light type="point" id="uwLight3" position="-15 -3 -15" color="#22ffdd" intensity="3.0" distance="75"></a-light>
-<a-light type="point" id="uwLight4" position="0 -6 20" color="#00eeff" intensity="3.0" distance="80"></a-light>
-<a-light type="point" id="uwLight5" position="-20 -4 5" color="#44ffcc" intensity="2.8" distance="70"></a-light>
-<a-light type="point" id="uwLight6" position="20 -4 -10" color="#00ddff" intensity="2.8" distance="70"></a-light>
+<a-light type="point" id="uwLight1" position="0 -2 0"    color="#00ffee" intensity="6" distance="0"></a-light>
+<a-light type="point" id="uwLight2" position="20 -3 20"  color="#00ccff" intensity="5" distance="0"></a-light>
+<a-light type="point" id="uwLight3" position="-20 -3 -20" color="#22ffdd" intensity="5" distance="0"></a-light>
+<a-light type="point" id="uwLight4" position="0 -3 25"   color="#00eeff" intensity="5" distance="0"></a-light>
+<a-light type="point" id="uwLight5" position="-25 -3 0"  color="#44ffcc" intensity="5" distance="0"></a-light>
+<a-light type="point" id="uwLight6" position="25 -3 -15" color="#00ddff" intensity="5" distance="0"></a-light>
 
 <!-- Nuages -->
 
@@ -490,108 +490,145 @@ function initGame(){
   }
 
   function buildUnderwaterWorld(){
-    // ── FOND SABLEUX visible partout sous la surface ──
-    // Déjà dans la scène : oceanFloor cylinder à Y=-18 et sable à Y=-0.8/-1.2
+    // Couleurs coraux vives
+    var CC=['#ff44aa','#ff6600','#ff1166','#ffaa00','#ff44cc','#ff7700',
+            '#00ddff','#ff3300','#ff9955','#ee1188','#ff6622','#ff2255',
+            '#00ffcc','#ffcc00','#ff44ff','#00ccff','#ff8800','#aa00ff',
+            '#ff3366','#44ffaa','#ff0055','#00ff99'];
 
-    // ── CORAUX — très denses, partout sur le fond sableux proche ──
-    // Grille de coraux sur toute la zone nageable (-80 à +80)
-    var coralColors=['#ff44aa','#ff6600','#ff1166','#ffaa00','#ff44cc','#ff7700',
-                     '#00ddff','#ff3300','#ff5566','#ee1188','#ff6622','#ff2255',
-                     '#ff4400','#dd1188','#ff5533','#00ffaa','#ffcc00','#ff44ff',
-                     '#00ccff','#ff8800','#ff0044','#aa00ff','#00ffcc','#ff3366'];
-
-    // Grille régulière de coraux sur tout le fond (-70 à +70, pas de 8)
-    for(var cx2=-70;cx2<=70;cx2+=8){
-      for(var cz2=-70;cz2<=70;cz2+=8){
-        if(Math.random()<0.25) continue; // 75% de remplissage
-        var jx=cx2+(Math.random()-.5)*5,jz=cz2+(Math.random()-.5)*5;
-        var col=coralColors[Math.floor(Math.random()*coralColors.length)];
-        var y=-0.5-Math.random()*0.4; // juste sous la surface
-        makeCoral(jx,y,jz,col);
+    // ── makeCoral amélioré : emissive très fort ──
+    function makeBrightCoral(x,y,z,col){
+      var h=0.8+Math.random()*1.8, nb=4+Math.floor(Math.random()*5);
+      var em=col,ei='0.9';
+      mk('cylinder',{'radius-bottom':'.20','radius-top':'.05',height:h.toFixed(2),
+        position:x.toFixed(2)+' '+(y+h/2).toFixed(2)+' '+z.toFixed(2),
+        material:'color:'+col+';roughness:.3;emissive:'+em+';emissiveIntensity:'+ei},W);
+      for(var b=0;b<nb;b++){
+        var ang=b/nb*Math.PI*2,br=.15+Math.random()*.4,bh=.3+Math.random()*1.0;
+        mk('cylinder',{'radius-bottom':'.07','radius-top':'.02',height:bh.toFixed(2),
+          position:(x+Math.sin(ang)*br).toFixed(2)+' '+(y+h*.5+bh/2).toFixed(2)+' '+(z+Math.cos(ang)*br).toFixed(2),
+          rotation:(Math.random()*22-11).toFixed(1)+' '+(ang*180/Math.PI).toFixed(1)+' 0',
+          material:'color:'+col+';roughness:.3;emissive:'+em+';emissiveIntensity:'+ei},W);
+        // Boule au bout
+        mk('sphere',{radius:(.05+Math.random()*.06).toFixed(3),
+          position:(x+Math.sin(ang)*br).toFixed(2)+' '+(y+h*.5+bh+.05).toFixed(2)+' '+(z+Math.cos(ang)*br).toFixed(2),
+          material:'color:'+col+';roughness:.2;emissive:'+em+';emissiveIntensity:1.0'},W);
       }
     }
-    // Coraux supplémentaires autour des îles
-    [[-165,-140],[165,-125]].forEach(function(isle){
-      for(var i=0;i<40;i++){
-        var ang=Math.random()*Math.PI*2,r=5+Math.random()*50;
-        var col=coralColors[Math.floor(Math.random()*coralColors.length)];
-        makeCoral(isle[0]+Math.sin(ang)*r,-0.5-Math.random()*.4,isle[1]+Math.cos(ang)*r,col);
-      }
-    });
 
-    // ── ÉTOILES DE MER — sur le sable, partout ──
-    for(var i=0;i<40;i++){
-      var sx=(Math.random()-.5)*130,sz=(Math.random()-.5)*130;
-      var c=['#ff4400','#ff6600','#ff2244','#ff8800'][Math.floor(Math.random()*4)];
-      var sz2=.18+Math.random()*.22;
+    // ── Sable du fond — texture sable visible ──
+    mk('cylinder',{radius:'200',height:'.3',position:'0 -0.55 0',
+      material:'color:#e8d880;roughness:.95;emissive:#c8b840;emissiveIntensity:.15'},W);
+
+    // ── CORAUX DENSES autour du spawn (rayon 0-50) ──
+    // Zone 1 : 0-15 unités du spawn — très dense, immédiatement visible
+    for(var i=0;i<80;i++){
+      var ang=Math.random()*Math.PI*2, r=1+Math.random()*14;
+      var cx2=Math.sin(ang)*r, cz2=Math.cos(ang)*r;
+      makeBrightCoral(cx2,-0.5,cz2, CC[Math.floor(Math.random()*CC.length)]);
+    }
+    // Zone 2 : 15-40 unités — dense
+    for(var i=0;i<120;i++){
+      var ang=Math.random()*Math.PI*2, r=15+Math.random()*25;
+      var cx2=Math.sin(ang)*r, cz2=Math.cos(ang)*r;
+      makeBrightCoral(cx2,-0.5,cz2, CC[Math.floor(Math.random()*CC.length)]);
+    }
+    // Zone 3 : 40-80 — modéré
+    for(var i=0;i<80;i++){
+      var ang=Math.random()*Math.PI*2, r=40+Math.random()*40;
+      var cx2=Math.sin(ang)*r, cz2=Math.cos(ang)*r;
+      makeBrightCoral(cx2,-0.5,cz2, CC[Math.floor(Math.random()*CC.length)]);
+    }
+
+    // ── ÉTOILES DE MER sur le sable ──
+    for(var i=0;i<50;i++){
+      var sang=Math.random()*Math.PI*2, sr=1+Math.random()*45;
+      var sx=Math.sin(sang)*sr, sz=Math.cos(sang)*sr;
+      var c=['#ff4400','#ff6600','#ff2244','#ff8800','#ffaa00'][Math.floor(Math.random()*5)];
+      var s2=.15+Math.random()*.2;
       for(var j=0;j<5;j++){
-        var ang=j/5*Math.PI*2;
-        mk('sphere',{radius:(sz2*.22).toFixed(3),scale:'3.5 .22 .7',
-          position:(sx+Math.sin(ang)*sz2*.5).toFixed(2)+' -0.45 '+(sz+Math.cos(ang)*sz2*.5).toFixed(2),
-          rotation:'0 '+(ang*180/Math.PI).toFixed(1)+' 0',
-          material:'color:'+c+';roughness:.6;emissive:'+c+';emissiveIntensity:.3'},W);
+        var a2=j/5*Math.PI*2;
+        mk('sphere',{radius:(s2*.2).toFixed(3),scale:'3.5 .18 .7',
+          position:(sx+Math.sin(a2)*s2*.45).toFixed(2)+' -0.48 '+(sz+Math.cos(a2)*s2*.45).toFixed(2),
+          rotation:'0 '+(a2*180/Math.PI).toFixed(1)+' 0',
+          material:'color:'+c+';roughness:.5;emissive:'+c+';emissiveIntensity:.7'},W);
       }
-      mk('sphere',{radius:(sz2*.15).toFixed(3),position:sx.toFixed(1)+' -0.45 '+sz.toFixed(1),
-        material:'color:'+c+';roughness:.5;emissive:'+c+';emissiveIntensity:.35'},W);
+      mk('sphere',{radius:(s2*.12).toFixed(3),position:sx.toFixed(1)+' -0.48 '+sz.toFixed(1),
+        material:'color:'+c+';emissive:'+c+';emissiveIntensity:.8'},W);
     }
 
-    // ── ALGUES — partout sur le fond ──
-    for(var i=0;i<200;i++){
-      var ax=(Math.random()-.5)*150,az=(Math.random()-.5)*150;
-      var baseY=-0.6;
-      if(Math.random()>.35) makeSeaweed(ax,baseY,az,.5+Math.random()*1.8);
-      else{
-        var gc=['#1a9a30','#0a8a20','#2aaa40','#0d7a28'][Math.floor(Math.random()*4)];
-        var lf=mk('plane',{width:(.08+Math.random()*.14).toFixed(2),height:(.6+Math.random()*1.6).toFixed(2),
-          position:ax.toFixed(1)+' '+(baseY+.8).toFixed(1)+' '+az.toFixed(1),
-          rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',
-          material:'side:double;color:'+gc+';roughness:.7;transparent:true;opacity:.9'},W);
-        lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='0';lf.dataset.bry=(Math.random()*360).toFixed(1);lf.classList.add('wind-leaf');
-      }
+    // ── ALGUES lumineuses ──
+    for(var i=0;i<180;i++){
+      var aang=Math.random()*Math.PI*2, ar=1+Math.random()*60;
+      var ax=Math.sin(aang)*ar, az=Math.cos(aang)*ar;
+      var gc=['#00cc28','#00aa20','#00ee30','#00bb24','#22dd44'][Math.floor(Math.random()*5)];
+      var ah=.4+Math.random()*1.6;
+      var lf=mk('plane',{width:(.07+Math.random()*.12).toFixed(2),height:ah.toFixed(2),
+        position:ax.toFixed(1)+' '+(-0.5+ah*.5).toFixed(2)+' '+az.toFixed(1),
+        rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',
+        material:'side:double;color:'+gc+';roughness:.5;emissive:'+gc+';emissiveIntensity:.6;transparent:true;opacity:.92'},W);
+      lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='0';lf.dataset.bry=(Math.random()*360).toFixed(1);lf.classList.add('wind-leaf');
     }
 
-    // ── ROCHERS sous-marins ──
-    for(var i=0;i<30;i++){
-      var rx=(Math.random()-.5)*140,rz=(Math.random()-.5)*140;
-      var rs=(0.4+Math.random()*1.8).toFixed(1);
-      mk('sphere',{radius:rs,position:rx.toFixed(1)+' -0.9 '+rz.toFixed(1),
-        scale:(0.9+Math.random()*.7).toFixed(2)+' '+(0.35+Math.random()*.45).toFixed(2)+' '+(0.8+Math.random()*.7).toFixed(2),
-        material:'color:#4a4030;roughness:.97'},W);
+    // ── COQUILLAGES sur le sable ──
+    for(var i=0;i<35;i++){
+      var cang=Math.random()*Math.PI*2, cr2=1+Math.random()*40;
+      var shcols=['#ffeecc','#ffddaa','#ff8866','#eeccaa','#cc8866'];
+      var shc=shcols[Math.floor(Math.random()*shcols.length)];
+      var ss=.08+Math.random()*.18;
+      mk('sphere',{radius:ss.toFixed(3),scale:'1 .4 1.4',
+        position:(Math.sin(cang)*cr2).toFixed(1)+' -0.50 '+(Math.cos(cang)*cr2).toFixed(1),
+        material:'color:'+shc+';roughness:.4;emissive:'+shc+';emissiveIntensity:.4'},W);
     }
 
-    // ── TORTUES — nagent à -1.5 à -3, bien visibles ──
-    [[0,15,-1.5,.08],[Math.PI*.5,11,-2,.06],[Math.PI,18,-1.8,.07],[Math.PI*1.5,13,-2.2,.09],[.8,9,-1.5,.1]].forEach(function(td){makeSeaTurtle(td[0],td[1],td[2],td[3]);});
+    // ── ROCHERS ──
+    for(var i=0;i<20;i++){
+      var rang=Math.random()*Math.PI*2, rr=3+Math.random()*55;
+      var rs=(.4+Math.random()*1.5).toFixed(1);
+      mk('sphere',{radius:rs,
+        position:(Math.sin(rang)*rr).toFixed(1)+' -0.6 '+(Math.cos(rang)*rr).toFixed(1),
+        scale:(0.9+Math.random()*.7).toFixed(2)+' '+(0.3+Math.random()*.4).toFixed(2)+' '+(0.8+Math.random()*.7).toFixed(2),
+        material:'color:#6a5a40;roughness:.95;emissive:#3a3020;emissiveIntensity:.2'},W);
+    }
 
-    // ── REQUINS — zone profonde ──
-    for(var i=0;i<3;i++) makeShark(i/3*Math.PI*2,45+Math.random()*25,-6-Math.random()*4,.04+Math.random()*.03);
+    // ── TORTUES — nagent lentement, visibles ──
+    [[0,12,-1.2,.07],[Math.PI*.5,9,-1.5,.05],[Math.PI,15,-1.8,.06],[Math.PI*1.5,11,-1.3,.08]].forEach(function(td){makeSeaTurtle(td[0],td[1],td[2],td[3]);});
 
-    // ── POISSONS — énormément, sur toute la zone, entre -0.6 et -5 ──
-    var fishGroups=[
-      // Bancs de poissons près de la surface (très visibles)
-      {n:20,rMin:3,rMax:18,depMin:-.7,depMax:-1.5,sMin:.25,sMax:.5,sizeMin:.07,sizeMax:.14},
-      // Poissons moyens profondeur
-      {n:25,rMin:8,rMax:30,depMin:-1.5,depMax:-4,sMin:.15,sMax:.35,sizeMin:.1,sizeMax:.22},
-      // Gros poissons profonds
-      {n:10,rMin:15,rMax:40,depMin:-3,depMax:-7,sMin:.1,sMax:.2,sizeMin:.18,sizeMax:.35},
+    // ── REQUINS — profondeur modérée ──
+    for(var i=0;i<2;i++) makeShark(i/2*Math.PI*2,35+Math.random()*20,-5-Math.random()*3,.035+Math.random()*.025);
+
+    // ── POISSONS — PARTOUT, emissive fort, visibles même sans lumière ──
+    var fishDefs=[
+      // Banc serré près du spawn
+      {n:15,rMin:2,rMax:10,dep:-.8,spd:.4,sz:.09,offX:0,offZ:0},
+      {n:15,rMin:3,rMax:12,dep:-1.2,spd:.35,sz:.11,offX:5,offZ:-5},
+      // Poissons plus loin
+      {n:12,rMin:8,rMax:20,dep:-.9,spd:.28,sz:.14,offX:12,offZ:8},
+      {n:12,rMin:8,rMax:20,dep:-1.5,spd:.25,sz:.13,offX:-10,offZ:12},
+      {n:10,rMin:5,rMax:15,dep:-.7,spd:.45,sz:.08,offX:-8,offZ:-10},
+      // Gros poissons
+      {n:6,rMin:12,rMax:28,dep:-2.5,spd:.18,sz:.25,offX:20,offZ:-15},
+      {n:6,rMin:10,rMax:25,dep:-3.0,spd:.16,sz:.28,offX:-18,offZ:20},
     ];
-    fishGroups.forEach(function(g){
+    fishDefs.forEach(function(g){
       for(var i=0;i<g.n;i++){
         var fish=mk('entity',{},W);
-        var fr=g.sizeMin+Math.random()*(g.sizeMax-g.sizeMin);
+        var fr=g.sz*(0.8+Math.random()*.4);
         var fc=randomFC();
-        mk('sphere',{radius:fr.toFixed(3),material:'color:#'+fc+';roughness:.4;emissive:#'+fc+';emissiveIntensity:.5'},fish);
-        mk('cone',{'radius-bottom':(fr*.5).toFixed(3),'radius-top':'.01',height:(fr*1.4).toFixed(3),
-          position:(-fr*1.1).toFixed(3)+' 0 0',rotation:'0 0 90',material:'color:#'+fc+';emissive:#'+fc+';emissiveIntensity:.4'},fish);
-        mk('cone',{'radius-bottom':(fr*.3).toFixed(3),'radius-top':'.01',height:(fr*.7).toFixed(3),
-          position:'0 '+(fr*.65).toFixed(3)+' 0',material:'color:#'+fc+';emissive:#'+fc+';emissiveIntensity:.3'},fish);
+        mk('sphere',{radius:fr.toFixed(3),material:'color:#'+fc+';roughness:.3;emissive:#'+fc+';emissiveIntensity:.7'},fish);
+        mk('cone',{'radius-bottom':(fr*.5).toFixed(3),'radius-top':'.005',height:(fr*1.3).toFixed(3),
+          position:(-fr*1.05).toFixed(3)+' 0 0',rotation:'0 0 90',
+          material:'color:#'+fc+';emissive:#'+fc+';emissiveIntensity:.6'},fish);
+        mk('cone',{'radius-bottom':(fr*.28).toFixed(3),'radius-top':'.005',height:(fr*.65).toFixed(3),
+          position:'0 '+(fr*.6).toFixed(3)+' 0',
+          material:'color:#'+fc+';emissive:#'+fc+';emissiveIntensity:.5'},fish);
         fish.classList.add('fish-anim');
-        fish.dataset.fishPhase=(Math.random()*Math.PI*2).toFixed(3);
+        fish.dataset.fishPhase=((i/g.n)*Math.PI*2+(Math.random()-.5)*.5).toFixed(3);
         fish.dataset.fishR=(g.rMin+Math.random()*(g.rMax-g.rMin)).toFixed(1);
-        fish.dataset.fishDepth=(g.depMin+Math.random()*(g.depMax-g.depMin)).toFixed(1);
-        fish.dataset.fishSpeed=(g.sMin+Math.random()*(g.sMax-g.sMin)).toFixed(3);
-        // Décaler aléatoirement autour de l'île
-        fish.dataset.fishOffX=((Math.random()-.5)*40).toFixed(1);
-        fish.dataset.fishOffZ=((Math.random()-.5)*40).toFixed(1);
+        fish.dataset.fishDepth=(g.dep+Math.random()*.4-.2).toFixed(1);
+        fish.dataset.fishSpeed=(g.spd*(0.8+Math.random()*.4)).toFixed(3);
+        fish.dataset.fishOffX=(g.offX+(Math.random()-.5)*6).toFixed(1);
+        fish.dataset.fishOffZ=(g.offZ+(Math.random()-.5)*6).toFixed(1);
       }
     });
   }
@@ -901,9 +938,9 @@ function initGame(){
     if(P.state==='diving'){
       waterOv.className='underwater';
       causticOv.style.opacity='0.6';
-      ambLightEl.setAttribute('intensity','3.5');
-      ambLightEl.setAttribute('color','#88eeff');
-      scnEl.setAttribute('fog','type:exponential;color:#004455;density:0.018');
+      ambLightEl.setAttribute('intensity','4.0');
+      ambLightEl.setAttribute('color','#aaffee');
+      scnEl.setAttribute('fog','type:exponential;color:#003344;density:0.008');
       document.getElementById('skyEl').setAttribute('color','#003355');
       diveHint.style.display='block';
       diveHint.textContent='🌊 ⬆ SURF = remonter  ·  ⬇ PLONGE = descendre';
