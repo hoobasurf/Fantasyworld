@@ -72,11 +72,11 @@
 <a-entity id="world"></a-entity>
 <a-entity id="underwater-world"></a-entity>
 <!-- STITCH -->
-<a-entity id="stitch-root" position="0 2 50">
+<a-entity id="stitch-root" position="0 2 72">
   <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false"></a-gltf-model>
 </a-entity>
 <!-- CAMERA -->
-<a-entity id="cam-rig" position="0 6 58">
+<a-entity id="cam-rig" position="0 5 80">
   <a-camera id="mainCam" look-controls="enabled:false" wasd-controls="enabled:false" fov="62" near=".05" far="700"></a-camera>
 </a-entity>
 </a-scene>
@@ -122,7 +122,7 @@ function initGame(){
   var islandDefs=[];
 
   function addPlatform(cx,cz,y,rx,rz){platforms.push({cx:cx,cz:cz,y:y,rx:rx,rz:rz});}
-  function addWall(x,z,r,h,y0){walls.push({x1:x-r,z1:z-r,x2:x+r,z2:z+r,h:h||5,y0:y0||0});}
+  function addWall(x,z,r,h,y0){/* murs désactivés */}
 
   function mk(tag,attrs,par){
     var e=document.createElement('a-'+tag);
@@ -895,7 +895,7 @@ function initGame(){
   var MAX_BREATH=100,BREATH_LOSE=5,BREATH_GAIN=30;
   var SINK_SPEED=2.5,SWIM_SPEED=5.5;
 
-  var P={x:0,y:1.5,z:50,vx:0,vy:0,vz:0,yaw:0,onGround:false,yOff:.7,
+  var P={x:0,y:1.5,z:72,vx:0,vy:0,vz:0,yaw:0,onGround:false,yOff:.7,
          state:'ground',breath:MAX_BREATH,swimBob:0,canSwim:true,sinkTimer:0,
          swimMode:false}; // ← swimMode : nage rapide (comme oasis)
 
