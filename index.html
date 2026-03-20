@@ -35,32 +35,12 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 <body>
 
 <a-scene renderer="antialias:true;colorManagement:true" shadow="type:pcfsoft" fog="type:exponential;color:#5ac8f0;density:0.007" vr-mode-ui="enabled:false" loading-screen="enabled:false">
-<a-assets timeout="60000">
-  <!-- Stitch -->
-  <a-asset-item id="stitchGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/stitch2.glb"></a-asset-item>
-  <!-- Île -->
-  <a-asset-item id="islandGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Island.glb"></a-asset-item>
-  <a-asset-item id="palmGLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Palm%20Tree.glb"></a-asset-item>
-  <a-asset-item id="hutGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hut.glb"></a-asset-item>
-  <a-asset-item id="rockLargeGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Rock%20Large.glb"></a-asset-item>
-  <!-- Sous l'eau — minimum de fichiers différents -->
-  <a-asset-item id="coralGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set.glb"></a-asset-item>
-  <a-asset-item id="coral2GLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set2.glb"></a-asset-item>
-  <a-asset-item id="kelpGLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/kelp.glb"></a-asset-item>
-  <a-asset-item id="seashellGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Seashell.glb"></a-asset-item>
-  <a-asset-item id="turtleGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Turtle.glb"></a-asset-item>
-  <a-asset-item id="sharkGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Shark.glb"></a-asset-item>
-  <a-asset-item id="dolphinGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Dolphin.glb"></a-asset-item>
-  <a-asset-item id="lionfishGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Lionfish.glb"></a-asset-item>
-  <a-asset-item id="island2GLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Island%202.glb"></a-asset-item>
-  <a-asset-item id="emptyIslandGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Empty%20Island.glb"></a-asset-item>
-  <a-asset-item id="palmsGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Palm%20Trees.glb"></a-asset-item>
-  <a-asset-item id="rockGLB"        src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Rock.glb"></a-asset-item>
-  <a-asset-item id="rocksGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Rocks.glb"></a-asset-item>
-  <a-asset-item id="houseGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/House.glb"></a-asset-item>
-  <a-asset-item id="coral3GLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set3.glb"></a-asset-item>
-  <a-asset-item id="anemoneGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Anemone.glb"></a-asset-item>
-  <img id="tSand" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sand.jpg" crossorigin="anonymous">
+<a-assets timeout="30000">
+  <a-asset-item id="stitchGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/stitch2.glb"></a-asset-item>
+  <a-asset-item id="palmGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Palm%20Tree.glb"></a-asset-item>
+  <a-asset-item id="hutGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hut.glb"></a-asset-item>
+  <a-asset-item id="coralGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set.glb"></a-asset-item>
+  <a-asset-item id="turtleGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Turtle.glb"></a-asset-item>
 </a-assets>
 
 <a-sky id="skyEl" color="#4ab8f0"></a-sky>
@@ -107,7 +87,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false"></a-gltf-model>
 </a-entity>
 <!-- Ombre blob de Stitch au sol -->
-<a-ellipse id="stitch-shadow" width="0.9" height="0.55" rotation="-90 0 0" position="0 0.02 3" material="color:#000;transparent:true;opacity:0.35;shader:flat"></a-ellipse>
+<a-circle id="stitch-shadow" radius="0.55" rotation="-90 0 0" position="0 0.02 35" material="color:#1a0a00;transparent:true;opacity:0.45;shader:flat"></a-circle>
 
 <!-- Caméra -->
 
@@ -516,84 +496,98 @@ function initGame(){
     var SEABED=-11.8;
     var W2=document.getElementById('world');
 
-    function glb(id,x,z,sc,ry){
+    function uwGlb(id,x,z,sc,ry){
       var e=document.createElement('a-gltf-model');
       e.setAttribute('src',id);
       e.setAttribute('position',x.toFixed(1)+' '+SEABED+' '+z.toFixed(1));
       e.setAttribute('rotation','0 '+(ry||0)+' 0');
-      var s=sc||1; e.setAttribute('scale',s+' '+s+' '+s);
-      W2.appendChild(e); return e;
+      e.setAttribute('scale',sc+' '+sc+' '+sc);
+      W2.appendChild(e);
     }
 
-    // CORAUX — denses, couvrent tout l'océan
-    var coralIds=['#coralGLB','#coral2GLB','#coral3GLB'];
-    for(var i=0;i<40;i++){
-      var a=i/40*Math.PI*2+Math.random()*.3, r=2+Math.random()*50;
-      glb(coralIds[i%3],Math.sin(a)*r,Math.cos(a)*r,2+Math.random()*2.5,Math.random()*360);
-    }
-    // Coraux autour de chaque île secondaire
-    [[-165,-140],[165,-125],[0,-220],[-220,50],[220,80]].forEach(function(ile){
-      for(var i=0;i<8;i++){
-        var a=Math.random()*Math.PI*2,r=5+Math.random()*30;
-        glb(coralIds[i%3],ile[0]+Math.sin(a)*r,ile[1]+Math.cos(a)*r,2+Math.random()*2,Math.random()*360);
-      }
-    });
-
-    // KELP — 20 instances réparties
-    for(var i=0;i<20;i++){
-      var a=i/20*Math.PI*2, r=5+Math.random()*60;
-      glb('#kelpGLB',Math.sin(a)*r,Math.cos(a)*r,1.5+Math.random()*2,Math.random()*360);
-    }
-
-    // ANÉMONES — 15 instances
+    // Coraux GLB — 15 seulement, 1 seul modèle réutilisé
     for(var i=0;i<15;i++){
-      var a=Math.random()*Math.PI*2,r=2+Math.random()*35;
-      glb('#anemoneGLB',Math.sin(a)*r,Math.cos(a)*r,1+Math.random()*1.5,Math.random()*360);
+      var a=i/15*Math.PI*2,r=3+Math.random()*30;
+      uwGlb('#coralGLB',Math.sin(a)*r,Math.cos(a)*r,2+Math.random()*2,i*24);
     }
 
-    // COQUILLAGES — 12 instances
+    // Coraux géométriques simples (pas de GLB) — beaucoup, partout
+    var CC=['#ff55bb','#ff6622','#ff1166','#ffaa33','#00bbdd','#ff4433','#00ffcc','#ff55ff'];
+    for(var i=0;i<60;i++){
+      var a=Math.random()*Math.PI*2,r=5+Math.random()*70;
+      var col=CC[i%CC.length],h=0.8+Math.random()*2.5;
+      var ex=Math.sin(a)*r,ez=Math.cos(a)*r;
+      var e=document.createElement('a-cylinder');
+      e.setAttribute('radius-bottom','0.18');e.setAttribute('radius-top','0.05');
+      e.setAttribute('height',h.toFixed(2));
+      e.setAttribute('position',ex.toFixed(1)+' '+(SEABED+h/2).toFixed(1)+' '+ez.toFixed(1));
+      e.setAttribute('material','color:'+col+';roughness:.5;emissive:'+col+';emissiveIntensity:.3');
+      W2.appendChild(e);
+    }
+
+    // Algues — plans fins verts
+    for(var i=0;i<30;i++){
+      var a=Math.random()*Math.PI*2,r=2+Math.random()*50,ah=0.6+Math.random()*2;
+      var gc=['#1a8820','#0d7018','#22aa30','#0a6015'][i%4];
+      var e=document.createElement('a-plane');
+      e.setAttribute('width',(0.1+Math.random()*0.15).toFixed(2));
+      e.setAttribute('height',ah.toFixed(2));
+      e.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' '+(SEABED+ah/2).toFixed(1)+' '+(Math.cos(a)*r).toFixed(1));
+      e.setAttribute('rotation','0 '+(i*12)+' 0');
+      e.setAttribute('material','side:double;color:'+gc+';emissive:'+gc+';emissiveIntensity:.2');
+      e.classList.add('wind-leaf');e.dataset.windPhase=(i*.4).toFixed(2);
+      e.dataset.brx='0';e.dataset.bry=(i*12).toString();
+      W2.appendChild(e);
+    }
+
+    // Étoiles de mer — géo simple
     for(var i=0;i<12;i++){
-      var a=Math.random()*Math.PI*2,r=2+Math.random()*30;
-      glb('#seashellGLB',Math.sin(a)*r,Math.cos(a)*r,1+Math.random()*1.2,Math.random()*360);
+      var a=Math.random()*Math.PI*2,r=2+Math.random()*25;
+      var c=['#ff4400','#ff6600','#ff8800'][i%3];
+      var e=document.createElement('a-sphere');
+      e.setAttribute('radius','0.35');
+      e.setAttribute('scale','1 .12 1');
+      e.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' '+(SEABED+0.05)+' '+(Math.cos(a)*r).toFixed(1));
+      e.setAttribute('material','color:'+c+';roughness:.6;emissive:'+c+';emissiveIntensity:.3');
+      W2.appendChild(e);
     }
 
-    // TORTUE x2
+    // Tortue GLB x2
     [0,Math.PI].forEach(function(ph,i){
       var e=document.createElement('a-gltf-model');
-      e.setAttribute('src','#turtleGLB');
-      e.setAttribute('scale','3 3 3');
+      e.setAttribute('src','#turtleGLB');e.setAttribute('scale','3 3 3');
       e.classList.add('turtle-anim');
-      e.dataset.tPhase=ph.toFixed(2);e.dataset.tR='12';
+      e.dataset.tPhase=ph.toFixed(2);e.dataset.tR='14';
       e.dataset.tDepth='-3';e.dataset.tSpeed='.06';
       W2.appendChild(e);
     });
 
-    // REQUIN x1
-    var sh=document.createElement('a-gltf-model');
-    sh.setAttribute('src','#sharkGLB');sh.setAttribute('scale','4 4 4');
+    // Requin — géo simple (pas de GLB pour éviter crash)
+    var sh=document.createElement('a-entity');
+    var shBody=document.createElement('a-sphere');
+    shBody.setAttribute('radius','1.5');shBody.setAttribute('scale','3.5 .65 .8');
+    shBody.setAttribute('material','color:#607080;roughness:.6');
+    sh.appendChild(shBody);
     sh.classList.add('shark-anim');
-    sh.dataset.sPhase='0';sh.dataset.sR='30';sh.dataset.sDepth='-5';sh.dataset.sSpeed='.03';
+    sh.dataset.sPhase='0';sh.dataset.sR='35';sh.dataset.sDepth='-5';sh.dataset.sSpeed='.03';
     W2.appendChild(sh);
 
-    // DAUPHIN x1
-    var dol=document.createElement('a-gltf-model');
-    dol.setAttribute('src','#dolphinGLB');dol.setAttribute('scale','3 3 3');
-    dol.classList.add('shark-anim');
-    dol.dataset.sPhase='3.14';dol.dataset.sR='20';dol.dataset.sDepth='-2';dol.dataset.sSpeed='.05';
-    W2.appendChild(dol);
-
-    // POISSONS — 15 instances, 2 modèles
-    for(var i=0;i<15;i++){
-      var fish=document.createElement('a-gltf-model');
-      fish.setAttribute('src',i%2===0?'#lionfishGLB':'#dolphinGLB');
-      fish.setAttribute('scale','1.5 1.5 1.5');
+    // Poissons — géo simple sphère+cône
+    for(var i=0;i<20;i++){
+      var fish=document.createElement('a-entity');
+      var fc=['ff8800','ff0044','00ccff','ffff00','ff44aa','88ffcc'][i%6];
+      var fr=0.12+Math.random()*0.18;
+      var fb=document.createElement('a-sphere');
+      fb.setAttribute('radius',fr.toFixed(3));
+      fb.setAttribute('material','color:#'+fc+';emissive:#'+fc+';emissiveIntensity:.4');
+      fish.appendChild(fb);
       fish.classList.add('fish-anim');
-      fish.dataset.fishPhase=(i/15*Math.PI*2).toFixed(3);
-      fish.dataset.fishR=(4+Math.random()*18).toFixed(1);
-      fish.dataset.fishDepth=(-2-Math.random()*4).toFixed(1);
+      fish.dataset.fishPhase=(i/20*Math.PI*2).toFixed(3);
+      fish.dataset.fishR=(4+Math.random()*20).toFixed(1);
+      fish.dataset.fishDepth=(-1.5-Math.random()*5).toFixed(1);
       fish.dataset.fishSpeed=(.25+Math.random()*.35).toFixed(3);
-      fish.dataset.fishOffX=((Math.random()-.5)*25).toFixed(1);
-      fish.dataset.fishOffZ=((Math.random()-.5)*25).toFixed(1);
+      fish.dataset.fishOffX=((Math.random()-.5)*30).toFixed(1);
+      fish.dataset.fishOffZ=((Math.random()-.5)*30).toFixed(1);
       W2.appendChild(fish);
     }
   }
@@ -640,48 +634,43 @@ function initGame(){
     });
   })();
 
-    // Helper île
-  function makeIsland(CX,CZ,label,islandSrc,islandScale,palmCount,hutCount){
-    var GY=0.1;
-    var R=50;
-    mk('cylinder',{radius:R,height:'.15',position:CX+' 0 '+CZ,material:'color:#f5e8b0;roughness:.9'});
-    mk('cylinder',{radius:R,height:'3.0',position:CX+' -1.5 '+CZ,material:'color:#ddd090;roughness:.95'});
+    // ══ ÎLES SECONDAIRES — géométrie pure, léger ══
+  function makeIsle(CX,CZ,label,col,palmN,hutN){
+    var GY=0.1,R=48;
+    mk('cylinder',{radius:R,height:'.12',position:CX+' .01 '+CZ,material:'color:#f0e090;roughness:.9',shadow:'receive:true'});
+    mk('cylinder',{radius:20,height:'.14',position:CX+' .02 '+CZ,material:'color:'+col+';roughness:.85'});
+    mk('cylinder',{radius:R,height:'3.0',position:CX+' -1.5 '+CZ,material:'color:#d8c880;roughness:.95'});
     addPlatform(CX,CZ,GY,R-1,R-1);
     islandDefs.push({cx:CX,cz:CZ,y:GY,label:label});
-    // GLB île — chargé une fois, réutilisé
-    mk('gltf-model',{src:islandSrc,position:CX+' 0 '+CZ,scale:islandScale});
-    // Palmiers — max 4 pour éviter crash
-    var pmax=Math.min(palmCount,4);
-    for(var i=0;i<pmax;i++){
-      var a=i/pmax*Math.PI*2,r=15+Math.random()*18;
+    // Palmiers GLB — max 4
+    for(var i=0;i<Math.min(palmN,4);i++){
+      var a=i/Math.min(palmN,4)*Math.PI*2,r=16+i*3;
       mk('gltf-model',{src:'#palmGLB',
-        position:(CX+Math.sin(a)*r).toFixed(1)+' '+GY+' '+(CZ+Math.cos(a)*r).toFixed(1),
+        position:(CX+Math.sin(a)*r).toFixed(1)+' 0 '+(CZ+Math.cos(a)*r).toFixed(1),
         rotation:'0 '+(i*90)+' 0',scale:'5 5 5'});
     }
-    // Huttes
-    for(var i=0;i<hutCount;i++){
-      var a=i/Math.max(hutCount,1)*Math.PI*2+0.5,r=10+i*5;
+    // Huttes GLB — max 2
+    for(var i=0;i<Math.min(hutN,2);i++){
+      var a=i*Math.PI+0.8,r=10;
       var hx=(CX+Math.sin(a)*r).toFixed(1),hz=(CZ+Math.cos(a)*r).toFixed(1);
-      mk('gltf-model',{src:'#hutGLB',position:hx+' 0 '+hz,
-        rotation:'0 '+(i*120)+' 0',scale:'12 12 12'});
+      mk('gltf-model',{src:'#hutGLB',position:hx+' 0 '+hz,rotation:'0 '+(i*180)+' 0',scale:'12 12 12'});
       addWall(parseFloat(hx),parseFloat(hz),5,6,GY);
     }
-    // 2 rochers max
-    for(var i=0;i<2;i++){
-      var a=i*Math.PI,r=22+i*5;
-      mk('gltf-model',{src:'#rockLargeGLB',
-        position:(CX+Math.sin(a)*r).toFixed(1)+' 0 '+(CZ+Math.cos(a)*r).toFixed(1),
-        rotation:'0 '+(i*180)+' 0',scale:'5 5 5'});
+    // Rochers — géométrie pure, pas de GLB
+    for(var i=0;i<3;i++){
+      var ra=i/3*Math.PI*2,rr=22+i*4;
+      mk('sphere',{radius:(2+i*.5).toFixed(1),
+        position:(CX+Math.sin(ra)*rr).toFixed(1)+' 0.5 '+(CZ+Math.cos(ra)*rr).toFixed(1),
+        scale:'1 .5 1',material:'color:#7a6a50;roughness:.95'});
     }
   }
-
-  makeIsland(-165,-140,'ILE VOLCANIQUE','#island2GLB','7 7 7',6,2);
-  makeIsland(165,-125,'ILE TROPICALE','#emptyIslandGLB','6 6 6',5,1);
-  makeIsland(0,-220,'ILE NORD','#islandGLB','1 1 1',4,2);
-  makeIsland(-220,50,'ILE OUEST','#emptyIslandGLB','5 5 5',5,1);
-  makeIsland(220,80,'ILE EST','#island2GLB','6 6 6',4,2);
-  makeIsland(100,-300,'ILE LOINTAINE','#islandGLB','1 1 1',6,3);
-  makeIsland(-300,-200,'ILE CACHEE','#emptyIslandGLB','5 5 5',4,1);
+  makeIsle(-165,-140,'ILE VOLCANIQUE','#4a7a20',4,2);
+  makeIsle(165,-125,'ILE TROPICALE','#5aaa28',4,1);
+  makeIsle(0,-220,'ILE NORD','#3a9a18',3,1);
+  makeIsle(-220,50,'ILE OUEST','#6aaa30',3,1);
+  makeIsle(220,80,'ILE EST','#4a8a22',3,2);
+  makeIsle(100,-300,'ILE LOINTAINE','#3a7a18',3,1);
+  makeIsle(-300,-200,'ILE CACHEE','#5a9a25',3,1);
 
   makeBridge(62,1.5,0,119,1.5,-125);
   makeBridge(0,1.5,-66,-112,1.5,-140);
@@ -884,13 +873,18 @@ function initGame(){
     // Ombre au sol sous Stitch
     if(shadowEl){
       var gy2=getGroundY(P.x,P.z);
-      if(gy2!==null&&P.state!=='diving'){
-        var shadowY=gy2+0.025;
-        var shadowScale=Math.max(0.2,1.0-Math.max(0,(P.y-gy2-P.yOff))*0.12);
-        var shadowOp=Math.max(0,0.38-Math.max(0,(P.y-gy2-P.yOff))*0.05);
-        shadowEl.setAttribute('position',P.x.toFixed(2)+' '+shadowY.toFixed(3)+' '+P.z.toFixed(2));
-        shadowEl.setAttribute('scale',shadowScale.toFixed(3)+' 1 '+shadowScale.toFixed(3));
-        shadowEl.setAttribute('material','color:#000;transparent:true;opacity:'+shadowOp.toFixed(3)+';shader:flat');
+      if(gy2!==null&&P.state!=='diving'&&P.state!=='surface'){
+        var heightAbove=Math.max(0,P.y-gy2-P.yOff);
+        var shadowY=gy2+0.03;
+        // Plus haut = ombre plus petite et plus transparente
+        var shadowScale=Math.max(0.15,1.1-heightAbove*0.08);
+        var shadowOp=Math.max(0,0.50-heightAbove*0.06);
+        // Ombre légèrement décalée selon direction du soleil
+        var shadowX=P.x+heightAbove*0.3;
+        var shadowZ=P.z-heightAbove*0.1;
+        shadowEl.setAttribute('position',shadowX.toFixed(2)+' '+shadowY.toFixed(3)+' '+shadowZ.toFixed(2));
+        shadowEl.setAttribute('scale',shadowScale.toFixed(3)+' 1 '+(shadowScale*0.7).toFixed(3));
+        shadowEl.setAttribute('material','color:#1a0a00;transparent:true;opacity:'+shadowOp.toFixed(3)+';shader:flat');
         shadowEl.setAttribute('visible','true');
       } else {
         shadowEl.setAttribute('visible','false');
