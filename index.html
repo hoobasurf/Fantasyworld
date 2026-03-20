@@ -53,8 +53,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <a-asset-item id="cartGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Street%20Vendor%20Cart.glb" crossorigin="anonymous"></a-asset-item>
   <a-asset-item id="sundaeGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb" crossorigin="anonymous"></a-asset-item>
   <a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb" crossorigin="anonymous"></a-asset-item>
-  <!-- Déco île -->
-  <a-asset-item id="hibiscusGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hibiscus%20flower.glb" crossorigin="anonymous"></a-asset-item>
+
 </a-assets>
 
 <a-sky id="skyEl" color="#4ab8f0"></a-sky>
@@ -751,32 +750,7 @@ function initGame(){
   buildUnderwaterWorld();
   buildMission();
 
-  // Charger personnages en différé (gros fichiers)
-  setTimeout(function(){
-    var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
-    var chars=[
-      {src:BASE+'nani_from_lilo_and_stitch.glb',pos:'-12 0 -8',rot:'0 180 0',sc:'1.5'},
-      {src:BASE+'jumba.glb',pos:'15 0 -8',rot:'0 220 0',sc:'1.5'},
-      {src:BASE+'smug_lilo.glb',pos:'-5 0 10',rot:'0 45 0',sc:'1.5'},
-      {src:BASE+'pleakley__lilo__stitch.glb',pos:'8 0 12',rot:'0 160 0',sc:'1.5'},
-    ];
-    chars.forEach(function(c){
-      var e=document.createElement('a-gltf-model');
-      e.setAttribute('src',c.src);
-      e.setAttribute('position',c.pos);
-      e.setAttribute('rotation',c.rot);
-      e.setAttribute('scale',c.sc+' '+c.sc+' '+c.sc);
-      document.getElementById('world').appendChild(e);
-    });
-    // Nani près du chariot
-    var nani=document.createElement('a-gltf-model');
-    nani.setAttribute('src',BASE+'nani_from_lilo_and_stitch.glb');
-    nani.setAttribute('id','paulo');
-    nani.setAttribute('position','25 0 54');
-    nani.setAttribute('rotation','0 180 0');
-    nani.setAttribute('scale','1.5 1.5 1.5');
-    document.getElementById('world').appendChild(nani);
-  }, 3000);
+
 
   function buildMission(){
     // ── CHARIOT VENDEUR GLB ──
@@ -806,11 +780,7 @@ function initGame(){
     // Smug Lilo chargée en différé
     // Pleakley chargé en différé
 
-    // ── HIBISCUS GLB partout ──
-    [[15,35],[25,20],[-18,30],[-30,15],[40,10],[-40,5],[20,-15],[-25,-10]].forEach(function(p){
-      mk('gltf-model',{src:'#hibiscusGLB',position:p[0]+' 0 '+p[1],
-        rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',scale:'2 2 2'});
-    });
+
 
     // Mission état
     window.MISSION={active:false,count:0,timer:0,done:false};
