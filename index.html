@@ -28,6 +28,13 @@
 #caustic-overlay{position:fixed;inset:0;pointer-events:none;z-index:19;opacity:0;transition:opacity .6s;
 background:repeating-linear-gradient(45deg,rgba(0,200,255,0.05) 0px,rgba(0,200,255,0) 8px,rgba(0,150,200,0.04) 12px,rgba(0,200,255,0) 20px),
 repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px,rgba(0,200,255,0.05) 15px,rgba(0,255,200,0) 24px)}
+/* MISSION */
+#mission-truck{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(0,8,22,.95);border:2px solid #ffcc00;border-radius:16px;padding:12px 18px;font-family:Georgia,serif;color:#fff;text-align:center;max-width:300px}
+#mission-truck h3{color:#ffcc00;font-size:13px;margin-bottom:6px}
+#mission-truck p{font-size:10px;line-height:1.5;margin-bottom:10px;color:#ddd}
+#mission-truck button{background:#ff6600;border:none;color:#fff;padding:6px 16px;border-radius:8px;font-size:11px;cursor:pointer;margin:3px}
+#mission-truck button.decline{background:#555}
+#mission-hud{position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(0,0,0,.8);border:1.5px solid #ffcc00;border-radius:12px;padding:6px 14px;font-family:Georgia,serif;font-size:11px;color:#ffcc00;text-align:center;pointer-events:none}
 #dive-hint{position:fixed;bottom:148px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(0,10,30,.88);border:1.5px solid rgba(0,220,200,.5);border-radius:12px;padding:5px 14px;color:#88ffee;font-size:10px;font-family:Georgia,serif;display:none;white-space:nowrap;pointer-events:none}
 </style>
 
@@ -129,6 +136,15 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 </div>
 
 <div id="toast"></div>
+<div id="mission-truck">
+  <h3>🚚 Camion de Fruits</h3>
+  <p id="mission-text">Salut ! Je suis Paulo le vendeur de fruits.<br>J'ai perdu mes <b>50 ananas</b> sur la plage !<br>Tu peux m'aider à les récupérer en <b>90 secondes</b> ?</p>
+  <button onclick="startMission()">✅ Oui, j'aide !</button>
+  <button class="decline" onclick="closeMissionDialog()">❌ Non merci</button>
+</div>
+<div id="mission-hud">
+  🍍 <span id="mission-count">0</span>/50 ananas &nbsp;|&nbsp; ⏱ <span id="mission-timer">90</span>s
+</div>
 
 <!-- Mini-carte orientation -->
 
@@ -622,8 +638,8 @@ function initGame(){
     // Montagne GLB
     var mtnEl=document.createElement('a-gltf-model');
     mtnEl.setAttribute('src','#mountainGLB');
-    mtnEl.setAttribute('position','0 0 -15');
-    mtnEl.setAttribute('scale','12 12 12');
+    mtnEl.setAttribute('position','0 0 -20');
+    mtnEl.setAttribute('scale','5 5 5');
     mtnEl.setAttribute('shadow','cast:true');
     mtnEl.addEventListener('model-error',function(){
       // Fallback si Mountain.glb ne charge pas
@@ -724,6 +740,71 @@ function initGame(){
 
   // Bridges removed - islands too far
   buildUnderwaterWorld();
+  buildMission();
+
+  function buildMission(){
+    // ── CAMION DE FRUITS sur la plage ──
+    // Corps camion
+    mk('box',{width:'5',height:'2.5',depth:'3',position:'30 1.25 55',material:'color:#cc2200;roughness:.7',shadow:'cast:true'});
+    mk('box',{width:'2.5',height:'2',depth:'3',position:'27 1.0 55',material:'color:#aa1800;roughness:.7',shadow:'cast:true'});
+    // Roues
+    [[-32.2,55],[-27.8,55],[-32.2,53.5],[-27.8,53.5]].forEach(function(w){
+      mk('cylinder',{radius:'.7',height:'.4',position:w[0]+' 0.3 '+w[1],rotation:'0 0 90',material:'color:#222;roughness:.9'});
+    });
+    // Ananas décoratifs sur le camion
+    for(var i=0;i<8;i++){
+      mk('sphere',{radius:'.4',position:(29+Math.random()*2).toFixed(1)+' 2.6 '+(54+Math.random()*2).toFixed(1),material:'color:#ffcc00;roughness:.6'});
+      mk('cone',{'radius-bottom':'.15','radius-top':'.01',height:'.5',position:(29+Math.random()*2).toFixed(1)+' 3.0 '+(54+Math.random()*2).toFixed(1),material:'color:#2a8a10;roughness:.7'});
+    }
+    // Paulo le vendeur (PNJ)
+    var paulo=mk('entity',{id:'paulo',position:'26 0 55'});
+    mk('cylinder',{'radius-bottom':'.22','radius-top':'.2',height:'1.0',position:'0 .5 0',material:'color:#ff8800;roughness:.8'},paulo);
+    mk('sphere',{radius:'.25',position:'0 1.12 0',material:'color:#f4a060;roughness:.8'},paulo);
+    mk('sphere',{radius:'.22',scale:'1 .5 1',position:'0 1.2 0',material:'color:#3a1a00;roughness:.9'},paulo);
+    paulo.setAttribute('class','clickable');
+
+    // ── ANANAS à ramasser sur la plage ──
+    window.pineappleEls=[];
+    for(var i=0;i<50;i++){
+      var a=Math.random()*Math.PI*2,r=10+Math.random()*55;
+      var px=Math.sin(a)*r,pz=Math.cos(a)*r+30;
+      // Rester dans l'île
+      if(Math.sqrt(px*px+pz*pz)>75) continue;
+      var pa=mk('entity',{class:'pineapple',position:px.toFixed(1)+' 0.35 '+pz.toFixed(1)});
+      mk('sphere',{radius:'.28',material:'color:#ffcc00;roughness:.6;emissive:#ffaa00;emissiveIntensity:.2'},pa);
+      mk('cone',{'radius-bottom':'.1','radius-top':'.01',height:'.38',position:'0 .3 0',material:'color:#2a8a10;roughness:.7'},pa);
+      window.pineappleEls.push(pa);
+    }
+
+    // Mission état
+    window.MISSION={active:false,count:0,timer:0,done:false};
+
+    // Clic Paulo → ouvre dialogue
+    document.querySelector('a-scene').addEventListener('click',function(e){
+      var el=e.target;
+      if(!el) return;
+      if(el.id==='paulo'||el.closest&&el.closest('#paulo')){
+        if(!window.MISSION.active&&!window.MISSION.done){
+          document.getElementById('mission-truck').style.display='block';
+        }
+      }
+      if(el.getAttribute&&el.getAttribute('class')=='totem-plaque'){
+        var mo=document.getElementById('map-overlay');
+        mo.style.display='flex'; drawMap();
+      }
+    });
+  }
+
+  window.closeMissionDialog=function(){
+    document.getElementById('mission-truck').style.display='none';
+  };
+
+  window.startMission=function(){
+    document.getElementById('mission-truck').style.display='none';
+    window.MISSION.active=true;window.MISSION.count=0;window.MISSION.timer=90;
+    document.getElementById('mission-hud').style.display='block';
+    toast('🍍 Mission démarrée ! Ramasse 50 ananas !',3000);
+  };
 
   // ══ STITCH ══
   var SFX='_Stitch_Armature',BONES={},BONE_REST={},ANIM_T=0,stitchMixer=null,nativeClip=null,nativeAction=null;
@@ -878,8 +959,8 @@ function initGame(){
       P.y=WATER_SURFACE+Math.sin(P.swimBob*2.2)*.06;
       P.vy=0;P.onGround=true;
 
-      // Remonter sur l'île — uniquement si on touche vraiment le bord
-      if(gy!==null&&gy>WATER_SURFACE+0.2&&P.y>=gy+P.yOff-0.3){
+      // Remonter sur l'île — seulement si on s'approche du bord horizontalement
+      if(gy!==null&&gy>WATER_SURFACE+0.2&&gy<WATER_SURFACE+0.8){
         P.state='ground';P.y=gy+P.yOff;P.vy=0;
       }
       // Plonger
@@ -904,14 +985,14 @@ function initGame(){
       if(P.y>=WATER_SURFACE-.05){P.y=WATER_SURFACE;P.state='surface';P.vy=0;toast('Stitch reprend son souffle ! 💨',2000);}
       if(P.y<-11.5){P.y=-11.5;P.vy=0;}
       if(P.breath<=0){P.vy=7;P.state='surface';P.breath=25;toast('Plus d air ! 😮‍💨',2000);}
-      // Toucher le sol — seulement si physiquement au niveau du sol
-      if(gy!==null&&gy>WATER_SURFACE+0.3&&P.y>=gy+P.yOff-0.15){
+      // Remonter sur l'île seulement si on nage VERS le haut et qu'on touche le bord
+      if(gy!==null&&gy>WATER_SURFACE+0.3&&P.y>=gy+P.yOff-0.05&&P.vy>=0){
         P.y=gy+P.yOff;P.vy=0;P.state='ground';
       }
     }
 
     // Collisions murs
-    var PRAD=0.8,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
+    var PRAD=1.0,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
     for(var wi=0;wi<walls.length;wi++){
       var w=walls[wi];if(P.y-P.yOff>w.y0+w.h)continue;
       var inX=nx+PRAD>w.x1&&nx-PRAD<w.x2,inZ=nz+PRAD>w.z1&&nz-PRAD<w.z2;
@@ -1060,6 +1141,40 @@ function initGame(){
     } else {
       bubCont.style.display='none';
       if(bubCont.children.length>0)bubCont.innerHTML='';
+    }
+
+    // ── MISSION — ramasser les ananas et timer ──
+    if(window.MISSION&&window.MISSION.active){
+      window.MISSION.timer-=dt;
+      if(window.MISSION.timer<=0){
+        window.MISSION.active=false;
+        document.getElementById('mission-hud').style.display='none';
+        var txt=window.MISSION.count>=50?'🎉 Bravo ! Tu as récupéré tous les ananas !':'😢 Temps écoulé ! '+window.MISSION.count+'/50 ananas récupérés.';
+        var md=document.getElementById('mission-truck');
+        document.getElementById('mission-text').innerHTML=txt+(window.MISSION.count>=50?'<br><b>Paulo te remercie !</b>':'<br>Retente ta chance !');
+        md.querySelector('button').textContent=window.MISSION.count>=50?'🎊 Super !':'🔄 Réessayer';
+        md.querySelector('button').onclick=window.MISSION.count>=50?window.closeMissionDialog:function(){window.MISSION={active:false,count:0,timer:0,done:false};window.pineappleEls.forEach(function(p){p.setAttribute('visible','true');});window.closeMissionDialog();};
+        md.querySelector('.decline').style.display='none';
+        md.style.display='block';
+        window.MISSION.done=window.MISSION.count>=50;
+      }
+      document.getElementById('mission-timer').textContent=Math.ceil(window.MISSION.timer);
+      document.getElementById('mission-count').textContent=window.MISSION.count;
+      // Détecter collision ananas
+      if(window.pineappleEls){
+        window.pineappleEls.forEach(function(pa){
+          if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false') return;
+          var pp=pa.getAttribute('position');
+          if(!pp) return;
+          var dx=P.x-parseFloat(pp.x||pp.split(' ')[0]);
+          var dz=P.z-parseFloat(pp.z||pp.split(' ')[2]);
+          if(dx*dx+dz*dz<2.5){
+            pa.setAttribute('visible','false');
+            window.MISSION.count++;
+            toast('🍍 +1 ananas !',600);
+          }
+        });
+      }
     }
 
     // Zone HUD
