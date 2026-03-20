@@ -53,11 +53,6 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <a-asset-item id="cartGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Street%20Vendor%20Cart.glb" crossorigin="anonymous"></a-asset-item>
   <a-asset-item id="sundaeGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb" crossorigin="anonymous"></a-asset-item>
   <a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb" crossorigin="anonymous"></a-asset-item>
-  <!-- Personnages Lilo & Stitch -->
-  <a-asset-item id="naniGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb" crossorigin="anonymous"></a-asset-item>
-  <a-asset-item id="jumbaGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/jumba.glb" crossorigin="anonymous"></a-asset-item>
-  <a-asset-item id="smugliloGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb" crossorigin="anonymous"></a-asset-item>
-  <a-asset-item id="pleakleyGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb" crossorigin="anonymous"></a-asset-item>
   <!-- Déco île -->
   <a-asset-item id="hibiscusGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hibiscus%20flower.glb" crossorigin="anonymous"></a-asset-item>
 </a-assets>
@@ -756,6 +751,33 @@ function initGame(){
   buildUnderwaterWorld();
   buildMission();
 
+  // Charger personnages en différé (gros fichiers)
+  setTimeout(function(){
+    var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
+    var chars=[
+      {src:BASE+'nani_from_lilo_and_stitch.glb',pos:'-12 0 -8',rot:'0 180 0',sc:'1.5'},
+      {src:BASE+'jumba.glb',pos:'15 0 -8',rot:'0 220 0',sc:'1.5'},
+      {src:BASE+'smug_lilo.glb',pos:'-5 0 10',rot:'0 45 0',sc:'1.5'},
+      {src:BASE+'pleakley__lilo__stitch.glb',pos:'8 0 12',rot:'0 160 0',sc:'1.5'},
+    ];
+    chars.forEach(function(c){
+      var e=document.createElement('a-gltf-model');
+      e.setAttribute('src',c.src);
+      e.setAttribute('position',c.pos);
+      e.setAttribute('rotation',c.rot);
+      e.setAttribute('scale',c.sc+' '+c.sc+' '+c.sc);
+      document.getElementById('world').appendChild(e);
+    });
+    // Nani près du chariot
+    var nani=document.createElement('a-gltf-model');
+    nani.setAttribute('src',BASE+'nani_from_lilo_and_stitch.glb');
+    nani.setAttribute('id','paulo');
+    nani.setAttribute('position','25 0 54');
+    nani.setAttribute('rotation','0 180 0');
+    nani.setAttribute('scale','1.5 1.5 1.5');
+    document.getElementById('world').appendChild(nani);
+  }, 3000);
+
   function buildMission(){
     // ── CHARIOT VENDEUR GLB ──
     mk('gltf-model',{src:'#cartGLB',position:'30 0 55',scale:'2 2 2',shadow:'cast:true'});
@@ -780,9 +802,9 @@ function initGame(){
     }
 
     // ── PERSONNAGES sur l'île ──
-    mk('gltf-model',{src:'#jumbaGLB',position:'15 0 -8',rotation:'0 220 0',scale:'1.5 1.5 1.5',shadow:'cast:true'});
-    mk('gltf-model',{src:'#smugliloGLB',position:'-10 0 5',rotation:'0 45 0',scale:'1.5 1.5 1.5',shadow:'cast:true'});
-    mk('gltf-model',{src:'#pleakleyGLB',position:'8 0 12',rotation:'0 160 0',scale:'1.5 1.5 1.5',shadow:'cast:true'});
+    // Jumba chargé en différé
+    // Smug Lilo chargée en différé
+    // Pleakley chargé en différé
 
     // ── HIBISCUS GLB partout ──
     [[15,35],[25,20],[-18,30],[-30,15],[40,10],[-40,5],[20,-15],[-25,-10]].forEach(function(p){
