@@ -102,15 +102,15 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 
 <!-- Stitch -->
 
-<a-entity id="stitch-root" position="0 2 60">
+<a-entity id="stitch-root" position="0 2 55">
   <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false"></a-gltf-model>
 </a-entity>
 <!-- Ombre blob de Stitch au sol -->
-<a-circle id="stitch-shadow" radius="0.6" rotation="-90 0 0" position="0 0.03 60" segments="8" material="color:#000000;transparent:true;opacity:0.0"></a-circle>
+<a-circle id="stitch-shadow" radius="0.6" rotation="-90 0 0" position="0 0.03 55" segments="8" material="color:#000000;transparent:true;opacity:0.0"></a-circle>
 
 <!-- Caméra -->
 
-<a-entity id="cam-rig" position="0 5 66">
+<a-entity id="cam-rig" position="0 4 61">
   <a-camera id="mainCam" look-controls="enabled:false" wasd-controls="enabled:false" fov="62" near=".01" far="700"></a-camera>
 </a-entity>
 </a-scene>
@@ -876,7 +876,7 @@ function initGame(){
   var WATER_ENTER_THRESHOLD=0.25; // pieds dans l'eau à partir de ce niveau au-dessus de WATER_SURFACE
 
   var MAX_BREATH=100,BREATH_LOSE=4,BREATH_GAIN=30;
-  var P={x:0,y:1.5,z:60,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,
+  var P={x:0,y:1.5,z:55,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,
          state:'ground',breath:MAX_BREATH,swimBob:0};
   var CAM={yaw:Math.PI,pitch:.22,dist:6.5};
   var jLX=0,jLY=0,jid=-1,rjLX=0,rjLY=0,rjid=-1,KY={},sprint=false;
