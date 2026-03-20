@@ -49,7 +49,17 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <a-asset-item id="coralGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set.glb"></a-asset-item>
   <a-asset-item id="turtleGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Turtle.glb"></a-asset-item>
   <a-asset-item id="mountainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Mountain.glb" crossorigin="anonymous"></a-asset-item>
-  <a-asset-item id="moutainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Mountain.glb" crossorigin="anonymous"></a-asset-item>
+  <!-- Mission -->
+  <a-asset-item id="cartGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Street%20Vendor%20Cart.glb" crossorigin="anonymous"></a-asset-item>
+  <a-asset-item id="sundaeGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb" crossorigin="anonymous"></a-asset-item>
+  <a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb" crossorigin="anonymous"></a-asset-item>
+  <!-- Personnages Lilo & Stitch -->
+  <a-asset-item id="naniGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb" crossorigin="anonymous"></a-asset-item>
+  <a-asset-item id="jumbaGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/jumba.glb" crossorigin="anonymous"></a-asset-item>
+  <a-asset-item id="smugliloGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb" crossorigin="anonymous"></a-asset-item>
+  <a-asset-item id="pleakleyGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb" crossorigin="anonymous"></a-asset-item>
+  <!-- Déco île -->
+  <a-asset-item id="hibiscusGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hibiscus%20flower.glb" crossorigin="anonymous"></a-asset-item>
 </a-assets>
 
 <a-sky id="skyEl" color="#4ab8f0"></a-sky>
@@ -642,10 +652,14 @@ function initGame(){
     mtnEl.setAttribute('scale','5 5 5');
     mtnEl.setAttribute('shadow','cast:true');
     mtnEl.addEventListener('model-error',function(){
-      // Fallback si Mountain.glb ne charge pas
-      console.log('Mountain.glb failed, using fallback');
-      mk('cone',{'radius-bottom':'20','radius-top':'2',height:'25',position:'0 12 -15',material:'color:#6a7a50;roughness:.9',shadow:'cast:true'});
-      mk('sphere',{radius:'15',position:'0 8 -15',scale:'1 .4 1',material:'color:#4a8a20;roughness:.85'});
+      // Fallback montagne géométrique belle
+      var mpos='0 0 -20';
+      mk('cone',{'radius-bottom':'18','radius-top':'1',height:'20',position:'0 10 -20',material:'color:#7a6a50;roughness:.92',shadow:'cast:true'});
+      mk('cone',{'radius-bottom':'12','radius-top':'1',height:'14',position:'-8 7 -25',material:'color:#6a5a40;roughness:.93',shadow:'cast:true'});
+      mk('cone',{'radius-bottom':'10','radius-top':'1',height:'12',position:'7 6 -28',material:'color:#6a5a40;roughness:.93',shadow:'cast:true'});
+      mk('sphere',{radius:'10',position:'0 14 -20',scale:'1.2 .5 1',material:'color:#3a7a14;roughness:.85',shadow:'cast:true'});
+      mk('sphere',{radius:'7',position:'-8 11 -25',scale:'1 .45 1',material:'color:#4a8a1a;roughness:.85',shadow:'cast:true'});
+      mk('sphere',{radius:'6',position:'7 10 -28',scale:'1 .4 1',material:'color:#3a7a14;roughness:.85',shadow:'cast:true'});
     });
     W.appendChild(mtnEl);
 
@@ -666,6 +680,7 @@ function initGame(){
      [12,20],[-14,18],[28,5],[-30,5]].forEach(function(p,i){
       mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],
         rotation:'0 '+(i*26)+' 0',scale:'5 5 5',shadow:'cast:true'});
+      addWall(p[0],p[1],1.2,8,GY); // collision tronc palmier
     });
 
     // ── VÉGÉTATION dense près du spawn ──
@@ -743,56 +758,44 @@ function initGame(){
   buildMission();
 
   function buildMission(){
-    // ── CAMION DE FRUITS sur la plage ──
-    // Corps camion
-    mk('box',{width:'5',height:'2.5',depth:'3',position:'30 1.25 55',material:'color:#cc2200;roughness:.7',shadow:'cast:true'});
-    mk('box',{width:'2.5',height:'2',depth:'3',position:'27 1.0 55',material:'color:#aa1800;roughness:.7',shadow:'cast:true'});
-    // Roues
-    [[-32.2,55],[-27.8,55],[-32.2,53.5],[-27.8,53.5]].forEach(function(w){
-      mk('cylinder',{radius:'.7',height:'.4',position:w[0]+' 0.3 '+w[1],rotation:'0 0 90',material:'color:#222;roughness:.9'});
-    });
-    // Ananas décoratifs sur le camion
-    for(var i=0;i<8;i++){
-      mk('sphere',{radius:'.4',position:(29+Math.random()*2).toFixed(1)+' 2.6 '+(54+Math.random()*2).toFixed(1),material:'color:#ffcc00;roughness:.6'});
-      mk('cone',{'radius-bottom':'.15','radius-top':'.01',height:'.5',position:(29+Math.random()*2).toFixed(1)+' 3.0 '+(54+Math.random()*2).toFixed(1),material:'color:#2a8a10;roughness:.7'});
-    }
-    // Paulo le vendeur (PNJ)
-    var paulo=mk('entity',{id:'paulo',position:'26 0 55'});
-    mk('cylinder',{'radius-bottom':'.22','radius-top':'.2',height:'1.0',position:'0 .5 0',material:'color:#ff8800;roughness:.8'},paulo);
-    mk('sphere',{radius:'.25',position:'0 1.12 0',material:'color:#f4a060;roughness:.8'},paulo);
-    mk('sphere',{radius:'.22',scale:'1 .5 1',position:'0 1.2 0',material:'color:#3a1a00;roughness:.9'},paulo);
-    paulo.setAttribute('class','clickable');
+    // ── CHARIOT VENDEUR GLB ──
+    mk('gltf-model',{src:'#cartGLB',position:'30 0 55',scale:'2 2 2',shadow:'cast:true'});
+    addWall(30,55,3,3,GY);
 
-    // ── ANANAS à ramasser sur la plage ──
+    // ── NANI comme vendeuse ──
+    mk('gltf-model',{id:'paulo',src:'#naniGLB',position:'25 0 54',rotation:'0 180 0',scale:'1.5 1.5 1.5',shadow:'cast:true'});
+
+    // ── GLACES à ramasser (Sundae GLB) ──
     window.pineappleEls=[];
     for(var i=0;i<50;i++){
-      var a=Math.random()*Math.PI*2,r=10+Math.random()*55;
-      var px=Math.sin(a)*r,pz=Math.cos(a)*r+30;
-      // Rester dans l'île
-      if(Math.sqrt(px*px+pz*pz)>75) continue;
-      var pa=mk('entity',{class:'pineapple',position:px.toFixed(1)+' 0.35 '+pz.toFixed(1)});
-      mk('sphere',{radius:'.28',material:'color:#ffcc00;roughness:.6;emissive:#ffaa00;emissiveIntensity:.2'},pa);
-      mk('cone',{'radius-bottom':'.1','radius-top':'.01',height:'.38',position:'0 .3 0',material:'color:#2a8a10;roughness:.7'},pa);
+      var a=i/50*Math.PI*2+Math.random()*.3, r=8+Math.random()*50;
+      var px=Math.sin(a)*r, pz=Math.cos(a)*r;
+      if(Math.sqrt(px*px+pz*pz)>72) continue;
+      var pa=document.createElement('a-gltf-model');
+      pa.setAttribute('src','#sundaeGLB');
+      pa.setAttribute('position',px.toFixed(1)+' 0 '+pz.toFixed(1));
+      pa.setAttribute('scale','0.8 0.8 0.8');
+      pa.classList.add('pineapple');
+      W.appendChild(pa);
       window.pineappleEls.push(pa);
     }
+
+    // ── PERSONNAGES sur l'île ──
+    mk('gltf-model',{src:'#jumbaGLB',position:'15 0 -8',rotation:'0 220 0',scale:'1.5 1.5 1.5',shadow:'cast:true'});
+    mk('gltf-model',{src:'#smugliloGLB',position:'-10 0 5',rotation:'0 45 0',scale:'1.5 1.5 1.5',shadow:'cast:true'});
+    mk('gltf-model',{src:'#pleakleyGLB',position:'8 0 12',rotation:'0 160 0',scale:'1.5 1.5 1.5',shadow:'cast:true'});
+
+    // ── HIBISCUS GLB partout ──
+    [[15,35],[25,20],[-18,30],[-30,15],[40,10],[-40,5],[20,-15],[-25,-10]].forEach(function(p){
+      mk('gltf-model',{src:'#hibiscusGLB',position:p[0]+' 0 '+p[1],
+        rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',scale:'2 2 2'});
+    });
 
     // Mission état
     window.MISSION={active:false,count:0,timer:0,done:false};
 
-    // Clic Paulo → ouvre dialogue
-    document.querySelector('a-scene').addEventListener('click',function(e){
-      var el=e.target;
-      if(!el) return;
-      if(el.id==='paulo'||el.closest&&el.closest('#paulo')){
-        if(!window.MISSION.active&&!window.MISSION.done){
-          document.getElementById('mission-truck').style.display='block';
-        }
-      }
-      if(el.getAttribute&&el.getAttribute('class')=='totem-plaque'){
-        var mo=document.getElementById('map-overlay');
-        mo.style.display='flex'; drawMap();
-      }
-    });
+    // Interaction Paulo détectée par proximité dans la boucle de jeu
+    window._pauloDialogShown=false;
   }
 
   window.closeMissionDialog=function(){
@@ -1143,13 +1146,25 @@ function initGame(){
       if(bubCont.children.length>0)bubCont.innerHTML='';
     }
 
+    // ── PROXIMITÉ PAULO — afficher dialogue si proche ──
+    if(window.MISSION&&!window.MISSION.active&&!window.MISSION.done){
+      var pdx=P.x-26,pdz=P.z-55;
+      var pDist=Math.sqrt(pdx*pdx+pdz*pdz);
+      if(pDist<4&&!window._pauloDialogShown){
+        window._pauloDialogShown=true;
+        document.getElementById('mission-truck').style.display='block';
+      } else if(pDist>6){
+        window._pauloDialogShown=false;
+      }
+    }
+
     // ── MISSION — ramasser les ananas et timer ──
     if(window.MISSION&&window.MISSION.active){
       window.MISSION.timer-=dt;
       if(window.MISSION.timer<=0){
         window.MISSION.active=false;
         document.getElementById('mission-hud').style.display='none';
-        var txt=window.MISSION.count>=50?'🎉 Bravo ! Tu as récupéré tous les ananas !':'😢 Temps écoulé ! '+window.MISSION.count+'/50 ananas récupérés.';
+        var txt=window.MISSION.count>=50?'🎉 Bravo ! Voici ton 🔫 pistolet à eau !':'😢 Temps écoulé ! '+window.MISSION.count+'/50 glaces récupérées.';
         var md=document.getElementById('mission-truck');
         document.getElementById('mission-text').innerHTML=txt+(window.MISSION.count>=50?'<br><b>Paulo te remercie !</b>':'<br>Retente ta chance !');
         md.querySelector('button').textContent=window.MISSION.count>=50?'🎊 Super !':'🔄 Réessayer';
@@ -1157,6 +1172,17 @@ function initGame(){
         md.querySelector('.decline').style.display='none';
         md.style.display='block';
         window.MISSION.done=window.MISSION.count>=50;
+        if(window.MISSION.done){
+          // Afficher pistolet à eau comme récompense
+          var gunEl=document.createElement('a-gltf-model');
+          gunEl.setAttribute('src','#watergunGLB');
+          gunEl.setAttribute('position',P.x+' '+(P.y+1.5)+' '+P.z);
+          gunEl.setAttribute('scale','3 3 3');
+          gunEl.setAttribute('rotation','0 '+(P.yaw*180/Math.PI)+' 0');
+          document.getElementById('world').appendChild(gunEl);
+          // Pistolet suit Stitch (décoratif)
+          window._gunEl=gunEl;
+        }
       }
       document.getElementById('mission-timer').textContent=Math.ceil(window.MISSION.timer);
       document.getElementById('mission-count').textContent=window.MISSION.count;
