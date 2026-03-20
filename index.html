@@ -87,7 +87,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false"></a-gltf-model>
 </a-entity>
 <!-- Ombre blob de Stitch au sol -->
-<a-plane id="stitch-shadow" width="1.2" height="0.8" rotation="-90 0 0" position="0 0.025 35" material="color:#000000;transparent:true;opacity:0.0;shader:flat"></a-plane>
+<a-circle id="stitch-shadow" radius="0.6" rotation="-90 0 0" position="0 0.03 145" segments="8" material="color:#000000;transparent:true;opacity:0.0"></a-circle>
 
 <!-- Caméra -->
 
@@ -643,18 +643,18 @@ function initGame(){
 
     // ── TOTEM au sommet de la colline ──
     // Socle
-    mk('cylinder',{radius:'2',height:'.4',position:'0 10 -30',material:'color:#8a6030;roughness:.9',shadow:'cast:true'});
+    mk('cylinder',{radius:'2',height:'.4',position:'0 26.5 -30',material:'color:#8a6030;roughness:.9',shadow:'cast:true'});
     // Poteau
-    mk('cylinder',{radius:'.35',height:'8',position:'0 13 -30',material:'color:#6a4010;roughness:.9',shadow:'cast:true'});
+    mk('cylinder',{radius:'.35',height:'8',position:'0 30 -30',material:'color:#6a4010;roughness:.9',shadow:'cast:true'});
     // Tête totem 1
-    mk('box',{width:'2',height:'2',depth:'1.2',position:'0 17 -30',material:'color:#cc6620;roughness:.7',shadow:'cast:true'});
-    mk('sphere',{radius:'.4',position:'-.6 17.2 -29.4',material:'color:#ffcc00;roughness:.5'});
-    mk('sphere',{radius:'.4',position:'.6 17.2 -29.4',material:'color:#ffcc00;roughness:.5'});
+    mk('box',{width:'2',height:'2',depth:'1.2',position:'0 34.2 -30',material:'color:#cc6620;roughness:.7',shadow:'cast:true'});
+    mk('sphere',{radius:'.4',position:'-.6 34.5 -29.4',material:'color:#ffcc00;roughness:.5'});
+    mk('sphere',{radius:'.4',position:'.6 34.5 -29.4',material:'color:#ffcc00;roughness:.5'});
     // Tête totem 2
-    mk('box',{width:'2.2',height:'2',depth:'1.2',position:'0 19 -30',material:'color:#aa4400;roughness:.7',shadow:'cast:true'});
-    mk('box',{width:'3',height:'.3',depth:'.8',position:'0 20 -30',material:'color:#cc6620;roughness:.7'});
+    mk('box',{width:'2.2',height:'2',depth:'1.2',position:'0 36 -30',material:'color:#aa4400;roughness:.7',shadow:'cast:true'});
+    mk('box',{width:'3',height:'.3',depth:'.8',position:'0 37 -30',material:'color:#cc6620;roughness:.7'});
     // Plaque orientation (cliquable)
-    var plaque=mk('box',{id:'totem-plaque',width:'3',height:'1.5',depth:'.2',position:'0 14.5 -29',material:'color:#f5dfa0;roughness:.6',shadow:'cast:true'});
+    var plaque=mk('box',{id:'totem-plaque',width:'3',height:'1.5',depth:'.2',position:'0 31 -29',material:'color:#f5dfa0;roughness:.6',shadow:'cast:true'});
     plaque.setAttribute('class','clickable');
 
     // ── PALMIERS — bien répartis sur toute l'île ──
@@ -893,10 +893,9 @@ function initGame(){
       P.y=WATER_SURFACE+Math.sin(P.swimBob*2.2)*.06;
       P.vy=0;P.onGround=true;
 
-      // Remonter sur l'île — sol solide au-dessus de l'eau
-      if(gy!==null&&gy>WATER_SURFACE+0.2){
+      // Remonter sur l'île — uniquement si on touche vraiment le bord
+      if(gy!==null&&gy>WATER_SURFACE+0.2&&P.y>=gy+P.yOff-0.3){
         P.state='ground';P.y=gy+P.yOff;P.vy=0;
-        toast('🏝 De retour sur l\'île !',1500);
       }
       // Plonger
       if(_pressingDown||jLY>0.4){
@@ -920,8 +919,8 @@ function initGame(){
       if(P.y>=WATER_SURFACE-.05){P.y=WATER_SURFACE;P.state='surface';P.vy=0;toast('Stitch reprend son souffle ! 💨',2000);}
       if(P.y<-11.5){P.y=-11.5;P.vy=0;}
       if(P.breath<=0){P.vy=7;P.state='surface';P.breath=25;toast('Plus d air ! 😮‍💨',2000);}
-      // Toucher le sol d'une île depuis sous l'eau — seulement si le sol est au-dessus de la surface
-      if(gy!==null&&gy>WATER_SURFACE+0.3&&P.y>=gy-0.3&&P.y<=gy+P.yOff+0.5){
+      // Toucher le sol — seulement si physiquement au niveau du sol
+      if(gy!==null&&gy>WATER_SURFACE+0.3&&P.y>=gy+P.yOff-0.15){
         P.y=gy+P.yOff;P.vy=0;P.state='ground';
       }
     }
@@ -949,7 +948,7 @@ function initGame(){
         var op=Math.max(0.0,0.52-heightAbove*0.055);
         shadowEl.setAttribute('position',(P.x+heightAbove*0.25).toFixed(2)+' '+shadowY.toFixed(3)+' '+(P.z-heightAbove*0.08).toFixed(2));
         shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.65).toFixed(3));
-        shadowEl.setAttribute('material','color:#000000;transparent:true;opacity:'+op.toFixed(3)+';shader:flat');
+        shadowEl.setAttribute('material','color:#000000;transparent:true;opacity:'+op.toFixed(3));
         shadowEl.setAttribute('visible','true');
       } else {
         shadowEl.setAttribute('visible','false');
@@ -960,8 +959,8 @@ function initGame(){
     // MAIS le modèle GLB est orienté différemment : on teste X négatif
     var tiltX=0;
     if(P.state==='diving'){
-      // Stitch penché vers l'avant horizontalement — nage réelle
-      tiltX=-35+Math.max(-20,Math.min(20,P.vy*5));
+      // Corps légèrement incliné — on voit Stitch de profil/derrière correctement
+      tiltX=Math.max(-20,Math.min(15,P.vy*4));
     } else if(P.state==='surface'){
       tiltX=5;
     }
