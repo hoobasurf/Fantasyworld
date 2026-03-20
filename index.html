@@ -619,8 +619,19 @@ function initGame(){
     islandDefs.push({cx:0,cz:0,y:GY,label:'ILE PRINCIPALE'});
 
     // ── MONTAGNE GLB ──
-    mk('gltf-model',{src:'#moutainGLB', position:'0 0 -15',
-      scale:'12 12 12', shadow:'cast:true;receive:true'});
+    // Montagne GLB
+    var mtnEl=document.createElement('a-gltf-model');
+    mtnEl.setAttribute('src','#mountainGLB');
+    mtnEl.setAttribute('position','0 0 -15');
+    mtnEl.setAttribute('scale','12 12 12');
+    mtnEl.setAttribute('shadow','cast:true');
+    mtnEl.addEventListener('model-error',function(){
+      // Fallback si Mountain.glb ne charge pas
+      console.log('Mountain.glb failed, using fallback');
+      mk('cone',{'radius-bottom':'20','radius-top':'2',height:'25',position:'0 12 -15',material:'color:#6a7a50;roughness:.9',shadow:'cast:true'});
+      mk('sphere',{radius:'15',position:'0 8 -15',scale:'1 .4 1',material:'color:#4a8a20;roughness:.85'});
+    });
+    W.appendChild(mtnEl);
 
     // ── TABLE D'ORIENTATION au sommet ──
     mk('cylinder',{radius:'.15',height:'1.4',position:'0 1.2 -12',
@@ -914,17 +925,18 @@ function initGame(){
     var shadowEl=document.getElementById('stitch-shadow');
     // Ombre au sol sous Stitch
     if(shadowEl){
-      var gy2=getGroundY(P.x,P.z);
-      if(gy2!==null){
-        // Hauteur des pieds au-dessus du sol
-        var feetY=P.y-P.yOff; // position des pieds
-        var ha=Math.max(0,feetY-gy2);
-        var sc=Math.max(0.2,0.9-ha*0.05);
-        var op=Math.max(0.0,0.48-ha*0.045);
-        shadowEl.setAttribute('position',P.x.toFixed(2)+' '+(gy2+0.02).toFixed(3)+' '+P.z.toFixed(2));
-        shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.65).toFixed(3));
+      if(P.state==='ground'||P.state==='air'){
+        // Ombre directement sous les pieds — Y = pieds de Stitch
+        var feetY=P.y-P.yOff;
+        var gy2=getGroundY(P.x,P.z);
+        var shadowY=gy2!==null?(gy2+0.02):(feetY+0.02);
+        var ha=Math.max(0,feetY-(shadowY-0.02));
+        var sc=Math.max(0.2,0.85-ha*0.04);
+        var op=Math.max(0,0.46-ha*0.04);
+        shadowEl.setAttribute('position',P.x.toFixed(2)+' '+shadowY.toFixed(3)+' '+P.z.toFixed(2));
+        shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.62).toFixed(3));
         shadowEl.setAttribute('material','color:#000000;transparent:true;opacity:'+op.toFixed(3));
-        shadowEl.setAttribute('visible',P.state!=='diving'&&P.state!=='surface'?'true':'false');
+        shadowEl.setAttribute('visible','true');
       } else {
         shadowEl.setAttribute('visible','false');
       }
