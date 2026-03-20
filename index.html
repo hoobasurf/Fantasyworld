@@ -103,7 +103,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 
 <!-- Stitch -->
 
-<a-entity id="stitch-root" position="0 2 3">
+<a-entity id="stitch-root" position="0 2 35">
   <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false"></a-gltf-model>
 </a-entity>
 <!-- Ombre blob de Stitch au sol -->
@@ -112,7 +112,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 <!-- Caméra -->
 
 <a-entity id="cam-rig" position="0 6 10">
-  <a-camera id="mainCam" look-controls="enabled:false" wasd-controls="enabled:false" fov="62" near=".05" far="700"></a-camera>
+  <a-camera id="mainCam" look-controls="enabled:false" wasd-controls="enabled:false" fov="62" near=".01" far="700"></a-camera>
 </a-entity>
 </a-scene>
 
@@ -654,31 +654,35 @@ function initGame(){
   // Helper île
   function makeIsland(CX,CZ,label,islandSrc,islandScale,palmCount,hutCount){
     var GY=0.1;
-    var R=45+Math.random()*15;
+    var R=50;
     mk('cylinder',{radius:R,height:'.15',position:CX+' 0 '+CZ,material:'color:#f5e8b0;roughness:.9'});
     mk('cylinder',{radius:R,height:'3.0',position:CX+' -1.5 '+CZ,material:'color:#ddd090;roughness:.95'});
     addPlatform(CX,CZ,GY,R-1,R-1);
     islandDefs.push({cx:CX,cz:CZ,y:GY,label:label});
-    mk('gltf-model',{src:islandSrc,position:CX+' 0 '+CZ,scale:islandScale,shadow:'cast:true;receive:true'});
-    for(var i=0;i<palmCount;i++){
-      var a=i/palmCount*Math.PI*2,r=12+Math.random()*20;
+    // GLB île — chargé une fois, réutilisé
+    mk('gltf-model',{src:islandSrc,position:CX+' 0 '+CZ,scale:islandScale});
+    // Palmiers — max 4 pour éviter crash
+    var pmax=Math.min(palmCount,4);
+    for(var i=0;i<pmax;i++){
+      var a=i/pmax*Math.PI*2,r=15+Math.random()*18;
       mk('gltf-model',{src:'#palmGLB',
         position:(CX+Math.sin(a)*r).toFixed(1)+' '+GY+' '+(CZ+Math.cos(a)*r).toFixed(1),
-        rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',scale:'5 5 5',shadow:'cast:true'});
+        rotation:'0 '+(i*90)+' 0',scale:'5 5 5'});
     }
+    // Huttes
     for(var i=0;i<hutCount;i++){
-      var a=i/hutCount*Math.PI*2+0.5,r=8+Math.random()*10;
+      var a=i/Math.max(hutCount,1)*Math.PI*2+0.5,r=10+i*5;
       var hx=(CX+Math.sin(a)*r).toFixed(1),hz=(CZ+Math.cos(a)*r).toFixed(1);
       mk('gltf-model',{src:'#hutGLB',position:hx+' 0 '+hz,
-        rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',scale:'12 12 12',shadow:'cast:true'});
+        rotation:'0 '+(i*120)+' 0',scale:'12 12 12'});
       addWall(parseFloat(hx),parseFloat(hz),5,6,GY);
     }
-    // Rochers
-    for(var i=0;i<4;i++){
-      var a=Math.random()*Math.PI*2,r=20+Math.random()*20;
+    // 2 rochers max
+    for(var i=0;i<2;i++){
+      var a=i*Math.PI,r=22+i*5;
       mk('gltf-model',{src:'#rockLargeGLB',
         position:(CX+Math.sin(a)*r).toFixed(1)+' 0 '+(CZ+Math.cos(a)*r).toFixed(1),
-        rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',scale:'5 5 5'});
+        rotation:'0 '+(i*180)+' 0',scale:'5 5 5'});
     }
   }
 
@@ -761,7 +765,7 @@ function initGame(){
   var WATER_ENTER_THRESHOLD=0.25; // pieds dans l'eau à partir de ce niveau au-dessus de WATER_SURFACE
 
   var MAX_BREATH=100,BREATH_LOSE=4,BREATH_GAIN=30;
-  var P={x:0,y:1.5,z:3,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,
+  var P={x:0,y:1.5,z:35,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,
          state:'ground',breath:MAX_BREATH,swimBob:0};
   var CAM={yaw:Math.PI,pitch:.22,dist:6.5};
   var jLX=0,jLY=0,jid=-1,rjLX=0,rjLY=0,rjid=-1,KY={},sprint=false;
@@ -876,7 +880,7 @@ function initGame(){
     }
 
     // Collisions murs
-    var PRAD=.44,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
+    var PRAD=0.8,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
     for(var wi=0;wi<walls.length;wi++){
       var w=walls[wi];if(P.y-P.yOff>w.y0+w.h)continue;
       var inX=nx+PRAD>w.x1&&nx-PRAD<w.x2,inZ=nz+PRAD>w.z1&&nz-PRAD<w.z2;
@@ -925,8 +929,18 @@ function initGame(){
     var camPitch=CAM.pitch;
     if(P.state==='diving'){
       camDist=5.0;
-      camPitch=0.10; // caméra presque horizontale — derrière Stitch, pas au-dessus
+      camPitch=0.10;
     }
+    // Réduire distance caméra si Stitch est dans un bâtiment (caméra reste proche)
+    // Détection simple : si beaucoup de murs autour, rapprocher la caméra
+    var inBuilding=false;
+    for(var wi2=0;wi2<walls.length;wi2++){
+      var ww=walls[wi2];
+      var wx=(ww.x1+ww.x2)/2,wz2=(ww.z1+ww.z2)/2;
+      var wdist=Math.sqrt((P.x-wx)*(P.x-wx)+(P.z-wz2)*(P.z-wz2));
+      if(wdist<8&&P.y<ww.y0+ww.h+1){inBuilding=true;break;}
+    }
+    if(inBuilding) camDist=2.5;
     var cr=camDist*Math.cos(camPitch);
     var cX=P.x+Math.sin(CAM.yaw)*cr,cZ=P.z+Math.cos(CAM.yaw)*cr;
     var cY=P.y+camDist*Math.sin(camPitch)+(P.state==='diving'?0.5:1.8);
