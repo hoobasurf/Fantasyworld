@@ -84,15 +84,15 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 
 <!-- Stitch -->
 
-<a-entity id="stitch-root" position="0 2 145">
+<a-entity id="stitch-root" position="0 2 60">
   <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false"></a-gltf-model>
 </a-entity>
 <!-- Ombre blob de Stitch au sol -->
-<a-circle id="stitch-shadow" radius="0.6" rotation="-90 0 0" position="0 0.03 145" segments="8" material="color:#000000;transparent:true;opacity:0.0"></a-circle>
+<a-circle id="stitch-shadow" radius="0.6" rotation="-90 0 0" position="0 0.03 60" segments="8" material="color:#000000;transparent:true;opacity:0.0"></a-circle>
 
 <!-- Caméra -->
 
-<a-entity id="cam-rig" position="0 8 151">
+<a-entity id="cam-rig" position="0 5 66">
   <a-camera id="mainCam" look-controls="enabled:false" wasd-controls="enabled:false" fov="62" near=".01" far="700"></a-camera>
 </a-entity>
 </a-scene>
@@ -606,88 +606,67 @@ function initGame(){
 
   // ══ ÎLE PRINCIPALE ══
   (function(){
-    var GY=0.0, R=180;
+    var GY=0.0, R=80;
 
-    // Sol sable plat simple — un seul cylindre
     mk('cylinder',{radius:R, height:'.15', position:'0 0.01 0',
       material:'color:#f5e8b0;roughness:.9', shadow:'receive:true'});
-    // Herbe au centre
-    mk('cylinder',{radius:'25', height:'.16', position:'0 0.02 0',
+    mk('cylinder',{radius:'30', height:'.16', position:'0 0.02 0',
       material:'color:#5a9a25;roughness:.85', shadow:'receive:true'});
-    // Corps sous l'eau
     mk('cylinder',{radius:R, height:'3.0', position:'0 -1.5 0',
       material:'color:#ddd090;roughness:.95'});
-
     addPlatform(0,0,GY,R-1,R-1);
     islandDefs.push({cx:0,cz:0,y:GY,label:'ILE PRINCIPALE'});
 
-    // ── MONTAGNE GLB au centre ──
-    mk('gltf-model',{src:'#mountainGLB', position:'0 0 -25',
-      scale:'18 18 18', shadow:'cast:true;receive:true'});
-    // Pas de addWall ici — on veut pouvoir monter dessus
-
-    // ── CHEMIN continu sur la montagne — plan incliné en sable ──
-    // Un seul plan long incliné qui part du sol et monte sur la montagne
-    mk('plane',{width:'6', height:'60',
-      position:'0 8 -25', rotation:'-75 0 0',
-      material:'color:#c8a840;roughness:.88;side:double',
-      shadow:'receive:true'});
-
-    // ── VÉGÉTATION des deux côtés du chemin ──
-    for(var vi=0;vi<28;vi++){
-      var vt=vi/27, vpz=-vt*100;
-      var side=(vi%2===0?1:-1), vd=7+Math.random()*4;
-      makeGiantHibiscus(side*vd+Math.random()*2, GY, vpz+Math.random()*3);
-      makeTallGrass(side*(vd-2), GY, vpz+1.5);
-      if(vi%3===0) makeBirdOfParadise(side*vd+1, GY, vpz-1);
-      if(vi%4===0) makeFern(-side*(vd-1), GY, vpz+2);
-    }
+    // ── MONTAGNE GLB ──
+    mk('gltf-model',{src:'#mountainGLB', position:'0 0 -15',
+      scale:'12 12 12', shadow:'cast:true;receive:true'});
 
     // ── TABLE D'ORIENTATION au sommet ──
-    mk('cylinder',{radius:'.15',height:'1.4',position:'0 17 -25',
+    mk('cylinder',{radius:'.15',height:'1.4',position:'0 12 -13',
       material:'color:#8a5010;roughness:.9',shadow:'cast:true'});
-    mk('cylinder',{radius:'1.2',height:'.12',position:'0 17.8 -25',
+    mk('cylinder',{radius:'1.0',height:'.12',position:'0 12.8 -13',
       material:'color:#c8a060;roughness:.7',shadow:'cast:true'});
-    var plaque=mk('box',{id:'totem-plaque',width:'2.8',height:'1.4',depth:'.15',
-      position:'0 17 -24',material:'color:#f5dfa0;roughness:.5',shadow:'cast:true'});
+    var plaque=mk('box',{id:'totem-plaque',width:'2.4',height:'1.2',depth:'.14',
+      position:'0 12 -12.2',material:'color:#f5dfa0;roughness:.5',shadow:'cast:true'});
     plaque.setAttribute('class','clickable');
+    mk('cone',{'radius-bottom':'.18','radius-top':'.01',height:'.4',
+      position:'0 12.9 -13',material:'color:#cc2200'});
 
-    // ── PALMIERS ──
-    [[40,100],[65,80],[80,40],[-40,105],[-70,75],[-80,35],
-     [45,-45],[70,-30],[-50,-40],[-75,-25],
-     [25,60],[-30,55],[55,5],[-60,10],
-     [100,50],[-100,45],[90,-10],[-90,5]].forEach(function(p,i){
+    // ── PALMIERS (dans le rayon de l'île) ──
+    [[18,48],[30,35],[45,15],[-18,50],[-32,33],[-46,12],
+     [22,-22],[38,-10],[-24,-20],[-40,-8],
+     [12,20],[-14,18],[28,5],[-30,5]].forEach(function(p,i){
       mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],
-        rotation:'0 '+(i*18)+' 0',scale:'5 5 5',shadow:'cast:true'});
+        rotation:'0 '+(i*26)+' 0',scale:'5 5 5',shadow:'cast:true'});
     });
 
-    // ── VÉGÉTATION ──
-    for(var vi=0;vi<35;vi++){
-      var va=vi/35*Math.PI*2, vr=8+Math.random()*55;
+    // ── VÉGÉTATION dense près du spawn ──
+    for(var vi=0;vi<40;vi++){
+      var va=vi/40*Math.PI*2, vr=4+Math.random()*35;
       var vx=Math.sin(va)*vr, vz2=Math.cos(va)*vr;
       makeGiantHibiscus(vx,GY,vz2);
-      if(vi%2===0) makeBirdOfParadise(vx+2,GY,vz2+2);
+      if(vi%2===0) makeBirdOfParadise(vx+1.5,GY,vz2+1.5);
       if(vi%3===0) makeFern(vx-1,GY,vz2-1);
       if(vi%4===0) makeMonstera(vx+1,GY,vz2-2);
     }
-    for(var vi=0;vi<40;vi++){
-      var va=Math.random()*Math.PI*2, vr=5+Math.random()*70;
+    for(var vi=0;vi<50;vi++){
+      var va=Math.random()*Math.PI*2, vr=3+Math.random()*40;
       makeTallGrass(Math.sin(va)*vr,GY,Math.cos(va)*vr);
     }
 
-    // Hutte — 1 seule, sans mur
-    mk('gltf-model',{src:'#hutGLB',position:'-12 0 -10',
+    // Hutte
+    mk('gltf-model',{src:'#hutGLB',position:'-8 0 -6',
       rotation:'0 140 0',scale:'12 12 12',shadow:'cast:true'});
 
     // Rochers plage
-    [[-55,90],[-70,50],[60,85],[75,45],[-30,125],[35,130]].forEach(function(p,i){
-      mk('sphere',{radius:(2.5+i*.4).toFixed(1),
-        position:p[0]+' 0.8 '+p[1],scale:'1 .5 1',
+    [[-35,50],[-42,28],[38,45],[44,24],[-18,65],[20,68]].forEach(function(p,i){
+      mk('sphere',{radius:(2+i*.35).toFixed(1),
+        position:p[0]+' 0.6 '+p[1],scale:'1 .5 1',
         material:'color:#7a6040;roughness:.95',shadow:'cast:true'});
     });
     // Rochers dans l'eau
-    [[-45,3],[48,-3],[22,-5],[-28,4]].forEach(function(p,i){
-      mk('sphere',{radius:(1.8+i*.25).toFixed(1),
+    [[-28,2],[30,-2],[14,-4],[-18,3]].forEach(function(p,i){
+      mk('sphere',{radius:(1.5+i*.2).toFixed(1),
         position:p[0]+' -.2 '+p[1],scale:'1 .4 1',
         material:'color:#6a5030;roughness:.95'});
     });
@@ -800,7 +779,7 @@ function initGame(){
   var WATER_ENTER_THRESHOLD=0.25; // pieds dans l'eau à partir de ce niveau au-dessus de WATER_SURFACE
 
   var MAX_BREATH=100,BREATH_LOSE=4,BREATH_GAIN=30;
-  var P={x:0,y:1.5,z:145,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,
+  var P={x:0,y:1.5,z:60,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,
          state:'ground',breath:MAX_BREATH,swimBob:0};
   var CAM={yaw:Math.PI,pitch:.22,dist:6.5};
   var jLX=0,jLY=0,jid=-1,rjLX=0,rjLY=0,rjid=-1,KY={},sprint=false;
@@ -935,12 +914,12 @@ function initGame(){
     if(shadowEl){
       var gy2=getGroundY(P.x,P.z);
       if(gy2!==null&&(P.state==='ground'||P.state==='air')){
-        var heightAbove=Math.max(0,P.y-(gy2+P.yOff));
-        var shadowY=gy2+0.03;
-        var sc=Math.max(0.2,1.0-heightAbove*0.07);
-        var op=Math.max(0.0,0.52-heightAbove*0.055);
-        shadowEl.setAttribute('position',(P.x+heightAbove*0.25).toFixed(2)+' '+shadowY.toFixed(3)+' '+(P.z-heightAbove*0.08).toFixed(2));
-        shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.65).toFixed(3));
+        var ha=Math.max(0,P.y-(gy2+P.yOff));
+        var sc=Math.max(0.25,1.0-ha*0.06);
+        var op=Math.max(0.0,0.50-ha*0.05);
+        // Ombre exactement sous les pieds — X et Z identiques à Stitch
+        shadowEl.setAttribute('position',P.x.toFixed(2)+' '+(gy2+0.025).toFixed(3)+' '+P.z.toFixed(2));
+        shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.7).toFixed(3));
         shadowEl.setAttribute('material','color:#000000;transparent:true;opacity:'+op.toFixed(3));
         shadowEl.setAttribute('visible','true');
       } else {
