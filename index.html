@@ -41,7 +41,8 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <a-asset-item id="hutGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hut.glb"></a-asset-item>
   <a-asset-item id="coralGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set.glb"></a-asset-item>
   <a-asset-item id="turtleGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Turtle.glb"></a-asset-item>
-  <a-asset-item id="mountainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Moutain.glb" crossorigin="anonymous"></a-asset-item>
+  <a-asset-item id="mountainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Mountain.glb" crossorigin="anonymous"></a-asset-item>
+  <a-asset-item id="moutainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Moutain.glb" crossorigin="anonymous"></a-asset-item>
 </a-assets>
 
 <a-sky id="skyEl" color="#4ab8f0"></a-sky>
@@ -618,19 +619,19 @@ function initGame(){
     islandDefs.push({cx:0,cz:0,y:GY,label:'ILE PRINCIPALE'});
 
     // ── MONTAGNE GLB ──
-    mk('gltf-model',{src:'#mountainGLB', position:'0 0 -15',
+    mk('gltf-model',{src:'#moutainGLB', position:'0 0 -15',
       scale:'12 12 12', shadow:'cast:true;receive:true'});
 
     // ── TABLE D'ORIENTATION au sommet ──
-    mk('cylinder',{radius:'.15',height:'1.4',position:'0 12 -13',
+    mk('cylinder',{radius:'.15',height:'1.4',position:'0 1.2 -12',
       material:'color:#8a5010;roughness:.9',shadow:'cast:true'});
-    mk('cylinder',{radius:'1.0',height:'.12',position:'0 12.8 -13',
+    mk('cylinder',{radius:'1.0',height:'.12',position:'0 2.0 -12',
       material:'color:#c8a060;roughness:.7',shadow:'cast:true'});
     var plaque=mk('box',{id:'totem-plaque',width:'2.4',height:'1.2',depth:'.14',
-      position:'0 12 -12.2',material:'color:#f5dfa0;roughness:.5',shadow:'cast:true'});
+      position:'0 1.5 -11.2',material:'color:#f5dfa0;roughness:.5',shadow:'cast:true'});
     plaque.setAttribute('class','clickable');
     mk('cone',{'radius-bottom':'.18','radius-top':'.01',height:'.4',
-      position:'0 12.9 -13',material:'color:#cc2200'});
+      position:'0 2.1 -12',material:'color:#cc2200'});
 
     // ── PALMIERS (dans le rayon de l'île) ──
     [[18,48],[30,35],[45,15],[-18,50],[-32,33],[-46,12],
@@ -644,14 +645,14 @@ function initGame(){
     for(var vi=0;vi<40;vi++){
       var va=vi/40*Math.PI*2, vr=4+Math.random()*35;
       var vx=Math.sin(va)*vr, vz2=Math.cos(va)*vr;
-      makeGiantHibiscus(vx,GY,vz2);
-      if(vi%2===0) makeBirdOfParadise(vx+1.5,GY,vz2+1.5);
-      if(vi%3===0) makeFern(vx-1,GY,vz2-1);
-      if(vi%4===0) makeMonstera(vx+1,GY,vz2-2);
+      makeGiantHibiscus(vx,GY+0.01,vz2);
+      if(vi%2===0) makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);
+      if(vi%3===0) makeFern(vx-1,GY+0.01,vz2-1);
+      if(vi%4===0) makeMonstera(vx+1,GY+0.01,vz2-2);
     }
     for(var vi=0;vi<50;vi++){
       var va=Math.random()*Math.PI*2, vr=3+Math.random()*40;
-      makeTallGrass(Math.sin(va)*vr,GY,Math.cos(va)*vr);
+      makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);
     }
 
     // Hutte
