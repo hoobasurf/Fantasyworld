@@ -604,98 +604,111 @@ function initGame(){
     }
   }
 
-  // ══ ÎLE PRINCIPALE — 5x plus grande, colline, chemin, totem ══
+  // ══ ÎLE PRINCIPALE — plage en pente douce ══
   (function(){
     var GY=0.0,R=180;
 
-    // Sol sable + herbe ronde
-    mk('cylinder',{radius:R,height:'.12',position:'0 .01 0',material:'color:#f5e8b0;roughness:.9',shadow:'receive:true'});
-    mk('cylinder',{radius:'80',height:'.14',position:'0 .02 0',material:'color:#5a9a25;roughness:.85',shadow:'receive:true'});
-    mk('cylinder',{radius:R,height:'4.0',position:'0 -2.0 0',material:'color:#ddd090;roughness:.95'});
+    // ── PENTE DE SABLE — l'île descend progressivement sous l'eau comme une vraie plage ──
+    // Disques de sable à des hauteurs décroissantes, du centre vers l'eau
+    var sandLevels=[
+      {r:20, y:0.02, col:'#e8d888'}, // herbe centre
+      {r:40, y:0.01, col:'#f0de90'},
+      {r:60, y:0.0,  col:'#f2e098'},
+      {r:80, y:-0.08,col:'#f5e4a0'},
+      {r:100,y:-0.18,col:'#f5e4a8'},
+      {r:120,y:-0.32,col:'#f0dc98'},
+      {r:140,y:-0.52,col:'#ecd890'},
+      {r:160,y:-0.78,col:'#e8d088'},
+      {r:180,y:-1.10,col:'#e0c878'},
+    ];
+    sandLevels.forEach(function(sl){
+      mk('cylinder',{radius:sl.r,height:'.06',
+        position:'0 '+sl.y.toFixed(3)+' 0',
+        material:'color:'+sl.col+';roughness:.92',shadow:'receive:true'});
+    });
+    // Herbe verte au centre
+    mk('cylinder',{radius:'22',height:'.08',position:'0 0.03 0',material:'color:#5a9a25;roughness:.85',shadow:'receive:true'});
+    // Corps solide de l'île
+    mk('cylinder',{radius:R,height:'2.5',position:'0 -1.8 0',material:'color:#d8c870;roughness:.95'});
+
+    // Pente sous l'eau — continue sous la surface
+    mk('cylinder',{radius:200,height:'.05',position:'0 -1.5 0',material:'color:#c8b860;roughness:.95'});
+    mk('cylinder',{radius:250,height:'.05',position:'0 -2.5 0',material:'color:#b8a850;roughness:.95'});
+    mk('cylinder',{radius:320,height:'.05',position:'0 -4.0 0',material:'color:#a89840;roughness:.95'});
+
     addPlatform(0,0,GY,R-1,R-1);
     islandDefs.push({cx:0,cz:0,y:GY,label:'ILE PRINCIPALE'});
 
-    // ── COLLINE CENTRALE ──
-    mk('sphere',{radius:'30',position:'0 6 -30',scale:'1 .55 1',material:'color:#4a8a1a;roughness:.88',shadow:'cast:true'});
-    mk('sphere',{radius:'20',position:'-12 10 -35',scale:'1 .6 1',material:'color:#3a7a14;roughness:.88',shadow:'cast:true'});
-    mk('sphere',{radius:'15',position:'10 8 -42',scale:'1 .55 1',material:'color:#4a8a1a;roughness:.88',shadow:'cast:true'});
-    // Rochers sur la colline
-    for(var ri=0;ri<6;ri++){
-      var ra=ri/6*Math.PI*2,rr=14+ri*2;
-      mk('sphere',{radius:(2+ri*.4).toFixed(1),position:(Math.sin(ra)*rr).toFixed(0)+' '+(2+ri*.4).toFixed(0)+' '+(-30+Math.cos(ra)*rr).toFixed(0),scale:'1 .55 1',material:'color:#7a6040;roughness:.95'});
+    // ── MONTAGNE GLB ──
+    mk('gltf-model',{src:'#mountainGLB',position:'0 0 -30',scale:'18 18 18',shadow:'cast:true;receive:true'});
+    addWall(0,-30,22,35,GY);
+
+    // ── CHEMIN DE SABLE vers la montagne — bandes plates rectangulaires ──
+    for(var ci=0;ci<22;ci++){
+      var ct=ci/21;
+      var cpz=(145-ct*160).toFixed(0);
+      var cpy=(ct*0.05).toFixed(3); // très légère pente
+      var cpx=(Math.sin(ct*Math.PI*1.2)*4).toFixed(1);
+      mk('box',{width:'2.8',height:'.06',depth:'2.8',
+        position:cpx+' '+(parseFloat(cpy)+0.05)+' '+cpz,
+        material:'color:#c8a040;roughness:.9',shadow:'receive:true'});
     }
 
-    // ── CHEMIN PÉDESTRE de la plage à la colline ──
-    // Chemin en dalles sable foncé
-    for(var ci=0;ci<18;ci++){
-      var ct=ci/17,cx2=0,cz2=150-ct*(150+45),cy=ct*5;
-      mk('cylinder',{radius:'3',height:'.08',
-        position:cx2+' '+(GY+cy+.04)+' '+cz2.toFixed(0),
-        material:'color:#c8a850;roughness:.92',shadow:'receive:true'});
+    // ── VÉGÉTATION des deux côtés du chemin ──
+    for(var vi=0;vi<28;vi++){
+      var vt=vi/27, vpz=-vt*100, vpy=GY;
+      var side=(vi%2===0?1:-1), vd=6+Math.random()*4;
+      makeGiantHibiscus(side*vd+Math.random()*2, vpy, vpz+Math.random()*3);
+      makeTallGrass(side*(vd-2), vpy, vpz+1.5);
+      if(vi%3===0) makeBirdOfParadise(side*vd+1, vpy, vpz-1);
+      if(vi%4===0) makeFern(-side*(vd-1), vpy, vpz+2);
     }
 
-    // ── VÉGÉTATION chemin ──
-    for(var vi=0;vi<24;vi++){
-      var vt=vi/24,vz=-vt*90,side=(vi%2===0?1:-1)*6;
-      mk('sphere',{radius:(1.2+Math.random()*.8).toFixed(1),position:(side+Math.random()*2).toFixed(0)+' '+(0.8+vt*2.5).toFixed(1)+' '+vz.toFixed(0),material:'color:#2a7a14;roughness:.85',shadow:'cast:true'});
-      makeGiantHibiscus(side*1.1+Math.random()*3,GY+vt*2,vz+Math.random()*4);
-      makeTallGrass(side*.8,GY+vt*3,vz+2);
-    }
-
-    // ── TOTEM au sommet de la colline ──
-    // Socle
-    mk('cylinder',{radius:'2',height:'.4',position:'0 26.5 -30',material:'color:#8a6030;roughness:.9',shadow:'cast:true'});
-    // Poteau
-    mk('cylinder',{radius:'.35',height:'8',position:'0 30 -30',material:'color:#6a4010;roughness:.9',shadow:'cast:true'});
-    // Tête totem 1
-    mk('box',{width:'2',height:'2',depth:'1.2',position:'0 34.2 -30',material:'color:#cc6620;roughness:.7',shadow:'cast:true'});
-    mk('sphere',{radius:'.4',position:'-.6 34.5 -29.4',material:'color:#ffcc00;roughness:.5'});
-    mk('sphere',{radius:'.4',position:'.6 34.5 -29.4',material:'color:#ffcc00;roughness:.5'});
-    // Tête totem 2
-    mk('box',{width:'2.2',height:'2',depth:'1.2',position:'0 36 -30',material:'color:#aa4400;roughness:.7',shadow:'cast:true'});
-    mk('box',{width:'3',height:'.3',depth:'.8',position:'0 37 -30',material:'color:#cc6620;roughness:.7'});
-    // Plaque orientation (cliquable)
-    var plaque=mk('box',{id:'totem-plaque',width:'3',height:'1.5',depth:'.2',position:'0 31 -29',material:'color:#f5dfa0;roughness:.6',shadow:'cast:true'});
+    // ── TABLE D'ORIENTATION au sommet ──
+    mk('cylinder',{radius:'.15',height:'1.4',position:'0 17 -28',material:'color:#8a5010;roughness:.9',shadow:'cast:true'});
+    mk('cylinder',{radius:'1.2',height:'.12',position:'0 17.8 -28',material:'color:#c8a060;roughness:.7',shadow:'cast:true'});
+    var plaque=mk('box',{id:'totem-plaque',width:'2.8',height:'1.4',depth:'.15',
+      position:'0 17 -27.1',material:'color:#f5dfa0;roughness:.5',shadow:'cast:true'});
     plaque.setAttribute('class','clickable');
+    mk('box',{width:'2.4',height:'.06',depth:'.04',position:'0 17.3 -26.98',material:'color:#8a5010'});
+    mk('box',{width:'2.4',height:'.06',depth:'.04',position:'0 17.0 -26.98',material:'color:#8a5010'});
+    mk('box',{width:'2.4',height:'.06',depth:'.04',position:'0 16.7 -26.98',material:'color:#8a5010'});
+    mk('cone',{'radius-bottom':'.22','radius-top':'.01',height:'.45',position:'0 17.9 -28',material:'color:#cc2200'});
 
-    // ── PALMIERS — bien répartis sur toute l'île ──
-    var palmPos=[
-      [40,100],[65,80],[80,40],[-40,105],[-70,75],[-80,35],
-      [45,-45],[70,-30],[-50,-40],[-75,-25],
-      [25,60],[-30,55],[55,5],[-60,10],
-      [100,50],[-100,45],[90,-10],[-90,5],
-      [25,-75],[40,-100],[-30,-80],[-45,-100]
-    ];
-    palmPos.forEach(function(p,i){
+    // ── PALMIERS répartis sur l'île ──
+    [[40,100],[65,80],[80,40],[-40,105],[-70,75],[-80,35],
+     [45,-45],[70,-30],[-50,-40],[-75,-25],
+     [25,60],[-30,55],[55,5],[-60,10],
+     [100,50],[-100,45],[90,-10],[-90,5]].forEach(function(p,i){
       mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],
-        rotation:'0 '+(i*17)+' 0',scale:'5 5 5',shadow:'cast:true'});
+        rotation:'0 '+(i*18)+' 0',scale:'5 5 5',shadow:'cast:true'});
     });
 
     // ── VÉGÉTATION abondante ──
-    for(var vi=0;vi<40;vi++){
-      var va=vi/40*Math.PI*2,vr=10+Math.random()*60;
+    for(var vi=0;vi<35;vi++){
+      var va=vi/35*Math.PI*2,vr=8+Math.random()*55;
       var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;
       makeGiantHibiscus(vx,GY,vz2);
       if(vi%2===0) makeBirdOfParadise(vx+2,GY,vz2+2);
       if(vi%3===0) makeFern(vx-1,GY,vz2-1);
       if(vi%4===0) makeMonstera(vx+1,GY,vz2-2);
     }
-    for(var vi=0;vi<50;vi++){
-      var va=Math.random()*Math.PI*2,vr=5+Math.random()*80;
+    for(var vi=0;vi<40;vi++){
+      var va=Math.random()*Math.PI*2,vr=5+Math.random()*70;
       makeTallGrass(Math.sin(va)*vr,GY,Math.cos(va)*vr);
     }
 
-    // Huttes (1 seule, taille réelle, visible depuis spawn)
+    // Hutte
     mk('gltf-model',{src:'#hutGLB',position:'-12 0 -10',rotation:'0 140 0',scale:'12 12 12',shadow:'cast:true'});
     addWall(-12,-10,5,6,GY);
 
-    // Rochers sur la plage
+    // Rochers plage
     [[-55,90],[-70,50],[60,85],[75,45],[-30,125],[35,130]].forEach(function(p,i){
-      mk('sphere',{radius:(3+i*.5).toFixed(0),position:p[0]+' 1.5 '+p[1],scale:'1 .5 1',material:'color:#7a6040;roughness:.95',shadow:'cast:true'});
+      mk('sphere',{radius:(2.5+i*.4).toFixed(1),position:p[0]+' 0.8 '+p[1],scale:'1 .5 1',material:'color:#7a6040;roughness:.95',shadow:'cast:true'});
     });
     // Rochers dans l'eau
     [[-45,3],[48,-3],[22,-5],[-28,4]].forEach(function(p,i){
-      mk('sphere',{radius:(2+i*.3).toFixed(1),position:p[0]+' -.3 '+p[1],scale:'1 .38 1',material:'color:#6a5030;roughness:.95'});
+      mk('sphere',{radius:(1.8+i*.25).toFixed(1),position:p[0]+' -.2 '+p[1],scale:'1 .4 1',material:'color:#6a5030;roughness:.95'});
     });
   })();
 
