@@ -915,15 +915,16 @@ function initGame(){
     // Ombre au sol sous Stitch
     if(shadowEl){
       var gy2=getGroundY(P.x,P.z);
-      if(gy2!==null&&(P.state==='ground'||P.state==='air')){
-        var ha=Math.max(0,P.y-(gy2+P.yOff));
-        var sc=Math.max(0.25,1.0-ha*0.06);
-        var op=Math.max(0.0,0.50-ha*0.05);
-        // Ombre exactement sous les pieds — X et Z identiques à Stitch
-        shadowEl.setAttribute('position',P.x.toFixed(2)+' '+(gy2+0.025).toFixed(3)+' '+P.z.toFixed(2));
-        shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.7).toFixed(3));
+      if(gy2!==null){
+        // Hauteur des pieds au-dessus du sol
+        var feetY=P.y-P.yOff; // position des pieds
+        var ha=Math.max(0,feetY-gy2);
+        var sc=Math.max(0.2,0.9-ha*0.05);
+        var op=Math.max(0.0,0.48-ha*0.045);
+        shadowEl.setAttribute('position',P.x.toFixed(2)+' '+(gy2+0.02).toFixed(3)+' '+P.z.toFixed(2));
+        shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.65).toFixed(3));
         shadowEl.setAttribute('material','color:#000000;transparent:true;opacity:'+op.toFixed(3));
-        shadowEl.setAttribute('visible','true');
+        shadowEl.setAttribute('visible',P.state!=='diving'&&P.state!=='surface'?'true':'false');
       } else {
         shadowEl.setAttribute('visible','false');
       }
