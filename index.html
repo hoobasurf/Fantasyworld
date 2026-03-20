@@ -680,7 +680,6 @@ function initGame(){
      [12,20],[-14,18],[28,5],[-30,5]].forEach(function(p,i){
       mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],
         rotation:'0 '+(i*26)+' 0',scale:'5 5 5',shadow:'cast:true'});
-      addWall(p[0],p[1],1.2,8,GY); // collision tronc palmier
     });
 
     // ── VÉGÉTATION dense près du spawn ──
@@ -1049,16 +1048,6 @@ function initGame(){
       camDist=5.0;
       camPitch=0.10;
     }
-    // Réduire distance caméra si Stitch est dans un bâtiment (caméra reste proche)
-    // Détection simple : si beaucoup de murs autour, rapprocher la caméra
-    var inBuilding=false;
-    for(var wi2=0;wi2<walls.length;wi2++){
-      var ww=walls[wi2];
-      var wx=(ww.x1+ww.x2)/2,wz2=(ww.z1+ww.z2)/2;
-      var wdist=Math.sqrt((P.x-wx)*(P.x-wx)+(P.z-wz2)*(P.z-wz2));
-      if(wdist<8&&P.y<ww.y0+ww.h+1){inBuilding=true;break;}
-    }
-    if(inBuilding) camDist=2.5;
     var cr=camDist*Math.cos(camPitch);
     var cX=P.x+Math.sin(CAM.yaw)*cr,cZ=P.z+Math.cos(CAM.yaw)*cr;
     var cY=P.y+camDist*Math.sin(camPitch)+(P.state==='diving'?0.5:1.8);
