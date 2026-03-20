@@ -16,6 +16,9 @@
 .pill{background:rgba(0,10,25,.78);border-radius:18px;padding:5px 12px;font-family:Georgia,serif;font-size:9px;color:#7de8ff;border:1px solid rgba(125,232,255,.25)}
 #toast{position:fixed;top:52px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;z-index:80;background:rgba(0,8,22,.94);border:1.5px solid #7de8ff;border-radius:18px;padding:7px 16px;color:#7de8ff;font-size:10px;font-family:Georgia,serif;white-space:nowrap;pointer-events:none;transition:all .18s}
 #toast.show{transform:translateX(-50%) scale(1);opacity:1}
+#bubbles-container{position:fixed;inset:0;pointer-events:none;z-index:21;overflow:hidden;display:none}
+.bubble{position:absolute;border-radius:50%;background:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.6);animation:rise linear forwards}
+@keyframes rise{0%{transform:translateY(0) scale(1);opacity:.7}100%{transform:translateY(-60vh) scale(1.5);opacity:0}}
 #breath-bar{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:40;display:none;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
 #breath-label{font-family:Georgia,serif;font-size:9px;color:#88ffee;text-shadow:0 0 6px #00ffcc}
 #breath-bg{width:140px;height:12px;border-radius:6px;background:rgba(0,20,40,.7);border:1.5px solid rgba(0,255,200,.4);overflow:hidden}
@@ -49,6 +52,14 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <a-asset-item id="sharkGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Shark.glb"></a-asset-item>
   <a-asset-item id="dolphinGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Dolphin.glb"></a-asset-item>
   <a-asset-item id="lionfishGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Lionfish.glb"></a-asset-item>
+  <a-asset-item id="island2GLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Island%202.glb"></a-asset-item>
+  <a-asset-item id="emptyIslandGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Empty%20Island.glb"></a-asset-item>
+  <a-asset-item id="palmsGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Palm%20Trees.glb"></a-asset-item>
+  <a-asset-item id="rockGLB"        src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Rock.glb"></a-asset-item>
+  <a-asset-item id="rocksGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Rocks.glb"></a-asset-item>
+  <a-asset-item id="houseGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/House.glb"></a-asset-item>
+  <a-asset-item id="coral3GLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set3.glb"></a-asset-item>
+  <a-asset-item id="anemoneGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Anemone.glb"></a-asset-item>
   <img id="tSand" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sand.jpg" crossorigin="anonymous">
 </a-assets>
 
@@ -118,6 +129,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 </div>
 
 <div id="water-overlay"></div>
+<div id="bubbles-container"></div>
 <div id="caustic-overlay"></div>
 <div id="dive-hint"></div>
 
@@ -513,22 +525,36 @@ function initGame(){
       W2.appendChild(e); return e;
     }
 
-    // CORAUX — max 20 instances, 2 modèles seulement
+    // CORAUX — denses, couvrent tout l'océan
+    var coralIds=['#coralGLB','#coral2GLB','#coral3GLB'];
+    for(var i=0;i<40;i++){
+      var a=i/40*Math.PI*2+Math.random()*.3, r=2+Math.random()*50;
+      glb(coralIds[i%3],Math.sin(a)*r,Math.cos(a)*r,2+Math.random()*2.5,Math.random()*360);
+    }
+    // Coraux autour de chaque île secondaire
+    [[-165,-140],[165,-125],[0,-220],[-220,50],[220,80]].forEach(function(ile){
+      for(var i=0;i<8;i++){
+        var a=Math.random()*Math.PI*2,r=5+Math.random()*30;
+        glb(coralIds[i%3],ile[0]+Math.sin(a)*r,ile[1]+Math.cos(a)*r,2+Math.random()*2,Math.random()*360);
+      }
+    });
+
+    // KELP — 20 instances réparties
     for(var i=0;i<20;i++){
-      var a=Math.random()*Math.PI*2,r=2+Math.random()*25;
-      glb(i%2===0?'#coralGLB':'#coral2GLB',Math.sin(a)*r,Math.cos(a)*r,2+Math.random()*2,Math.random()*360);
+      var a=i/20*Math.PI*2, r=5+Math.random()*60;
+      glb('#kelpGLB',Math.sin(a)*r,Math.cos(a)*r,1.5+Math.random()*2,Math.random()*360);
     }
 
-    // KELP — 12 instances
+    // ANÉMONES — 15 instances
+    for(var i=0;i<15;i++){
+      var a=Math.random()*Math.PI*2,r=2+Math.random()*35;
+      glb('#anemoneGLB',Math.sin(a)*r,Math.cos(a)*r,1+Math.random()*1.5,Math.random()*360);
+    }
+
+    // COQUILLAGES — 12 instances
     for(var i=0;i<12;i++){
-      var a=Math.random()*Math.PI*2,r=3+Math.random()*30;
-      glb('#kelpGLB',Math.sin(a)*r,Math.cos(a)*r,1.5+Math.random()*1.5,Math.random()*360);
-    }
-
-    // COQUILLAGES — 8 instances
-    for(var i=0;i<8;i++){
-      var a=Math.random()*Math.PI*2,r=2+Math.random()*20;
-      glb('#seashellGLB',Math.sin(a)*r,Math.cos(a)*r,1+Math.random()*1,Math.random()*360);
+      var a=Math.random()*Math.PI*2,r=2+Math.random()*30;
+      glb('#seashellGLB',Math.sin(a)*r,Math.cos(a)*r,1+Math.random()*1.2,Math.random()*360);
     }
 
     // TORTUE x2
@@ -602,9 +628,12 @@ function initGame(){
     });
 
     // ── HUTTES / MAISONS ──
-    mk('gltf-model',{src:'#hutGLB',position:'8 0 10',rotation:'0 -30 0',scale:'4 4 4',shadow:'cast:true'});
-    mk('gltf-model',{src:'#hutGLB',position:'-10 0 8',rotation:'0 45 0',scale:'3.5 3.5 3.5',shadow:'cast:true'});
-    mk('gltf-model',{src:'#houseGLB',position:'0 0 -5',rotation:'0 180 0',scale:'3 3 3',shadow:'cast:true'});
+    mk('gltf-model',{src:'#hutGLB',position:'8 0 10',rotation:'0 -30 0',scale:'12 12 12',shadow:'cast:true'});
+    addWall(8,10,5,6,GY);
+    mk('gltf-model',{src:'#hutGLB',position:'-10 0 8',rotation:'0 45 0',scale:'12 12 12',shadow:'cast:true'});
+    addWall(-10,8,5,6,GY);
+    mk('gltf-model',{src:'#houseGLB',position:'14 0 -8',rotation:'0 180 0',scale:'10 10 10',shadow:'cast:true'});
+    addWall(14,-8,5,6,GY);
 
     // ── GROS ROCHERS sur la plage ──
     var rockPos=[[-38,20,6],[-44,15,5],[40,18,6],[46,10,5],[-20,48,5],[22,50,4],[-8,56,4]];
@@ -622,34 +651,44 @@ function initGame(){
     });
   })();
 
-  // ══ ÎLE 2 ══
-  (function(){
-    var CX=-165,CZ=-140,GY=0.1;
-    mk('cylinder',{radius:'55',height:'.15',position:CX+' 0 '+CZ,material:'color:#f5e8b0;roughness:.9'});
-    mk('cylinder',{radius:'55',height:'3.0',position:CX+' -1.5 '+CZ,material:'color:#ddd090;roughness:.95'});
-    addPlatform(CX,CZ,GY,54,54);
-    islandDefs.push({cx:CX,cz:CZ,y:GY,label:'ILE VOLCANIQUE'});
-    mk('gltf-model',{src:'#island2GLB',position:CX+' 0 '+CZ,scale:'7 7 7',shadow:'cast:true;receive:true'});
-    [[CX-20,CZ+12],[CX+16,CZ-10],[CX+22,CZ+14],[CX-8,CZ+18]].forEach(function(p){
-      mk('gltf-model',{src:'#palmGLB',position:p[0]+' '+GY+' '+p[1],
+  // Helper île
+  function makeIsland(CX,CZ,label,islandSrc,islandScale,palmCount,hutCount){
+    var GY=0.1;
+    var R=45+Math.random()*15;
+    mk('cylinder',{radius:R,height:'.15',position:CX+' 0 '+CZ,material:'color:#f5e8b0;roughness:.9'});
+    mk('cylinder',{radius:R,height:'3.0',position:CX+' -1.5 '+CZ,material:'color:#ddd090;roughness:.95'});
+    addPlatform(CX,CZ,GY,R-1,R-1);
+    islandDefs.push({cx:CX,cz:CZ,y:GY,label:label});
+    mk('gltf-model',{src:islandSrc,position:CX+' 0 '+CZ,scale:islandScale,shadow:'cast:true;receive:true'});
+    for(var i=0;i<palmCount;i++){
+      var a=i/palmCount*Math.PI*2,r=12+Math.random()*20;
+      mk('gltf-model',{src:'#palmGLB',
+        position:(CX+Math.sin(a)*r).toFixed(1)+' '+GY+' '+(CZ+Math.cos(a)*r).toFixed(1),
         rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',scale:'5 5 5',shadow:'cast:true'});
-    });
-    mk('gltf-model',{src:'#hutGLB',position:(CX+15)+' 0 '+(CZ+10),rotation:'0 30 0',scale:'4 4 4',shadow:'cast:true'});
-  })();
+    }
+    for(var i=0;i<hutCount;i++){
+      var a=i/hutCount*Math.PI*2+0.5,r=8+Math.random()*10;
+      var hx=(CX+Math.sin(a)*r).toFixed(1),hz=(CZ+Math.cos(a)*r).toFixed(1);
+      mk('gltf-model',{src:'#hutGLB',position:hx+' 0 '+hz,
+        rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',scale:'12 12 12',shadow:'cast:true'});
+      addWall(parseFloat(hx),parseFloat(hz),5,6,GY);
+    }
+    // Rochers
+    for(var i=0;i<4;i++){
+      var a=Math.random()*Math.PI*2,r=20+Math.random()*20;
+      mk('gltf-model',{src:'#rockLargeGLB',
+        position:(CX+Math.sin(a)*r).toFixed(1)+' 0 '+(CZ+Math.cos(a)*r).toFixed(1),
+        rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',scale:'5 5 5'});
+    }
+  }
 
-  // ══ ÎLE 3 ══
-  (function(){
-    var CX=165,CZ=-125,GY=0.1;
-    mk('cylinder',{radius:'48',height:'.15',position:CX+' 0 '+CZ,material:'color:#f5e8b0;roughness:.9'});
-    mk('cylinder',{radius:'48',height:'3.0',position:CX+' -1.5 '+CZ,material:'color:#ddd090;roughness:.95'});
-    addPlatform(CX,CZ,GY,47,47);
-    islandDefs.push({cx:CX,cz:CZ,y:GY,label:'ILE TROPICALE'});
-    mk('gltf-model',{src:'#emptyIslandGLB',position:CX+' 0 '+CZ,scale:'6 6 6',shadow:'cast:true;receive:true'});
-    [[CX+12,CZ+8],[CX-10,CZ+15],[CX+28,CZ-8],[CX-22,CZ-12]].forEach(function(p){
-      mk('gltf-model',{src:'#palmsGLB',position:p[0]+' '+GY+' '+p[1],
-        rotation:'0 '+(Math.random()*360).toFixed(0)+' 0',scale:'5 5 5',shadow:'cast:true'});
-    });
-  })();
+  makeIsland(-165,-140,'ILE VOLCANIQUE','#island2GLB','7 7 7',6,2);
+  makeIsland(165,-125,'ILE TROPICALE','#emptyIslandGLB','6 6 6',5,1);
+  makeIsland(0,-220,'ILE NORD','#islandGLB','1 1 1',4,2);
+  makeIsland(-220,50,'ILE OUEST','#emptyIslandGLB','5 5 5',5,1);
+  makeIsland(220,80,'ILE EST','#island2GLB','6 6 6',4,2);
+  makeIsland(100,-300,'ILE LOINTAINE','#islandGLB','1 1 1',6,3);
+  makeIsland(-300,-200,'ILE CACHEE','#emptyIslandGLB','5 5 5',4,1);
 
   makeBridge(62,1.5,0,119,1.5,-125);
   makeBridge(0,1.5,-66,-112,1.5,-140);
@@ -818,9 +857,12 @@ function initGame(){
         P.state='diving';P.vy=-7;P.y=WATER_SURFACE-1.2;P.onGround=false;
       }
     } else if(P.state==='diving'){
-      if(_pressingDown||jLY>0.3){P.vy=Math.max(P.vy-9*dt,-8);}
-      else if(KY['Space']){P.vy=Math.min(P.vy+9*dt,8);}
-      else{P.vy=P.vy*.95+.3*dt;}
+      // Vitesse nage horizontale boostée
+      var spdDiv=sprint?14:9;
+      if(moveMag>.05){P.vx*=spdDiv/5.2;P.vz*=spdDiv/5.2;}
+      if(_pressingDown||jLY>0.3){P.vy=Math.max(P.vy-12*dt,-10);}
+      else if(KY['Space']){P.vy=Math.min(P.vy+12*dt,10);}
+      else{P.vy=P.vy*.92+.4*dt;}
       P.y+=P.vy*dt;P.onGround=false;
       P.breath=Math.max(0,P.breath-BREATH_LOSE*dt);
       // Remonter à la surface
@@ -866,8 +908,8 @@ function initGame(){
     // MAIS le modèle GLB est orienté différemment : on teste X négatif
     var tiltX=0;
     if(P.state==='diving'){
-      // Corps penché vers l'avant (nage) — entre -50° (descente) et +20° (remontée)
-      tiltX=Math.max(-55,Math.min(20,-P.vy*6-40));
+      // Stitch penché vers l'avant horizontalement — nage réelle
+      tiltX=-35+Math.max(-20,Math.min(20,P.vy*5));
     } else if(P.state==='surface'){
       tiltX=5;
     }
@@ -953,6 +995,23 @@ function initGame(){
       scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.007');
       document.getElementById('skyEl').setAttribute('color','#4ab8f0');
       diveHint.style.display='none';
+    }
+
+    // Bulles en nageant
+    var bubCont=document.getElementById('bubbles-container');
+    if(P.state==='diving'){
+      bubCont.style.display='block';
+      if(moveMag>.05&&Math.floor(waveT*8)%2===0){
+        var b=document.createElement('div');
+        b.className='bubble';
+        var sz=4+Math.random()*8;
+        b.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(38+Math.random()*24)+'%;bottom:'+(35+Math.random()*15)+'%;animation-duration:'+(1.2+Math.random()*.8)+'s';
+        bubCont.appendChild(b);
+        setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b);},2000);
+      }
+    } else {
+      bubCont.style.display='none';
+      if(bubCont.children.length>0)bubCont.innerHTML='';
     }
 
     // Zone HUD
