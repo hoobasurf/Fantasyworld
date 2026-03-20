@@ -41,7 +41,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <a-asset-item id="hutGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hut.glb"></a-asset-item>
   <a-asset-item id="coralGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set.glb"></a-asset-item>
   <a-asset-item id="turtleGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Turtle.glb"></a-asset-item>
-  <a-asset-item id="mountainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Mountain.glb"></a-asset-item>
+  <a-asset-item id="mountainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/mountain.glb" crossorigin="anonymous"></a-asset-item>
 </a-assets>
 
 <a-sky id="skyEl" color="#4ab8f0"></a-sky>
@@ -612,7 +612,7 @@ function initGame(){
       material:'color:#f5e8b0;roughness:.9', shadow:'receive:true'});
     mk('cylinder',{radius:'30', height:'.16', position:'0 0.02 0',
       material:'color:#5a9a25;roughness:.85', shadow:'receive:true'});
-    mk('cylinder',{radius:R, height:'3.0', position:'0 -1.5 0',
+    mk('cylinder',{radius:R, height:'.3', position:'0 -.15 0',
       material:'color:#ddd090;roughness:.95'});
     addPlatform(0,0,GY,R-1,R-1);
     islandDefs.push({cx:0,cz:0,y:GY,label:'ILE PRINCIPALE'});
@@ -677,7 +677,8 @@ function initGame(){
     var GY=0.1,R=48;
     mk('cylinder',{radius:R,height:'.12',position:CX+' .01 '+CZ,material:'color:#f0e090;roughness:.9',shadow:'receive:true'});
     mk('cylinder',{radius:20,height:'.14',position:CX+' .02 '+CZ,material:'color:'+col+';roughness:.85'});
-    mk('cylinder',{radius:R,height:'3.0',position:CX+' -1.5 '+CZ,material:'color:#d8c880;roughness:.95'});
+    // Corps île — seulement 0.3 d'épaisseur, juste sous la surface, invisible sous l'eau
+    mk('cylinder',{radius:R,height:'.3',position:CX+' -.15 '+CZ,material:'color:#d8c880;roughness:.95'});
     addPlatform(CX,CZ,GY,R-1,R-1);
     islandDefs.push({cx:CX,cz:CZ,y:GY,label:label});
     // Palmiers GLB — max 4
