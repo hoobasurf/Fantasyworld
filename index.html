@@ -74,10 +74,11 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <audio id="sndNah"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Nah!.mp3" preload="none"></audio>
   <audio id="sndGobble"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GOBBLING%20-%20Sound%20Effect).mp3" preload="none"></audio>
   <!-- Ambiance plage -->
-  <audio id="sndBeach"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Beach.wav" loop preload="none"></audio>
+  <audio id="sndBeach"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Beach.wav" loop preload="auto"></audio>
   <!-- Bandes son (2 musiques ukulele en rotation) -->
-  <audio id="bgMusic1" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="none"></audio>
-  <audio id="bgMusic2" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="none"></audio>
+  <audio id="bgMusic1" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="auto"></audio>
+  <audio id="bgMusic2" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="auto"></audio>
+  <audio id="bgMusic3" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/peterkolaiko-tropical-happy-ukulele-231561.mp3" preload="none"></audio>
 </a-assets>
 
 <a-sky id="skyEl" color="#4ab8f0"></a-sky>
@@ -197,9 +198,9 @@ function updateAudioZone(state){
     if(water){
       water.loop=true;
       water.volume=0.35;
-      // Reprendre depuis là où on était ou recommencer
+      water.currentTime=0;
       var p=water.play();
-      if(p&&p.catch)p.catch(function(){});
+      if(p&&p.catch)p.catch(function(e){console.log('water music err:',e);});
     }
   } else if(!isUnderwater && _audioState!=='island'){
     _audioState='island';
@@ -305,11 +306,11 @@ function initGame(){
           var h=box.max.y-box.min.y;
           if(h>0.05){
             var ratios={
-              'nani':1.8,'jumba':2.5,
-              'lilo':1.6,     // bien visible, entre Stitch et Nani
-              'pleakley':1.9,
-              'angel':1.0,'lilo2':1.6,'hamster':0.65,
-              'cobra':2.2,'councilwoman':1.7,'wendy':1.8
+              'nani':2.2,'jumba':3.0,
+              'lilo':1.9,
+              'pleakley':2.3,
+              'angel':1.4,'lilo2':1.9,'hamster':0.9,
+              'cobra':2.6,'councilwoman':2.1,'wendy':2.2
             };
             var ratio=ratios[c.id]||1.2;
             var sc=(1.4*ratio)/h;
@@ -510,9 +511,11 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     window._stepT+=dt;
     if(P.state==='ground'&&moveMag>.05){
       if(window._stepT>0.38){window._stepT=0;playSound('sndStepSand');}
-    } else if((P.state==='surface'||P.state==='diving')&&moveMag>.05){
-      if(window._stepT>0.45){window._stepT=0;playSound('sndStepWater');}
-    } else {window._stepT=0;}
+    } else if(P.state==='surface'&&moveMag>.05){
+      if(window._stepT>0.48){window._stepT=0;playSound('sndStepWater');}
+    } else {
+      window._stepT=0; // silence dans l'eau (diving) et immobile
+    }
     if(Math.abs(rjLX)>.04)CAM.yaw+=rjLX*dt*2.5;else if(moveMag>.1){var tc=P.yaw+Math.PI,cd=tc-CAM.yaw;while(cd>Math.PI)cd-=Math.PI*2;while(cd<-Math.PI)cd+=Math.PI*2;CAM.yaw+=cd*dt*2.2;}
     if(Math.abs(rjLY)>.04)CAM.pitch=Math.max(.06,Math.min(.75,CAM.pitch+rjLY*dt*1.5));
     var camDist=CAM.dist,camPitch=CAM.pitch;
@@ -564,14 +567,18 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     }
     // Mettre à jour la musique selon la zone
     updateAudioZone(P.state);
-    // Voix Stitch aléatoires automatiques
+    // Voix Stitch toutes les 7 secondes, toujours différente
     if(!window._voiceT)window._voiceT=0;
+    if(!window._lastVoice)window._lastVoice=-1;
     window._voiceT+=dt;
-    var voiceInterval=P.state==='ground'&&moveMag>.05?18:25;
-    if(window._voiceT>voiceInterval){
+    if(window._voiceT>7){
       window._voiceT=0;
-      var autoVoices=['sndHiii','sndOhana','sndGobble','sndLaugh','sndAaaah','sndEek'];
-      playSound(autoVoices[Math.floor(Math.random()*autoVoices.length)]);
+      var autoVoices=['sndHiii','sndOhana','sndGobble','sndLaugh','sndAaaah','sndEek','sndNah'];
+      var nextVoice;
+      do{nextVoice=Math.floor(Math.random()*autoVoices.length);}
+      while(nextVoice===window._lastVoice&&autoVoices.length>1);
+      window._lastVoice=nextVoice;
+      playSound(autoVoices[nextVoice]);
     }
     var zone='🌊 OCEAN';
     if(P.state==='diving')zone='🤿 SOUS L EAU';
@@ -626,11 +633,13 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     if(!window._gunEl3D){
       var g=document.createElement('a-gltf-model');
       g.setAttribute('src','#watergunGLB');
-      g.setAttribute('scale','1.2 1.2 1.2');
-      g.setAttribute('position','0.5 0.8 0.3');
-      g.setAttribute('rotation','0 -30 -20');
+      g.setAttribute('scale','1.0 1.0 1.0');
+      g.setAttribute('position','0.45 0.55 0.2');
+      g.setAttribute('rotation','0 -45 -15');
       g.id='gun-on-stitch';
-      document.getElementById('stitch-root').appendChild(g);
+      // Attacher au modèle Stitch (enfant direct)
+      var stitchModel=document.getElementById('stitch-model');
+      stitchModel.appendChild(g);
       window._gunEl3D=g;
     } else {
       window._gunEl3D.setAttribute('visible','true');
