@@ -56,6 +56,25 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <a-asset-item id="cartGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Street%20Vendor%20Cart.glb" crossorigin="anonymous"></a-asset-item>
   <a-asset-item id="sundaeGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb" crossorigin="anonymous"></a-asset-item>
   <a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb" crossorigin="anonymous"></a-asset-item>
+  <!-- Sons du jeu - fichiers réels GitHub -->
+  <audio id="sndCollect" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Ice%20cream.wav" preload="auto"></audio>
+  <audio id="sndSplash"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Splash.wav" preload="auto"></audio>
+  <audio id="sndWin"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Aloha!.mp3" preload="auto"></audio>
+  <audio id="sndStepSand" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20sand.wav" preload="auto"></audio>
+  <audio id="sndStepWater" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20water.wav" preload="auto"></audio>
+  <!-- Voix de Stitch -->
+  <audio id="sndEek"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GROWLING)%20Eek!.mp3" preload="auto"></audio>
+  <audio id="sndLaugh"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20LAUGHING%20-%20Sound%20Effect).mp3" preload="auto"></audio>
+  <audio id="sndOhana"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Ohana.mp3" preload="auto"></audio>
+  <audio id="sndHiii"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Stitch%20hiiii.mp3" preload="auto"></audio>
+  <audio id="sndAaaah"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Aaaah.mp3" preload="auto"></audio>
+  <audio id="sndNah"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Nah!.mp3" preload="auto"></audio>
+  <audio id="sndGobble"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GOBBLING%20-%20Sound%20Effect).mp3" preload="auto"></audio>
+  <!-- Ambiance plage -->
+  <audio id="sndBeach"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Beach.wav" loop preload="auto"></audio>
+  <!-- Bandes son (2 musiques ukulele en rotation) -->
+  <audio id="bgMusic1" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="auto"></audio>
+  <audio id="bgMusic2" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="auto"></audio>
 </a-assets>
 
 <a-sky id="skyEl" color="#4ab8f0"></a-sky>
@@ -142,6 +161,49 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 </div>
 
 <script>
+// ── AUDIO ──
+function playSound(id){try{var s=document.getElementById(id);if(s){s.currentTime=0;s.volume=0.7;s.play().catch(function(){});}}catch(e){}}
+// ── SYSTÈME AUDIO ZONES ──
+var _audioState='none'; // 'island' | 'water'
+
+function startMusic(){
+  if(window._musicStarted)return;
+  window._musicStarted=true;
+  // Lancer l'ambiance plage en boucle (toujours active sur île)
+  var beach=document.getElementById('sndBeach');
+  if(beach){beach.volume=0.18;beach.loop=true;beach.play().catch(function(){});}
+  // Lancer la musique île
+  var isle=document.getElementById('bgMusic2'); // the_mountain ukulele
+  if(isle){isle.volume=0.32;isle.loop=true;isle.play().catch(function(){});}
+  _audioState='island';
+}
+
+function updateAudioZone(state){
+  if(!window._musicStarted)return;
+  var isUnderwater=(state==='diving'||state==='surface');
+  var beach=document.getElementById('sndBeach');
+  var isle=document.getElementById('bgMusic2');
+  var water=document.getElementById('bgMusic1'); // sonican ukulele
+
+  if(isUnderwater && _audioState!=='water'){
+    _audioState='water';
+    // Couper île + plage, lancer son eau
+    if(isle){isle.pause();}
+    if(beach){beach.pause();}
+    if(water){water.volume=0.35;water.loop=true;water.play().catch(function(){});}
+  } else if(!isUnderwater && _audioState!=='island'){
+    _audioState='island';
+    // Couper eau, relancer île + plage
+    if(water){water.pause();}
+    if(beach){beach.volume=0.18;beach.loop=true;beach.play().catch(function(){});}
+    if(isle){isle.volume=0.32;isle.loop=true;isle.play().catch(function(){});}
+  }
+}
+
+// Démarrer au premier touch
+document.addEventListener('touchstart',startMusic,{once:true});
+document.addEventListener('click',startMusic,{once:true});
+
 function toast(m,d){var t=document.getElementById('toast');t.textContent=m;t.className='show';clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='';},d||3000);}
 document.querySelector('a-scene').addEventListener('loaded',initGame);
 
@@ -214,7 +276,10 @@ function initGame(){
         {id:'pleakley',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb',pos:'-5 0 15',rot:'0 90 0',sc:'0.35'},
         {id:'angel',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_and_stitch__oc_.glb',pos:'15 0 -5',rot:'0 270 0',sc:'0.38'},
         {id:'lilo2',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lilo_et_scrump.glb',pos:'-8 0 25',rot:'0 150 0',sc:'0.38'},
-        {id:'hamster',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hamsterwiel_from_lilo_and_stitch.glb',pos:'20 0 30',rot:'0 220 0',sc:'0.35'}
+        {id:'hamster',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hamsterwiel_from_lilo_and_stitch.glb',pos:'20 0 30',rot:'0 220 0',sc:'0.35'},
+        {id:'cobra',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/cobra_bubbles_from_li...glb',pos:'-18 0 -10',rot:'0 30 0',sc:'0.35'},
+        {id:'councilwoman',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/grand_councilwoman_...glb',pos:'22 0 -12',rot:'0 200 0',sc:'0.35'},
+        {id:'wendy',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/wendy_pleakley_from_...glb',pos:'-20 0 20',rot:'0 100 0',sc:'0.35'}
       ];
       chars.forEach(function(c){
         var el=document.createElement('a-gltf-model');
@@ -223,16 +288,39 @@ function initGame(){
         el.setAttribute('rotation',c.rot);
         el.setAttribute('scale','1 1 1');
         el.setAttribute('shadow','cast:true');
-        // Auto-scale au chargement pour que chaque perso fasse ~1.4 unités
+        // Auto-scale + lancer animation GLB
         el.addEventListener('model-loaded',function(){
           var mesh=el.getObject3D('mesh');
           if(!mesh)return;
           var box=new AFRAME.THREE.Box3().setFromObject(mesh);
           var h=box.max.y-box.min.y;
           if(h>0.05){
-            var target=1.4; // même hauteur que Stitch
-            var sc=target/h;
+            var ratios={
+              'nani':1.8,'jumba':2.5,'lilo':0.75,'pleakley':1.9,
+              'angel':1.0,'lilo2':0.75,'hamster':0.65,
+              'cobra':2.2,'councilwoman':1.7,'wendy':1.8
+            };
+            var ratio=ratios[c.id]||1.2;
+            var sc=(1.4*ratio)/h;
             el.setAttribute('scale',sc+' '+sc+' '+sc);
+          }
+          // Lancer l'animation intégrée du GLB (idle/walk)
+          var obj=el.getObject3D('mesh');
+          var clips=[],cur=obj;
+          while(cur){if(cur.animations&&cur.animations.length){clips=cur.animations;break;}cur=cur.parent;}
+          if(clips.length>0){
+            var mixer=new AFRAME.THREE.AnimationMixer(cur);
+            // Jouer le premier clip en boucle (idle/walk selon le modèle)
+            var action=mixer.clipAction(clips[0]);
+            action.setLoop(AFRAME.THREE.LoopRepeat,Infinity);
+            action.play();
+            // Stocker le mixer pour update dans la boucle principale
+            if(!window._npcMixers)window._npcMixers=[];
+            window._npcMixers.push(mixer);
+          }
+          // Ajouter une rotation lente pour les persos sans animation
+          if(clips.length===0){
+            el.setAttribute('animation','property:rotation;to:0 360 0;loop:true;dur:8000;easing:linear');
           }
         });
         el.addEventListener('model-error',function(){el.parentNode&&el.parentNode.removeChild(el);});
@@ -357,6 +445,8 @@ function initGame(){
   function loop(){
     requestAnimationFrame(loop);
     var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;waveT+=dt;
+    // Update animations NPC
+    if(window._npcMixers){for(var mi=0;mi<window._npcMixers.length;mi++){window._npcMixers[mi].update(dt);}}
     if(!windLeaves)windLeaves=document.querySelectorAll('.wind-leaf');
     windLeaves.forEach(function(lf){var ph=parseFloat(lf.dataset.windPhase||0),brx=parseFloat(lf.dataset.brx||0),bry=lf.dataset.bry||'0';var s=Math.sin(waveT*1.15+ph)*3.2;lf.setAttribute('rotation',(brx+s).toFixed(1)+' '+bry+' '+Math.cos(waveT*.75+ph).toFixed(1));});
     if(!fishEls)fishEls=document.querySelectorAll('.fish-anim');
@@ -375,8 +465,8 @@ P.vx*=turnFactor;P.vz*=turnFactor;
 P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     if(P.state==='ground'||P.state==='air'){
       P.vy-=22*dt;if(P.vy<-25)P.vy=-25;P.y+=P.vy*dt;
-      if(gy!==null&&P.y<=gy+P.yOff){if(gy<WATER_SURFACE-0.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}else if(P.y<=WATER_SURFACE+WATER_ENTER_THRESHOLD&&gy<=WATER_SURFACE){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;}else{P.y=gy+P.yOff;P.vy=0;P.onGround=true;P.state='ground';}}
-      else if(gy===null&&P.y<=WATER_SURFACE+0.05){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}
+      if(gy!==null&&P.y<=gy+P.yOff){if(gy<WATER_SURFACE-0.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;playSound('sndSplash');toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}else if(P.y<=WATER_SURFACE+WATER_ENTER_THRESHOLD&&gy<=WATER_SURFACE){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;}else{P.y=gy+P.yOff;P.vy=0;P.onGround=true;P.state='ground';}}
+      else if(gy===null&&P.y<=WATER_SURFACE+0.05){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;playSound('sndSplash');toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}
       else{P.onGround=false;if(P.state==='ground')P.state='air';}
     }else if(P.state==='surface'){
       P.swimBob+=dt;P.breath=Math.min(MAX_BREATH,P.breath+BREATH_GAIN*dt);P.y=WATER_SURFACE+Math.sin(P.swimBob*2.2)*.06;P.vy=0;P.onGround=true;
@@ -401,6 +491,16 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     stEl.setAttribute('position',P.x.toFixed(2)+' '+P.y.toFixed(2)+' '+P.z.toFixed(2));
     stEl.setAttribute('rotation',tiltX.toFixed(1)+' '+(P.yaw*180/Math.PI).toFixed(1)+' 0');
     animateStitch(dt,moveMag,P.state,sprint);
+    // Son de pas
+    if(P.state==='ground'&&moveMag>.05){
+      if(!window._stepT)window._stepT=0;
+      window._stepT+=dt;
+      if(window._stepT>0.38){window._stepT=0;playSound('sndStepSand');}
+    } else if(P.state==='surface'&&moveMag>.05){
+      if(!window._stepT)window._stepT=0;
+      window._stepT+=dt;
+      if(window._stepT>0.4){window._stepT=0;playSound('sndStepWater');}
+    }
     if(Math.abs(rjLX)>.04)CAM.yaw+=rjLX*dt*2.5;else if(moveMag>.1){var tc=P.yaw+Math.PI,cd=tc-CAM.yaw;while(cd>Math.PI)cd-=Math.PI*2;while(cd<-Math.PI)cd+=Math.PI*2;CAM.yaw+=cd*dt*2.2;}
     if(Math.abs(rjLY)>.04)CAM.pitch=Math.max(.06,Math.min(.75,CAM.pitch+rjLY*dt*1.5));
     var camDist=CAM.dist,camPitch=CAM.pitch;
@@ -437,19 +537,21 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
           md.querySelector('button').textContent='✅ Oui, réessayer !';
           md.querySelector('button').onclick=function(){window.MISSION={active:false,count:0,timer:0,done:false,total:20};window.pineappleEls.forEach(function(p){p.setAttribute('visible','true');});window.closeMissionDialog();};
           md.querySelector('.decline').textContent='❌ Non, à bientôt';
-          md.querySelector('.decline').onclick=function(){window.MISSION.done=true;window.closeMissionDialog();toast('À bientôt Nani ! 👋',2500);};
+          md.querySelector('.decline').onclick=function(){playSound('sndNah');window.MISSION.done=true;window.closeMissionDialog();toast('À bientôt Nani ! 👋',2500);};
           md.querySelector('.decline').style.display='';
         }
         md.style.display='block';
         window.MISSION.done=window.MISSION.count>=20;
         if(window.MISSION.done){var gunEl=document.createElement('a-gltf-model');gunEl.setAttribute('src','#watergunGLB');gunEl.setAttribute('position',P.x+' '+(P.y+1.5)+' '+P.z);gunEl.setAttribute('scale','3 3 3');gunEl.setAttribute('rotation','0 '+(P.yaw*180/Math.PI)+' 0');document.getElementById('world').appendChild(gunEl);
-          window.INVENTAIRE.push({icon:'🔫',name:'Pistolet à eau',desc:'Cadeau de Nani pour avoir ramassé les 20 glaces !'});
+          playSound('sndWin');setTimeout(function(){playSound('sndOhana');},1500);window.INVENTAIRE.push({icon:'🔫',name:'Pistolet à eau',desc:'Cadeau de Nani pour avoir ramassé les 20 glaces !'});
           toast('🔫 Pistolet à eau ajouté dans ton sac !',3000);}
       }
       document.getElementById('mission-timer').textContent=Math.ceil(window.MISSION.timer);
       document.getElementById('mission-count').textContent=window.MISSION.count;
-      if(window.pineappleEls){window.pineappleEls.forEach(function(pa){if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;var pp=pa.getAttribute('position');if(!pp)return;var dx=P.x-parseFloat(pp.x||pp.split(' ')[0]);var dz=P.z-parseFloat(pp.z||pp.split(' ')[2]);if(dx*dx+dz*dz<3.5&&window.MISSION.count<20){pa.setAttribute('visible','false');window.MISSION.count++;toast('🍦 +1 glace !',600);if(window.MISSION.count>=20){window.MISSION.timer=0.01;}}});}
+      if(window.pineappleEls){window.pineappleEls.forEach(function(pa){if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;var pp=pa.getAttribute('position');if(!pp)return;var dx=P.x-parseFloat(pp.x||pp.split(' ')[0]);var dz=P.z-parseFloat(pp.z||pp.split(' ')[2]);if(dx*dx+dz*dz<3.5&&window.MISSION.count<20){pa.setAttribute('visible','false');window.MISSION.count++;playSound('sndCollect');if(window.MISSION.count===10){setTimeout(function(){playSound('sndLaugh');},300);}toast('🍦 +1 glace !',600);if(window.MISSION.count>=20){window.MISSION.timer=0.01;}}});}
     }
+    // Mettre à jour la musique selon la zone
+    updateAudioZone(P.state);
     var zone='🌊 OCEAN';
     if(P.state==='diving')zone='🤿 SOUS L EAU';
     else if(P.state!=='surface'){zone='🏖 PLAGE';for(var ii=0;ii<islandDefs.length;ii++){var id2=islandDefs[ii];if(Math.sqrt((P.x-id2.cx)*(P.x-id2.cx)+(P.z-id2.cz)*(P.z-id2.cz))<62){zone='🏝 '+id2.label;break;}}}
@@ -457,7 +559,17 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
   }
   loop();
 
-  window.doJump=function(e){if(e&&e.preventDefault)e.preventDefault();if(P.state==='diving'){P.vy=7;}else if(P.state==='ground'&&P.onGround){P.vy=8.5;P.onGround=false;P.state='air';}else if(P.state==='surface'){P.vy=6;P.state='air';}};
+  window.doJump=function(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  // Voix Stitch aléatoire au saut (1 fois sur 3)
+  if(Math.random()<0.33){
+    var voices=['sndHiii','sndEek','sndAaaah'];
+    playSound(voices[Math.floor(Math.random()*voices.length)]);
+  }
+  if(P.state==='diving'){P.vy=7;}
+  else if(P.state==='ground'&&P.onGround){P.vy=8.5;P.onGround=false;P.state='air';}
+  else if(P.state==='surface'){P.vy=6;P.state='air';}
+};
   window.startDive=function(e){if(e&&e.preventDefault)e.preventDefault();_pressingDown=true;if(P.state==='surface'){P.state='diving';P.vy=-7;P.y=WATER_SURFACE-1.2;P.onGround=false;}};
   window.stopDive=function(e){if(e&&e.preventDefault)e.preventDefault();_pressingDown=false;};
   window.setSprint=function(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;};
