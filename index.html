@@ -39,6 +39,9 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 #gun-btns{position:fixed;bottom:110px;right:14px;z-index:30;display:none;flex-direction:column;gap:8px;align-items:flex-end}
 #btn-fire{background:rgba(255,50,50,.92);border:2px solid #ff6666;border-radius:50%;width:58px;height:58px;color:#fff;font-size:9px;font-family:Georgia,serif;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center}
 #btn-holster{background:rgba(0,8,22,.82);border:2px solid #aaa;border-radius:50%;width:48px;height:48px;color:#aaa;font-size:8px;font-family:Georgia,serif;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center}
+/* Pistolet collectible flottant */
+#gun-pickup-hint{position:fixed;bottom:160px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(0,30,60,.9);border:2px solid #00ffcc;border-radius:12px;padding:6px 16px;color:#00ffcc;font-size:11px;font-family:Georgia,serif;display:none;white-space:nowrap;pointer-events:none;animation:pulse 1s infinite alternate}
+@keyframes pulse{from{border-color:#00ffcc;color:#00ffcc}to{border-color:#ffffff;color:#ffffff}}
 #backpack-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.8);align-items:center;justify-content:center;}
 #backpack-box{background:linear-gradient(135deg,#2a1a0a,#3a2a10);border:3px solid #ffaa00;border-radius:20px;padding:20px;width:280px;max-height:70vh;overflow-y:auto;position:relative;}
 #backpack-box h2{color:#ffaa00;font-family:Georgia,serif;font-size:15px;text-align:center;margin-bottom:14px}
@@ -59,13 +62,11 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <a-asset-item id="cartGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Street%20Vendor%20Cart.glb" crossorigin="anonymous"></a-asset-item>
   <a-asset-item id="sundaeGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb" crossorigin="anonymous"></a-asset-item>
   <a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb" crossorigin="anonymous"></a-asset-item>
-  <!-- Sons du jeu - fichiers réels GitHub -->
   <audio id="sndCollect" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Ice%20cream.wav" preload="auto"></audio>
   <audio id="sndSplash"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Splash.wav" preload="auto"></audio>
   <audio id="sndWin"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Aloha!.mp3" preload="none"></audio>
   <audio id="sndStepSand" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20sand.wav" preload="auto"></audio>
   <audio id="sndStepWater" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20water.wav" preload="auto"></audio>
-  <!-- Voix de Stitch -->
   <audio id="sndEek"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GROWLING)%20Eek!.mp3" preload="none"></audio>
   <audio id="sndLaugh"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20LAUGHING%20-%20Sound%20Effect).mp3" preload="none"></audio>
   <audio id="sndOhana"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Ohana.mp3" preload="none"></audio>
@@ -73,9 +74,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <audio id="sndAaaah"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Aaaah.mp3" preload="none"></audio>
   <audio id="sndNah"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Nah!.mp3" preload="none"></audio>
   <audio id="sndGobble"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GOBBLING%20-%20Sound%20Effect).mp3" preload="none"></audio>
-  <!-- Ambiance plage -->
   <audio id="sndBeach"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Beach.wav" loop preload="auto"></audio>
-  <!-- Bandes son (2 musiques ukulele en rotation) -->
   <audio id="bgMusic1" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="none"></audio>
   <audio id="bgMusic2" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="none"></audio>
   <audio id="bgMusic3" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/peterkolaiko-tropical-happy-ukulele-231561.mp3" preload="none"></audio>
@@ -130,12 +129,14 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 <div id="bubbles-container"></div>
 <div id="caustic-overlay"></div>
 <div id="dive-hint"></div>
+<div id="gun-pickup-hint">🔫 Appuie sur RAMASSER pour prendre le pistolet !</div>
 <div id="joy"><div id="jnub"></div></div>
 <div id="rjoy"><div id="rjnub"></div></div>
 <div id="btns">
   <div class="btn" style="border-color:#7de8ff;color:#7de8ff" ontouchstart="doJump(event)" onclick="doJump()">⬆<br>JUMP</div>
   <div class="btn" style="border-color:#00ffcc;color:#00ffcc" ontouchstart="startDive(event)" ontouchend="stopDive(event)" onmousedown="startDive()" onmouseup="stopDive()">⬇<br>PLONGE</div>
   <div class="btn" style="border-color:#ffd700;color:#ffd700" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">⚡<br>RUN</div>
+  <div class="btn" id="btn-pickup" style="border-color:#00ffcc;color:#00ffcc;display:none" ontouchstart="pickupNearby(event)" onclick="pickupNearby()">🤲<br>RAMASSER</div>
 </div>
 <div id="toast"></div>
 <div id="gun-btns">
@@ -152,7 +153,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 </div>
 <div id="mission-truck">
   <h3>🍦 Chariot de Glaces</h3>
-  <p id="mission-text">Aloha ! Je suis Nani, la vendeuse de glaces.<br>Mes <b>50 glaces</b> se sont éparpillées partout !<br>Aide-moi à les récupérer en <b>90 secondes</b><br>et je te donne un <b>🔫 pistolet à eau</b> !</p>
+  <p id="mission-text">Aloha ! Je suis Nani, la vendeuse de glaces.<br>Mes <b>20 glaces</b> se sont éparpillées partout !<br>Aide-moi à les récupérer en <b>90 secondes</b><br>et je te donne un <b>🔫 pistolet à eau</b> !</p>
   <button onclick="startMission()">✅ Oui, j'aide !</button>
   <button class="decline" onclick="closeMissionDialog()">❌ Non merci</button>
 </div>
@@ -175,15 +176,12 @@ function playSound(id){
     var s=document.getElementById(id);
     if(!s)return;
     s.currentTime=0;
-    // Voix Stitch à fond, sons de jeu normaux
     var voixStitch=['sndHiii','sndOhana','sndGobble','sndLaugh','sndAaaah','sndEek','sndNah','sndWin'];
     s.volume=voixStitch.indexOf(id)>=0?1.0:0.75;
     s.play().catch(function(){});
   }catch(e){}
 }
-// ── SYSTÈME AUDIO ZONES ──
-var _audioState='none'; // 'island' | 'water'
-
+var _audioState='none';
 function startMusic(){
   if(window._musicStarted)return;
   window._musicStarted=true;
@@ -193,26 +191,21 @@ function startMusic(){
   var isle=document.getElementById('bgMusic2');
   if(isle){isle.loop=true;isle.volume=0.32;isle.play().catch(function(){});}
 }
-
 function updateAudioZone(state){
   if(!window._musicStarted)return;
   var isUnderwater=(state==='diving'||state==='surface');
   var beach=document.getElementById('sndBeach');
-  var isle=document.getElementById('bgMusic2');   // the_mountain — île
-  var water=document.getElementById('bgMusic1');  // sonican — eau
-
+  var isle=document.getElementById('bgMusic2');
+  var water=document.getElementById('bgMusic1');
   if(isUnderwater && _audioState!=='water'){
     _audioState='water';
     try{if(isle&&!isle.paused)isle.pause();}catch(e){}
     try{if(beach&&!beach.paused)beach.pause();}catch(e){}
     if(water){
-      water.loop=true;
-      water.volume=0.20;
-      // Charger si pas encore fait (preload=none)
+      water.loop=true;water.volume=0.20;
       if(water.readyState===0){water.load();}
       var tryPlay=function(){water.currentTime=0;var p=water.play();if(p&&p.catch)p.catch(function(){});};
-      if(water.readyState>=2){tryPlay();}
-      else{water.addEventListener('canplay',tryPlay,{once:true});}
+      if(water.readyState>=2){tryPlay();}else{water.addEventListener('canplay',tryPlay,{once:true});}
     }
   } else if(!isUnderwater && _audioState!=='island'){
     _audioState='island';
@@ -221,8 +214,6 @@ function updateAudioZone(state){
     if(isle){isle.loop=true;isle.volume=0.18;if(isle.readyState===0){isle.load();}var tryIsle=function(){var p2=isle.play();if(p2&&p2.catch)p2.catch(function(){});};if(isle.readyState>=2){tryIsle();}else{isle.addEventListener('canplay',tryIsle,{once:true});}}
   }
 }
-
-// Démarrer au premier touch
 document.addEventListener('touchstart',startMusic,{once:true});
 document.addEventListener('click',startMusic,{once:true});
 
@@ -244,7 +235,6 @@ function initGame(){
     for(var i=0;i<bridgeSegs.length;i++){var seg=bridgeSegs[i];var dx=seg.x2-seg.x1,dz=seg.z2-seg.z1,len=Math.sqrt(dx*dx+dz*dz);if(len<0.001)continue;var nx2=dx/len,nz2=dz/len;var px2=px-seg.x1,pz2=pz-seg.z1;var along=px2*nx2+pz2*nz2;var perp=Math.abs(px2*(-nz2)+pz2*nx2);if(along>=-0.5&&along<=len+0.5&&perp<=seg.hw){if(best===null||seg.y>best)best=seg.y;}}
     return best;
   }
-  var SAND_COL='#f5e8b0',SAND_WET='#ddd090';
 
   function makePalm(x,gy,z,h,lx,lz,par){par=par||W;addWall(x,z,0.35,h*0.5,gy);var NS=14,pts=[];for(var i=0;i<=NS;i++){var t=i/NS;pts.push({x:x+lx*h*t*t*.7,y:gy+h*t,z:z+lz*h*t*t*.7});}for(var i=0;i<NS;i++){var p0=pts[i],p1=pts[i+1];var dx=p1.x-p0.x,dy=p1.y-p0.y,dz=p1.z-p0.z,len=Math.sqrt(dx*dx+dy*dy+dz*dz);var tr=i/NS;var rB=Math.max(.022,.055-tr*.032),rT=Math.max(.018,.042-tr*.022);mk('cylinder',{'radius-bottom':rB.toFixed(4),'radius-top':rT.toFixed(4),height:len.toFixed(3),'segments-radial':'6',position:((p0.x+p1.x)/2).toFixed(2)+' '+((p0.y+p1.y)/2).toFixed(2)+' '+((p0.z+p1.z)/2).toFixed(2),rotation:segRot(dx,dy,dz),material:'roughness:.93;color:'+(i%2===0?'#c8a86a':'#b09050'),shadow:'cast:true'},par);}var top=pts[NS];var nL=11+Math.floor(Math.random()*4);for(var i=0;i<nL;i++){var ang=i/nL*Math.PI*2+(Math.random()-.5)*.2;var ll=5+Math.random()*4;var lw=.5+Math.random()*.35;var droop=.5+Math.random()*.48;var fx=top.x+Math.sin(ang)*.28,fy=top.y+.06,fz=top.z+Math.cos(ang)*.28;var brx=(-droop*64).toFixed(1),bry=((ang+Math.PI/2)*180/Math.PI).toFixed(1);var gv=.62+Math.random()*.3;var lf=mk('plane',{width:ll.toFixed(2),height:lw.toFixed(2),position:fx.toFixed(2)+' '+fy.toFixed(2)+' '+fz.toFixed(2),rotation:brx+' '+bry+' 0',material:'roughness:.65;side:double;color:#'+Math.floor(gv*.38*255).toString(16).padStart(2,'0')+Math.floor(gv*255).toString(16).padStart(2,'0')+Math.floor(gv*.2*255).toString(16).padStart(2,'0'),shadow:'cast:true'},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx=brx;lf.dataset.bry=bry;lf.classList.add('wind-leaf');}}
   function makeTallGrass(x,gy,z,par){par=par||W;var nc=6+Math.floor(Math.random()*5);for(var i=0;i<nc;i++){var ang=i/nc*Math.PI*2+Math.random()*.5,r=.05+Math.random()*.3,sh=0.8+Math.random()*1.4;var gcol=['#4a9a20','#3a8a18','#5aaa28','#2a7a10','#6aba30'][Math.floor(Math.random()*5)];var lf=mk('plane',{width:(.06+Math.random()*.05).toFixed(3),height:sh.toFixed(2),position:(x+Math.sin(ang)*r).toFixed(2)+' '+(gy+sh*.5).toFixed(2)+' '+(z+Math.cos(ang)*r).toFixed(2),rotation:'0 '+(ang*180/Math.PI).toFixed(1)+' '+(Math.random()*15-7).toFixed(1),material:'roughness:.8;side:double;color:'+gcol},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='0';lf.dataset.bry=(ang*180/Math.PI).toFixed(1);lf.classList.add('wind-leaf');}}
@@ -288,8 +278,6 @@ function initGame(){
     for(var vi=0;vi<40;vi++){var va=vi/40*Math.PI*2,vr=4+Math.random()*35;var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;makeGiantHibiscus(vx,GY+0.01,vz2);if(vi%2===0)makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);if(vi%3===0)makeFern(vx-1,GY+0.01,vz2-1);if(vi%4===0)makeMonstera(vx+1,GY+0.01,vz2-2);}
     for(var vi=0;vi<50;vi++){var va=Math.random()*Math.PI*2,vr=3+Math.random()*40;makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);}
     mk('gltf-model',{src:'#hutGLB',position:'-8 0 -6',rotation:'0 140 0',scale:'12 12 12',shadow:'cast:true'});
-    // ── PERSONNAGES Lilo & Stitch disponibles ──
-    // Nani près du chariot (chargement différé)
     setTimeout(function(){
       var chars=[
         {id:'nani',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb',pos:'26 0 52',rot:'0 180 0',sc:'0.35'},
@@ -305,84 +293,24 @@ function initGame(){
       ];
       chars.forEach(function(c){
         var el=document.createElement('a-gltf-model');
-        el.setAttribute('src',c.src);
-        el.setAttribute('position',c.pos);
-        el.setAttribute('rotation',c.rot);
-        el.setAttribute('scale','1 1 1');
-        el.setAttribute('shadow','cast:true');
-        // Auto-scale + lancer animation GLB
+        el.setAttribute('src',c.src);el.setAttribute('position',c.pos);el.setAttribute('rotation',c.rot);el.setAttribute('scale','1 1 1');el.setAttribute('shadow','cast:true');
         el.addEventListener('model-loaded',function(){
-          var mesh=el.getObject3D('mesh');
-          if(!mesh)return;
-          var box=new AFRAME.THREE.Box3().setFromObject(mesh);
-          var h=box.max.y-box.min.y;
-          var finalSc=1;
-          if(h>0.05){
-            var ratios={
-              'nani':2.8,'jumba':3.0,
-              'lilo':1.9,
-              'pleakley':2.3,
-              'angel':1.4,'lilo2':1.9,'hamster':0.9,
-              'cobra':2.6,'councilwoman':2.1,'wendy':2.2
-            };
-            var ratio=ratios[c.id]||1.2;
-            finalSc=(1.4*ratio)/h;
-            el.setAttribute('scale',finalSc+' '+finalSc+' '+finalSc);
-          }
-          // ── OMBRE collée sous les pieds du NPC ──
-          var shadow=document.createElement('a-circle');
-          shadow.setAttribute('radius',(0.35*Math.min(finalSc*h/1.4,1.2)).toFixed(2));
-          shadow.setAttribute('rotation','-90 0 0');
-          shadow.setAttribute('segments','8');
-          shadow.setAttribute('material','color:#000000;transparent:true;opacity:0.35');
-          // Position Y légèrement au-dessus du sol (0.02) relative au parent world
-          var pos=c.pos.split(' ');
-          var px=parseFloat(pos[0]),pz=parseFloat(pos[2]);
-          shadow.setAttribute('position',px.toFixed(2)+' 0.02 '+pz.toFixed(2));
-          document.getElementById('world').appendChild(shadow);
-          // Lancer l'animation intégrée du GLB (idle/walk)
-          var obj=el.getObject3D('mesh');
-          var clips=[],cur=obj;
-          while(cur){if(cur.animations&&cur.animations.length){clips=cur.animations;break;}cur=cur.parent;}
-          if(clips.length>0){
-            var mixer=new AFRAME.THREE.AnimationMixer(cur);
-            // Jouer le premier clip en boucle (idle/walk selon le modèle)
-            var action=mixer.clipAction(clips[0]);
-            action.setLoop(AFRAME.THREE.LoopRepeat,Infinity);
-            action.play();
-            // Stocker le mixer pour update dans la boucle principale
-            if(!window._npcMixers)window._npcMixers=[];
-            window._npcMixers.push(mixer);
-          }
-          // Ajouter une rotation lente pour les persos sans animation
-          if(clips.length===0){
-            el.setAttribute('animation','property:rotation;to:0 360 0;loop:true;dur:8000;easing:linear');
-          }
+          var mesh=el.getObject3D('mesh');if(!mesh)return;
+          var box=new AFRAME.THREE.Box3().setFromObject(mesh);var h=box.max.y-box.min.y;var finalSc=1;
+          if(h>0.05){var ratios={nani:2.8,jumba:3.0,lilo:1.9,pleakley:2.3,angel:1.4,lilo2:1.9,hamster:0.9,cobra:2.6,councilwoman:2.1,wendy:2.2};var ratio=ratios[c.id]||1.2;finalSc=(1.4*ratio)/h;el.setAttribute('scale',finalSc+' '+finalSc+' '+finalSc);}
+          var shadow=document.createElement('a-circle');shadow.setAttribute('radius',(0.35*Math.min(finalSc*h/1.4,1.2)).toFixed(2));shadow.setAttribute('rotation','-90 0 0');shadow.setAttribute('segments','8');shadow.setAttribute('material','color:#000000;transparent:true;opacity:0.35');var pos=c.pos.split(' ');var px=parseFloat(pos[0]),pz=parseFloat(pos[2]);shadow.setAttribute('position',px.toFixed(2)+' 0.02 '+pz.toFixed(2));document.getElementById('world').appendChild(shadow);
+          var obj=el.getObject3D('mesh');var clips=[],cur=obj;while(cur){if(cur.animations&&cur.animations.length){clips=cur.animations;break;}cur=cur.parent;}
+          if(clips.length>0){var mixer=new AFRAME.THREE.AnimationMixer(cur);var action=mixer.clipAction(clips[0]);action.setLoop(AFRAME.THREE.LoopRepeat,Infinity);action.play();if(!window._npcMixers)window._npcMixers=[];window._npcMixers.push(mixer);}
+          if(clips.length===0){el.setAttribute('animation','property:rotation;to:0 360 0;loop:true;dur:8000;easing:linear');}
         });
         el.addEventListener('model-error',function(){el.parentNode&&el.parentNode.removeChild(el);});
         document.getElementById('world').appendChild(el);
       });
-      // Rochers GLB sur la plage
       var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
-      [['Rock.glb','38 0 30',3],['Rock.glb','-35 0 25',3.5],['Rocks.glb','42 0 -10',4],
-       ['Rock%202.glb','-40 0 -5',3.5],['Rock%20Large.glb','50 0 20',5],
-       ['Rock%20Large%202.glb','-48 0 15',4.5]].forEach(function(r){
-        var el=document.createElement('a-gltf-model');
-        el.setAttribute('src',BASE+r[0]);el.setAttribute('position',r[1]);
-        el.setAttribute('scale',r[2]+' '+r[2]+' '+r[2]);
-        document.getElementById('world').appendChild(el);
-      });
+      [['Rock.glb','38 0 30',3],['Rock.glb','-35 0 25',3.5],['Rocks.glb','42 0 -10',4],['Rock%202.glb','-40 0 -5',3.5],['Rock%20Large.glb','50 0 20',5],['Rock%20Large%202.glb','-48 0 15',4.5]].forEach(function(r){var el=document.createElement('a-gltf-model');el.setAttribute('src',BASE+r[0]);el.setAttribute('position',r[1]);el.setAttribute('scale',r[2]+' '+r[2]+' '+r[2]);document.getElementById('world').appendChild(el);});
     },3000);
-    // ── DÉCO : Hibiscus GLB ──
     setTimeout(function(){
-      for(var i=0;i<8;i++){
-        var a=i/8*Math.PI*2,r=15+Math.random()*25;
-        var el=document.createElement('a-gltf-model');
-        el.setAttribute('src','https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hibiscus%20flower.glb');
-        el.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' 0 '+(Math.cos(a)*r).toFixed(1));
-        el.setAttribute('scale','3 3 3');
-        document.getElementById('world').appendChild(el);
-      }
+      for(var i=0;i<8;i++){var a=i/8*Math.PI*2,r=15+Math.random()*25;var el=document.createElement('a-gltf-model');el.setAttribute('src','https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hibiscus%20flower.glb');el.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' 0 '+(Math.cos(a)*r).toFixed(1));el.setAttribute('scale','3 3 3');document.getElementById('world').appendChild(el);}
     },4000);
     [[-35,50],[-42,28],[38,45],[44,24],[-18,65],[20,68]].forEach(function(p,i){mk('sphere',{radius:(2+i*.35).toFixed(1),position:p[0]+' 0.6 '+p[1],scale:'1 .5 1',material:'color:#7a6040;roughness:.95',shadow:'cast:true'});});
     [[-28,2],[30,-2],[14,-4],[-18,3]].forEach(function(p,i){mk('sphere',{radius:(1.5+i*.2).toFixed(1),position:p[0]+' -.2 '+p[1],scale:'1 .4 1',material:'color:#6a5030;roughness:.95'});});
@@ -409,18 +337,24 @@ function initGame(){
   buildUnderwaterWorld();
   buildMission();
 
+  // ─────────────────────────────────────────────
+  // MISSION — CORRECTIONS DES 3 BUGS
+  // ─────────────────────────────────────────────
   function buildMission(){
     var GY=0.0;
     mk('gltf-model',{src:'#cartGLB',position:'30 2.5 55',scale:'2 2 2',shadow:'cast:true'});
     addWall(30,55,3,3,GY);
-    // Vendeuse géométrique (Nani) — pas de GLB externe
     var nani=mk('entity',{id:'paulo',position:'25 0 54'});
     mk('cylinder',{'radius-bottom':'.14','radius-top':'.12',height:'.9',position:'0 .5 0',material:'color:#ff6688;roughness:.8'},nani);
     mk('sphere',{radius:'.16',position:'0 1.08 0',material:'color:#f4a060;roughness:.8'},nani);
     mk('sphere',{radius:'.16',scale:'1 .55 1',position:'0 1.15 0',material:'color:#3a1a00;roughness:.9'},nani);
+
+    // Créer 20 glaces seulement (pas 50) — on n'en collecte que 20
     window.pineappleEls=[];
-    for(var i=0;i<50;i++){
-      var a=i/50*Math.PI*2+Math.random()*.3,r=8+Math.random()*50;
+    var placed=0,attempts=0;
+    while(placed<20&&attempts<200){
+      attempts++;
+      var a=Math.random()*Math.PI*2,r=8+Math.random()*50;
       var px=Math.sin(a)*r,pz=Math.cos(a)*r;
       if(Math.sqrt(px*px+pz*pz)>72)continue;
       var pa=document.createElement('a-gltf-model');
@@ -431,13 +365,61 @@ function initGame(){
       pa.classList.add('pineapple');
       W.appendChild(pa);
       window.pineappleEls.push(pa);
+      placed++;
     }
-    window.MISSION={active:false,count:0,timer:0,done:false,total:20};
+
+    // ── PISTOLET COLLECTIBLE dans le monde ──
+    // Posé près du chariot, collectible en s'approchant
+    window._gunWorldEl=null;
+    window._gunPickable=false;  // devient true après mission gagnée
+    window._gunCollected=false; // devient true une fois ramassé
+
+    window.MISSION={active:false,count:0,timer:90,done:false,total:20};
     window._pauloDialogShown=false;
   }
 
   window.closeMissionDialog=function(){document.getElementById('mission-truck').style.display='none';};
-  window.startMission=function(){document.getElementById('mission-truck').style.display='none';window.MISSION.active=true;window.MISSION.count=0;window.MISSION.timer=90;document.getElementById('mission-hud').style.display='block';if(window.pineappleEls)window.pineappleEls.forEach(function(p){p.setAttribute('visible','true');});toast('🍦 Mission démarrée ! Ramasse 20 glaces !',3000);};
+
+  // ── BUG 1 CORRIGÉ : timer toujours réinitialisé à 90 ──
+  window.startMission=function(){
+    document.getElementById('mission-truck').style.display='none';
+    // Réinitialisation complète à chaque lancement
+    window.MISSION.active=true;
+    window.MISSION.count=0;
+    window.MISSION.timer=90;   // ← TOUJOURS 90s, pas reprise de l'ancienne valeur
+    window.MISSION.done=false;
+    document.getElementById('mission-hud').style.display='block';
+    // ── BUG 2 CORRIGÉ : rendre toutes les glaces visibles ──
+    if(window.pineappleEls){
+      window.pineappleEls.forEach(function(p){
+        p.setAttribute('visible','true');
+        p._collected=false; // reset état collecte
+      });
+    }
+    toast('🍦 Mission démarrée ! Ramasse 20 glaces en 90s !',3000);
+  };
+
+  // ── BUG 3 CORRIGÉ : pistolet posé sur le sol, à ramasser ──
+  window._spawnGunOnGround=function(){
+    if(window._gunWorldEl){
+      // Déjà créé (mission rejouée) — le remettre visible
+      window._gunWorldEl.setAttribute('visible','true');
+      window._gunWorldEl.setAttribute('position','28 0.5 52');
+    } else {
+      var g=document.createElement('a-gltf-model');
+      g.setAttribute('src','#watergunGLB');
+      g.setAttribute('position','28 0.5 52');  // posé sur le sol près de Nani
+      g.setAttribute('scale','3 3 3');
+      g.setAttribute('rotation','0 45 0');
+      g.id='gun-world-object';
+      // Animation de flottement doux sur place
+      g.setAttribute('animation','property:position;from:28 0.5 52;to:28 1.0 52;loop:true;dur:1200;dir:alternate;easing:easeInOutSine');
+      document.getElementById('world').appendChild(g);
+      window._gunWorldEl=g;
+    }
+    window._gunPickable=true;
+    window._gunCollected=false;
+  };
 
   var SFX='_Stitch_Armature',BONES={},BONE_REST={},ANIM_T=0,stitchMixer=null,nativeAction=null;
   var BONE_MAP={root:'ROOT'+SFX,spine0:'Spine_start'+SFX,spine1:'Spine.001'+SFX,shoulders:'Shoulders'+SFX,neck:'Neck'+SFX,head:'Head'+SFX,shoulderL:'Shoulder.L'+SFX,armL:'Arm.L'+SFX,foreArmL:'ForeArm.L'+SFX,shoulderR:'Shoulder.R'+SFX,armR:'Arm.R'+SFX,foreArmR:'ForeArm.R'+SFX,hipL:'Hip.L'+SFX,legL:'Leg.L'+SFX,foreLegL:'ForeLeg.L'+SFX,heelL:'Heel.L'+SFX,hipR:'Hip.R'+SFX,legR:'Leg.R'+SFX,foreLegR:'ForeLeg.R'+SFX,heelR:'Heel.R'+SFX,butt:'Butt'+SFX,tail:'Tail'+SFX,earAL:'Ear_A.L'+SFX,earAR:'Ear_A.R'+SFX};
@@ -482,7 +464,6 @@ function initGame(){
     requestAnimationFrame(loop);
     try{
     var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;waveT+=dt;
-    // Update animations NPC
     if(window._npcMixers){for(var mi=0;mi<window._npcMixers.length;mi++){window._npcMixers[mi].update(dt);}}
     if(!windLeaves)windLeaves=document.querySelectorAll('.wind-leaf');
     windLeaves.forEach(function(lf){var ph=parseFloat(lf.dataset.windPhase||0),brx=parseFloat(lf.dataset.brx||0),bry=lf.dataset.bry||'0';var s=Math.sin(waveT*1.15+ph)*3.2;lf.setAttribute('rotation',(brx+s).toFixed(1)+' '+bry+' '+Math.cos(waveT*.75+ph).toFixed(1));});
@@ -496,10 +477,7 @@ function initGame(){
     if(KY['KeyW']||KY['KeyZ']||KY['ArrowUp'])fwd=1;if(KY['KeyS']||KY['ArrowDown'])fwd=-1;if(KY['KeyD']||KY['ArrowRight'])lat=1;if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft'])lat=-1;
     fwd-=jLY;lat+=jLX;
     var moveMag=Math.sqrt(fwd*fwd+lat*lat),gy=getGroundY(P.x,P.z),spd=sprint?9.5:5.2;
-    if(moveMag>.05){var mx=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);var mz=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));var mn=Math.sqrt(mx*mx+mz*mz);var spdM=(P.state==='surface')?.7:(P.state==='diving')?.65:1.0;P.vx=mx/mn*spd*spdM;P.vz=mz/mn*spd*spdM;var ty=Math.atan2(mx/mn,mz/mn),dyw=ty-P.yaw;while(dyw>Math.PI)dyw-=Math.PI*2;while(dyw<-Math.PI)dyw+=Math.PI*2;// Ralentir Stitch proportionnellement à l'angle de virage
-var turnFactor=Math.min(1,1-Math.abs(dyw)/Math.PI*0.75);
-P.vx*=turnFactor;P.vz*=turnFactor;
-P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
+    if(moveMag>.05){var mx=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);var mz=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));var mn=Math.sqrt(mx*mx+mz*mz);var spdM=(P.state==='surface')?.7:(P.state==='diving')?.65:1.0;P.vx=mx/mn*spd*spdM;P.vz=mz/mn*spd*spdM;var ty=Math.atan2(mx/mn,mz/mn),dyw=ty-P.yaw;while(dyw>Math.PI)dyw-=Math.PI*2;while(dyw<-Math.PI)dyw+=Math.PI*2;var turnFactor=Math.min(1,1-Math.abs(dyw)/Math.PI*0.75);P.vx*=turnFactor;P.vz*=turnFactor;P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     if(P.state==='ground'||P.state==='air'){
       P.vy-=22*dt;if(P.vy<-25)P.vy=-25;P.y+=P.vy*dt;
       if(gy!==null&&P.y<=gy+P.yOff){if(gy<WATER_SURFACE-0.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;playSound('sndSplash');toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}else if(P.y<=WATER_SURFACE+WATER_ENTER_THRESHOLD&&gy<=WATER_SURFACE){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;}else{P.y=gy+P.yOff;P.vy=0;P.onGround=true;P.state='ground';}}
@@ -507,7 +485,6 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
       else{P.onGround=false;if(P.state==='ground')P.state='air';}
     }else if(P.state==='surface'){
       P.swimBob+=dt;P.breath=Math.min(MAX_BREATH,P.breath+BREATH_GAIN*dt);P.y=WATER_SURFACE+Math.sin(P.swimBob*2.2)*.06;P.vy=0;P.onGround=true;
-      // Remonter sur l'île : sol doit être franchement au-dessus de l'eau
       if(gy!==null&&gy>WATER_SURFACE+0.4){P.state='ground';P.y=gy+P.yOff;P.vy=0;}
       if(_pressingDown||jLY>0.4){P.state='diving';P.vy=-7;P.y=WATER_SURFACE-1.2;P.onGround=false;}
     }else if(P.state==='diving'){
@@ -517,8 +494,6 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
       if(P.y>=WATER_SURFACE-.05){P.y=WATER_SURFACE;P.state='surface';P.vy=0;toast('Stitch reprend son souffle ! 💨',2000);}
       if(P.y<-11.5){P.y=-11.5;P.vy=0;}
       if(P.breath<=0){P.vy=7;P.state='surface';P.breath=25;toast('Plus d air ! 😮‍💨',2000);}
-      // Depuis diving → passer par surface d'abord, jamais directement ground
-      // (la transition ground se fait dans le bloc surface ci-dessus)
     }
     var PRAD=1.0,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
     for(var wi=0;wi<walls.length;wi++){var w=walls[wi];if(P.y-P.yOff>w.y0+w.h)continue;var inX=nx+PRAD>w.x1&&nx-PRAD<w.x2,inZ=nz+PRAD>w.z1&&nz-PRAD<w.z2;var curX=P.x+PRAD>w.x1&&P.x-PRAD<w.x2,curZ=P.z+PRAD>w.z1&&P.z-PRAD<w.z2;if(inX&&inZ){if(!curX){P.vx=0;nx=P.x;}if(!curZ){P.vz=0;nz=P.z;}}}
@@ -530,16 +505,11 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     stEl.setAttribute('position',P.x.toFixed(2)+' '+P.y.toFixed(2)+' '+P.z.toFixed(2));
     stEl.setAttribute('rotation',tiltX.toFixed(1)+' '+(P.yaw*180/Math.PI).toFixed(1)+' 0');
     animateStitch(dt,moveMag,P.state,sprint);
-    // Son de pas
     if(!window._stepT)window._stepT=0;
     window._stepT+=dt;
-    if(P.state==='ground'&&moveMag>.05){
-      if(window._stepT>0.38){window._stepT=0;playSound('sndStepSand');}
-    } else if(P.state==='surface'&&moveMag>.05){
-      if(window._stepT>0.48){window._stepT=0;playSound('sndStepWater');}
-    } else {
-      window._stepT=0; // silence dans l'eau (diving) et immobile
-    }
+    if(P.state==='ground'&&moveMag>.05){if(window._stepT>0.38){window._stepT=0;playSound('sndStepSand');}}
+    else if(P.state==='surface'&&moveMag>.05){if(window._stepT>0.48){window._stepT=0;playSound('sndStepWater');}}
+    else{window._stepT=0;}
     if(Math.abs(rjLX)>.04)CAM.yaw+=rjLX*dt*2.5;else if(moveMag>.1){var tc=P.yaw+Math.PI,cd=tc-CAM.yaw;while(cd>Math.PI)cd-=Math.PI*2;while(cd<-Math.PI)cd+=Math.PI*2;CAM.yaw+=cd*dt*2.2;}
     if(Math.abs(rjLY)>.04)CAM.pitch=Math.max(.06,Math.min(.75,CAM.pitch+rjLY*dt*1.5));
     var camDist=CAM.dist,camPitch=CAM.pitch;
@@ -560,57 +530,107 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     else{waterOv.className='';causticOv.style.opacity='0';['uwLight1','uwLight2','uwLight3','uwLight4','uwLight5'].forEach(function(id){var l=document.getElementById(id);if(l)l.setAttribute('intensity','0');});document.getElementById('sunLight').setAttribute('intensity','2.2');document.getElementById('hemiLight').setAttribute('intensity','.7');ambLightEl.setAttribute('intensity','.25');ambLightEl.setAttribute('color','#ffeedd');scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.007');document.getElementById('skyEl').setAttribute('color','#4ab8f0');diveHint.style.display='none';}
     var bubCont=document.getElementById('bubbles-container');
     if(P.state==='diving'){bubCont.style.display='block';if(moveMag>.05&&Math.floor(waveT*8)%2===0){var b=document.createElement('div');b.className='bubble';var sz=4+Math.random()*8;b.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(38+Math.random()*24)+'%;bottom:'+(35+Math.random()*15)+'%;animation-duration:'+(1.2+Math.random()*.8)+'s';bubCont.appendChild(b);setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b);},2000);}}else{bubCont.style.display='none';if(bubCont.children.length>0)bubCont.innerHTML='';}
-    if(window.MISSION&&!window.MISSION.active&&!window.MISSION.done){var pdx=P.x-26,pdz=P.z-55;var pDist=Math.sqrt(pdx*pdx+pdz*pdz);if(pDist<4&&!window._pauloDialogShown){window._pauloDialogShown=true;document.getElementById('mission-truck').style.display='block';}else if(pDist>6){window._pauloDialogShown=false;}}
+
+    // ── DIALOGUE NANI ──
+    if(window.MISSION&&!window.MISSION.active&&!window.MISSION.done){
+      var pdx=P.x-26,pdz=P.z-55;var pDist=Math.sqrt(pdx*pdx+pdz*pdz);
+      if(pDist<4&&!window._pauloDialogShown){window._pauloDialogShown=true;document.getElementById('mission-truck').style.display='block';}
+      else if(pDist>6){window._pauloDialogShown=false;}
+    }
+
+    // ── TIMER MISSION ──
     if(window.MISSION&&window.MISSION.active){
       window.MISSION.timer-=dt;
+      document.getElementById('mission-timer').textContent=Math.max(0,Math.ceil(window.MISSION.timer));
+      document.getElementById('mission-count').textContent=window.MISSION.count;
+
+      // ── BUG 2 CORRIGÉ : collecte des glaces ──
+      if(window.pineappleEls){
+        window.pineappleEls.forEach(function(pa){
+          if(pa._collected)return;
+          if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;
+          var pp=pa.getAttribute('position');if(!pp)return;
+          var ppx=parseFloat(pp.x!==undefined?pp.x:pp.split(' ')[0]);
+          var ppz=parseFloat(pp.z!==undefined?pp.z:pp.split(' ')[2]);
+          var dx=P.x-ppx,dz=P.z-ppz;
+          if(dx*dx+dz*dz<9){  // rayon 3 unités
+            pa._collected=true;
+            pa.setAttribute('visible','false');
+            window.MISSION.count++;
+            playSound('sndCollect');
+            if(window.MISSION.count===10)setTimeout(function(){playSound('sndLaugh');},300);
+            toast('🍦 +1 glace ! ('+window.MISSION.count+'/20)',800);
+            // ── BUG 2 : dès 20 glaces → cacher toutes les restantes immédiatement ──
+            if(window.MISSION.count>=20){
+              window.pineappleEls.forEach(function(p2){
+                if(!p2._collected){p2._collected=true;p2.setAttribute('visible','false');}
+              });
+              window.MISSION.timer=0.01; // forcer la fin
+            }
+          }
+        });
+      }
+
       if(window.MISSION.timer<=0){
-        window.MISSION.active=false;document.getElementById('mission-hud').style.display='none';
-        var txt=window.MISSION.count>=20?'🎉 Bravo ! Voici ton 🔫 pistolet à eau !':'😢 Temps écoulé ! '+window.MISSION.count+'/20 glaces récupérées.';
+        window.MISSION.active=false;
+        document.getElementById('mission-hud').style.display='none';
+        var won=window.MISSION.count>=20;
+        var txt=won?'🎉 Bravo ! Tu as ramassé toutes les glaces !<br><b>Nani te remercie ! Va chercher ton cadeau !</b>':'😢 Temps écoulé ! '+window.MISSION.count+'/20 glaces récupérées.';
+        document.getElementById('mission-text').innerHTML=txt;
         var md=document.getElementById('mission-truck');
-        document.getElementById('mission-text').innerHTML=txt+(window.MISSION.count>=20?'<br><b>Nani te remercie !</b>':'<br>Retente ta chance !');
-        if(window.MISSION.count>=20){
+        if(won){
           md.querySelector('button').textContent='🎊 Super !';
           md.querySelector('button').onclick=window.closeMissionDialog;
           md.querySelector('.decline').style.display='none';
+          window.MISSION.done=true;
+          // ── BUG 3 CORRIGÉ : pistolet posé sur le sol à ramasser ──
+          window._spawnGunOnGround();
+          playSound('sndWin');
+          setTimeout(function(){playSound('sndOhana');},1500);
+          toast('🔫 Le pistolet est posé près de Nani ! Va le ramasser !',4000);
         } else {
-          md.querySelector('button').textContent='✅ Oui, réessayer !';
-          md.querySelector('button').onclick=function(){window.MISSION={active:false,count:0,timer:0,done:false,total:20};window.pineappleEls.forEach(function(p){p.setAttribute('visible','true');});window.closeMissionDialog();};
-          md.querySelector('.decline').textContent='❌ Non, à bientôt';
+          md.querySelector('button').textContent='✅ Réessayer !';
+          md.querySelector('button').onclick=function(){
+            // ── BUG 1 CORRIGÉ : reset complet avant de relancer ──
+            window.MISSION={active:false,count:0,timer:90,done:false,total:20};
+            window.closeMissionDialog();
+            window.startMission();
+          };
+          md.querySelector('.decline').textContent='❌ Non merci';
           md.querySelector('.decline').onclick=function(){playSound('sndNah');window.MISSION.done=true;window.closeMissionDialog();toast('À bientôt Nani ! 👋',2500);};
           md.querySelector('.decline').style.display='';
         }
         md.style.display='block';
-        window.MISSION.done=window.MISSION.count>=20;
-        if(window.MISSION.done){var gunEl=document.createElement('a-gltf-model');gunEl.setAttribute('src','#watergunGLB');gunEl.setAttribute('position',P.x+' '+(P.y+1.5)+' '+P.z);gunEl.setAttribute('scale','3 3 3');gunEl.setAttribute('rotation','0 '+(P.yaw*180/Math.PI)+' 0');document.getElementById('world').appendChild(gunEl);
-          playSound('sndWin');setTimeout(function(){playSound('sndOhana');},1500);window.INVENTAIRE.push({icon:'🔫',name:'Pistolet à eau',desc:'Cadeau de Nani pour avoir ramassé les 20 glaces !'});
-          toast('🔫 Pistolet à eau ajouté dans ton sac !',3000);}
       }
-      document.getElementById('mission-timer').textContent=Math.ceil(window.MISSION.timer);
-      document.getElementById('mission-count').textContent=window.MISSION.count;
-      if(window.pineappleEls){window.pineappleEls.forEach(function(pa){if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;var pp=pa.getAttribute('position');if(!pp)return;var dx=P.x-parseFloat(pp.x||pp.split(' ')[0]);var dz=P.z-parseFloat(pp.z||pp.split(' ')[2]);var dist2d=dx*dx+dz*dz;
-          if(dist2d<9&&window.MISSION.count<20){  // rayon 3 unités (9=3²)
-            pa.setAttribute('visible','false');
-            window.MISSION.count++;
-            playSound('sndCollect');
-            if(window.MISSION.count===10){setTimeout(function(){playSound('sndLaugh');},300);}
-            toast('🍦 +1 glace ! ('+window.MISSION.count+'/20)',800);
-            if(window.MISSION.count>=20){window.MISSION.timer=0.01;}
-          }});}
     }
-    // Mettre à jour la musique selon la zone
+
+    // ── BUG 3 CORRIGÉ : détection proximité pistolet au sol ──
+    if(window._gunPickable&&!window._gunCollected&&window._gunWorldEl){
+      var gdx=P.x-28,gdz=P.z-52;
+      var gunDist=Math.sqrt(gdx*gdx+gdz*gdz);
+      var hint=document.getElementById('gun-pickup-hint');
+      var btnPickup=document.getElementById('btn-pickup');
+      if(gunDist<4){
+        hint.style.display='block';
+        btnPickup.style.display='flex';
+      } else {
+        hint.style.display='none';
+        btnPickup.style.display='none';
+      }
+    } else {
+      document.getElementById('gun-pickup-hint').style.display='none';
+      document.getElementById('btn-pickup').style.display='none';
+    }
+
     updateAudioZone(P.state);
-    // Voix Stitch toutes les 7 secondes, toujours différente
     if(!window._voiceT)window._voiceT=0;
     if(!window._lastVoice)window._lastVoice=-1;
     window._voiceT+=dt;
     if(window._voiceT>7){
       window._voiceT=0;
       var autoVoices=['sndHiii','sndOhana','sndGobble','sndLaugh','sndAaaah','sndEek','sndNah'];
-      var nextVoice;
-      do{nextVoice=Math.floor(Math.random()*autoVoices.length);}
-      while(nextVoice===window._lastVoice&&autoVoices.length>1);
-      window._lastVoice=nextVoice;
-      playSound(autoVoices[nextVoice]);
+      var nextVoice;do{nextVoice=Math.floor(Math.random()*autoVoices.length);}while(nextVoice===window._lastVoice&&autoVoices.length>1);
+      window._lastVoice=nextVoice;playSound(autoVoices[nextVoice]);
     }
     var zone='🌊 OCEAN';
     if(P.state==='diving')zone='🤿 SOUS L EAU';
@@ -620,17 +640,33 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
   }
   loop();
 
+  // ── RAMASSER LE PISTOLET (bouton + touche) ──
+  window.pickupNearby=function(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    if(window._gunPickable&&!window._gunCollected){
+      var gdx=P.x-28,gdz=P.z-52;
+      if(Math.sqrt(gdx*gdx+gdz*gdz)<4){
+        window._gunCollected=true;
+        window._gunPickable=false;
+        // Supprimer l'objet 3D du sol
+        if(window._gunWorldEl){window._gunWorldEl.setAttribute('visible','false');}
+        document.getElementById('gun-pickup-hint').style.display='none';
+        document.getElementById('btn-pickup').style.display='none';
+        // Ajouter à l'inventaire avec bouton équiper
+        window.INVENTAIRE.push({icon:'🔫',name:'Pistolet à eau',desc:'Cadeau de Nani — arrose tes amis !',action:'equip'});
+        playSound('sndGobble');
+        toast('🔫 Pistolet à eau ramassé ! Ouvre ton sac pour l équiper.',3500);
+      }
+    }
+  };
+
   window.doJump=function(e){
-  if(e&&e.preventDefault)e.preventDefault();
-  // Voix Stitch aléatoire au saut (1 fois sur 3)
-  if(Math.random()<0.33){
-    var voices=['sndHiii','sndEek','sndAaaah'];
-    playSound(voices[Math.floor(Math.random()*voices.length)]);
-  }
-  if(P.state==='diving'){P.vy=7;}
-  else if(P.state==='ground'&&P.onGround){P.vy=8.5;P.onGround=false;P.state='air';}
-  else if(P.state==='surface'){P.vy=6;P.state='air';}
-};
+    if(e&&e.preventDefault)e.preventDefault();
+    if(Math.random()<0.33){var voices=['sndHiii','sndEek','sndAaaah'];playSound(voices[Math.floor(Math.random()*voices.length)]);}
+    if(P.state==='diving'){P.vy=7;}
+    else if(P.state==='ground'&&P.onGround){P.vy=8.5;P.onGround=false;P.state='air';}
+    else if(P.state==='surface'){P.vy=6;P.state='air';}
+  };
   window.startDive=function(e){if(e&&e.preventDefault)e.preventDefault();_pressingDown=true;if(P.state==='surface'){P.state='diving';P.vy=-7;P.y=WATER_SURFACE-1.2;P.onGround=false;}};
   window.stopDive=function(e){if(e&&e.preventDefault)e.preventDefault();_pressingDown=false;};
   window.setSprint=function(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;};
@@ -654,15 +690,13 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
   function drawMap(){var canvas=document.getElementById('mapCanvas');if(!canvas)return;var ctx=canvas.getContext('2d');var W=248,H=248,scale=0.28,cx=W/2,cy=H/2;ctx.fillStyle='#1a5a7a';ctx.fillRect(0,0,W,H);[{x:0,z:0,r:80,col:'#4a8a1a',label:'PRINCIPALE'},{x:-165,z:-140,r:48,col:'#3a7a14',label:'VOLCANIQUE'},{x:165,z:-125,r:48,col:'#5aaa28',label:'TROPICALE'},{x:0,z:-220,r:48,col:'#3a9a18',label:'NORD'},{x:-220,z:50,r:48,col:'#6aaa30',label:'OUEST'},{x:220,z:80,r:48,col:'#4a8a22',label:'EST'},{x:100,z:-300,r:48,col:'#3a7a18',label:'LOINTAINE'},{x:-300,z:-200,r:48,col:'#5a9a25',label:'CACHEE'}].forEach(function(il){var ix=cx+il.x*scale,iy=cy+il.z*scale,ir=Math.max(3,il.r*scale);ctx.beginPath();ctx.arc(ix,iy,ir,0,Math.PI*2);ctx.fillStyle=il.col;ctx.fill();ctx.fillStyle='#fff';ctx.font='7px Georgia';ctx.textAlign='center';ctx.fillText(il.label,ix,iy-ir-2);});var px=cx+P.x*scale,py=cy+P.z*scale;ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fillStyle='#ff4466';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+Math.sin(P.yaw)*10,py+Math.cos(P.yaw)*10);ctx.strokeStyle='#ffcc00';ctx.lineWidth=2;ctx.stroke();document.getElementById('mapLabel').textContent='📍 '+(P.state==='diving'?'SOUS L\'EAU':'SUR L\'ILE')+' — X:'+P.x.toFixed(0)+' Z:'+P.z.toFixed(0);}
 
   document.querySelector('a-scene').addEventListener('click',function(e){var el=e.target;if(el&&el.id==='totem-plaque'){var mo=document.getElementById('map-overlay');mo.style.display='flex';drawMap();}});
-  // ── SAC À DOS ──
+
   window.INVENTAIRE=[];
   window._gunEquipped=false;
-  window._gunEl3D=null;  // l'entité 3D du pistolet dans la scène
+  window._gunEl3D=null;
 
-  // Équiper le pistolet : Stitch le tient à la main
   window.equipGun=function(){
     window._gunEquipped=true;
-    // Créer le pistolet si pas encore fait
     if(!window._gunEl3D){
       var g=document.createElement('a-gltf-model');
       g.setAttribute('src','#watergunGLB');
@@ -670,9 +704,8 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
       g.setAttribute('position','0.45 0.55 0.2');
       g.setAttribute('rotation','0 -45 -15');
       g.id='gun-on-stitch';
-      // Attacher au modèle Stitch (enfant direct)
-      var stitchModel=document.getElementById('stitch-model');
-      stitchModel.appendChild(g);
+      var stitchModelEl=document.getElementById('stitch-model');
+      stitchModelEl.appendChild(g);
       window._gunEl3D=g;
     } else {
       window._gunEl3D.setAttribute('visible','true');
@@ -681,19 +714,16 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     toast('🔫 Pistolet équipé ! Appuie TIR pour arroser !',2000);
   };
 
-  // Tir avec le pistolet
   window.fireGun=function(e){
     if(e&&e.preventDefault)e.preventDefault();
     if(!window._gunEquipped)return;
     playSound('sndSplash');
-    // Effet visuel : flash bleu
     var ov=document.getElementById('water-overlay');
     ov.style.background='rgba(0,150,255,0.4)';
     setTimeout(function(){ov.style.background='';},200);
     toast('💦 Splaaash !',600);
   };
 
-  // Ranger le pistolet dans le sac
   window.holsterGun=function(e){
     if(e&&e.preventDefault)e.preventDefault();
     window._gunEquipped=false;
@@ -701,17 +731,18 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     document.getElementById('gun-btns').style.display='none';
     toast('🎒 Pistolet rangé dans le sac !',1500);
   };
+
   window.openBackpack=function(){
     var ov=document.getElementById('backpack-overlay');
     var items=document.getElementById('backpack-items');
     ov.style.display='flex';
     if(window.INVENTAIRE.length===0){
-      items.innerHTML='<div class="bp-item"><span>📭</span><div>Sac vide - rien encore !</div></div>';
+      items.innerHTML='<div class="bp-item"><span>📭</span><div>Sac vide — accomplis la mission de Nani !</div></div>';
     } else {
-      items.innerHTML=window.INVENTAIRE.map(function(it,idx){
+      items.innerHTML=window.INVENTAIRE.map(function(it){
         var extra='';
         if(it.action==='equip'){
-          var btnTxt=window._gunEquipped?'✅ Équipé':'🔫 Équiper';
+          var btnTxt=window._gunEquipped?'✅ Déjà équipé':'🔫 Équiper';
           extra='<br><button onclick="window.equipGun();window.closeBackpack();" style="margin-top:5px;background:#ff6600;border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:10px;cursor:pointer">'+btnTxt+'</button>';
         }
         return '<div class="bp-item"><span>'+it.icon+'</span><div><b>'+it.name+'</b><br><small style="color:#aaa">'+it.desc+'</small>'+extra+'</div></div>';
@@ -720,7 +751,7 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
   };
   window.closeBackpack=function(){document.getElementById('backpack-overlay').style.display='none';};
 
-  window.addEventListener('keydown',function(e){KY[e.code]=1;if(e.code==='Space'){e.preventDefault();window.doJump();}if(e.code==='ShiftLeft')sprint=true;});
+  window.addEventListener('keydown',function(e){KY[e.code]=1;if(e.code==='Space'){e.preventDefault();window.doJump();}if(e.code==='KeyE'){window.pickupNearby();}if(e.code==='ShiftLeft')sprint=true;});
   window.addEventListener('keyup',function(e){KY[e.code]=0;if(e.code==='ShiftLeft')sprint=false;});
 }
 </script>
