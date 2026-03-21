@@ -10,7 +10,22 @@
 #jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,#ff88bb,#e8174a 60%,#8a0020);border:2.5px solid rgba(255,180,200,.8);box-shadow:0 3px 10px rgba(200,20,60,.5);}
 #rjoy{position:fixed;right:14px;bottom:14px;z-index:30;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(0,220,180,.22),rgba(0,120,100,.16));border:2px solid rgba(100,255,220,.45);touch-action:none;pointer-events:all;box-shadow:0 0 14px rgba(0,200,160,.2);}
 #rjnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:radial-gradient(circle,#5fffdc,#00c8a8 60%,#005a50);border:2px solid rgba(100,255,220,.7);box-shadow:0 3px 8px rgba(0,150,120,.5);}
-/* ── BOUTONS HAWAÏENS ── */
+/* ── ÉCRAN DE CHARGEMENT ── */
+#loading-screen{
+  position:fixed;inset:0;z-index:999;
+  background:linear-gradient(160deg,#1a5a8a 0%,#0a2a50 40%,#1a0a30 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:Georgia,serif;
+  transition:opacity .8s ease;
+}
+#loading-screen.fade-out{opacity:0;pointer-events:none;}
+#loading-title{font-size:28px;color:#fff;text-shadow:0 2px 12px rgba(255,150,100,.6);margin-bottom:6px;letter-spacing:2px;}
+#loading-sub{font-size:13px;color:#ffcc88;margin-bottom:30px;letter-spacing:1px;}
+#loading-flowers{font-size:32px;margin-bottom:20px;animation:spinFlower 3s linear infinite;}
+@keyframes spinFlower{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(1.2)}100%{transform:rotate(360deg) scale(1)}}
+#loading-bar-bg{width:220px;height:10px;border-radius:5px;background:rgba(255,255,255,.15);border:1px solid rgba(255,200,150,.3);overflow:hidden;margin-bottom:12px;}
+#loading-bar-fill{height:100%;width:0%;border-radius:5px;background:linear-gradient(90deg,#ff6fa0,#ff9900,#ffe566);transition:width .3s ease;}
+#loading-msg{font-size:10px;color:#aaddff;letter-spacing:.5px;min-height:16px;}
 #btns{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:10px;pointer-events:none;align-items:flex-end;}
 .btn{width:62px;height:62px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;touch-action:manipulation;pointer-events:all;position:relative;overflow:hidden;transition:transform .1s,box-shadow .1s;box-shadow:0 4px 14px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);}
 .btn:active{transform:scale(.91);}
@@ -60,37 +75,51 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 </head>
 <body>
 
-<a-scene renderer="antialias:true;colorManagement:true" shadow="type:pcfsoft" fog="type:exponential;color:#5ac8f0;density:0.007" vr-mode-ui="enabled:false" loading-screen="enabled:false">
-<a-assets timeout="30000">
-  <a-asset-item id="stitchGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/stitch2.glb"></a-asset-item>
-  <a-asset-item id="palmGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Palm%20Tree.glb"></a-asset-item>
-  <a-asset-item id="hutGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hut.glb"></a-asset-item>
-  <a-asset-item id="coralGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set.glb"></a-asset-item>
-  <a-asset-item id="turtleGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Turtle.glb"></a-asset-item>
-  <a-asset-item id="mountainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Mountain.glb" crossorigin="anonymous"></a-asset-item>
-  <a-asset-item id="cartGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Street%20Vendor%20Cart.glb" crossorigin="anonymous"></a-asset-item>
-  <a-asset-item id="sundaeGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb" crossorigin="anonymous"></a-asset-item>
-  <a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb" crossorigin="anonymous"></a-asset-item>
-  <audio id="sndCollect" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Ice%20cream.wav" preload="auto"></audio>
-  <audio id="sndSplash"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Splash.wav" preload="auto"></audio>
-  <audio id="sndWin"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Aloha!.mp3" preload="none"></audio>
-  <audio id="sndStepSand" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20sand.wav" preload="auto"></audio>
-  <audio id="sndStepWater" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20water.wav" preload="auto"></audio>
-  <audio id="sndEek"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GROWLING)%20Eek!.mp3" preload="none"></audio>
-  <audio id="sndLaugh"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20LAUGHING%20-%20Sound%20Effect).mp3" preload="none"></audio>
-  <audio id="sndOhana"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Ohana.mp3" preload="none"></audio>
-  <audio id="sndHiii"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Stitch%20hiiii.mp3" preload="none"></audio>
-  <audio id="sndAaaah"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Aaaah.mp3" preload="none"></audio>
-  <audio id="sndNah"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Nah!.mp3" preload="none"></audio>
-  <audio id="sndGobble"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GOBBLING%20-%20Sound%20Effect).mp3" preload="none"></audio>
-  <audio id="sndBeach"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Beach.wav" loop preload="auto"></audio>
-  <audio id="bgMusic1" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="none"></audio>
-  <audio id="bgMusic2" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="none"></audio>
-  <audio id="bgMusic3" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/peterkolaiko-tropical-happy-ukulele-231561.mp3" preload="none"></audio>
+<div id="loading-screen">
+  <div id="loading-title">🏝 STITCH ISLAND</div>
+  <div id="loading-sub">Aloha ! Chargement en cours...</div>
+  <div id="loading-flowers">🌺</div>
+  <div id="loading-bar-bg"><div id="loading-bar-fill"></div></div>
+  <div id="loading-msg">Initialisation...</div>
+</div>
+
+<a-scene 
+renderer="antialias:false;colorManagement:true;physicallyCorrectLights:false" 
+shadow="type:basic" 
+fog="type:exponential;color:#5ac8f0;density:0.007" 
+vr-mode-ui="enabled:false" 
+loading-screen="enabled:false"
+device-orientation-permission-ui="enabled:false">
+<a-assets timeout="8000">
+<a-asset-item id="stitchGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/stitch2.glb"              crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="palmGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Palm%20Tree.glb"           crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="hutGLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hut.glb"                   crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="coralGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set.glb"    crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="turtleGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Turtle.glb"               crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="mountainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Mountain.glb"             crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="cartGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Street%20Vendor%20Cart.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="sundaeGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb"               crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb"           crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<audio id="sndCollect"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Ice%20cream.wav"          preload="none"></audio>
+<audio id="sndSplash"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Splash.wav"               preload="none"></audio>
+<audio id="sndWin"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Aloha!.mp3"         preload="none"></audio>
+<audio id="sndStepSand" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20sand.wav"      preload="none"></audio>
+<audio id="sndStepWater" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20water.wav"    preload="none"></audio>
+<audio id="sndEek"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GROWLING)%20Eek!.mp3" preload="none"></audio>
+<audio id="sndLaugh"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20LAUGHING%20-%20Sound%20Effect).mp3" preload="none"></audio>
+<audio id="sndOhana"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Ohana.mp3"          preload="none"></audio>
+<audio id="sndHiii"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Stitch%20hiiii.mp3" preload="none"></audio>
+<audio id="sndAaaah"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Aaaah.mp3"                preload="none"></audio>
+<audio id="sndNah"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Nah!.mp3"           preload="none"></audio>
+<audio id="sndGobble"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GOBBLING%20-%20Sound%20Effect).mp3" preload="none"></audio>
+<audio id="sndBeach"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Beach.wav"                loop preload="none"></audio>
+<audio id="bgMusic1"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="none"></audio>
+<audio id="bgMusic2"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="none"></audio>
+<audio id="bgMusic3"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/peterkolaiko-tropical-happy-ukulele-231561.mp3" preload="none"></audio>
 </a-assets>
 
 <a-sky id="skyEl" color="#4ab8f0"></a-sky>
-<a-light type="directional" id="sunLight" position="-40 80 30" color="#fff4dd" intensity="2.2" cast-shadow="true" shadow-camera-left="-200" shadow-camera-right="200" shadow-camera-top="200" shadow-camera-bottom="-200" shadow-map-width="2048" shadow-map-height="2048"></a-light>
+<a-light type="directional" id="sunLight" position="-40 80 30" color="#fff4dd" intensity="2.2" cast-shadow="true" shadow-camera-left="-120" shadow-camera-right="120" shadow-camera-top="120" shadow-camera-bottom="-120" shadow-map-width="512" shadow-map-height="512"></a-light>
 <a-light type="hemisphere" id="hemiLight" color="#88ccff" ground-color="#446622" intensity=".7"></a-light>
 <a-light type="ambient" id="ambientLight" color="#ffeedd" intensity=".25"></a-light>
 <a-light type="point" id="uwLight1" position="0 -5 0"    color="#00eedd" intensity="0" distance="70"></a-light>
@@ -122,7 +151,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 <a-circle id="stitch-shadow" radius="0.6" rotation="-90 0 0" position="0 0.03 5" segments="8" material="color:#000000;transparent:true;opacity:0.0"></a-circle>
 
 <a-entity id="cam-rig" position="0 5 12">
-  <a-camera id="mainCam" look-controls="enabled:false" wasd-controls="enabled:false" fov="62" near=".01" far="700"></a-camera>
+  <a-camera id="mainCam" look-controls="enabled:false;reverseMouseDrag:false;touchEnabled:false;magicWindowTrackingEnabled:false" wasd-controls="enabled:false" fov="62" near=".01" far="700"></a-camera>
 </a-entity>
 </a-scene>
 
@@ -239,7 +268,37 @@ document.addEventListener('touchstart',startMusic,{once:true});
 document.addEventListener('click',startMusic,{once:true});
 
 function toast(m,d){var t=document.getElementById('toast');t.textContent=m;t.className='show';clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='';},d||3000);}
-document.querySelector('a-scene').addEventListener('loaded',initGame);
+
+// ── CHARGEMENT : démarrer dès que A-Frame est prêt, sans attendre tous les assets ──
+function setLoadMsg(msg,pct){
+  var lm=document.getElementById('loading-msg');if(lm)lm.textContent=msg;
+  var lf=document.getElementById('loading-bar-fill');if(lf)lf.style.width=(pct||0)+'%';
+}
+function hideLoadingScreen(){
+  var ls=document.getElementById('loading-screen');
+  if(ls){ls.classList.add('fade-out');setTimeout(function(){ls.style.display='none';},900);}
+}
+
+var scn=document.querySelector('a-scene');
+// Timeout de sécurité : démarrer quoi qu'il arrive après 5s
+var _initDone=false;
+function tryInitGame(){
+  if(_initDone)return;_initDone=true;
+  setLoadMsg('Île en construction... 🌴',80);
+  setTimeout(function(){setLoadMsg('Prêt ! Aloha 🌺',100);setTimeout(hideLoadingScreen,400);},300);
+  initGame();
+}
+// Écouter l'événement loaded ET mettre un timeout de 5s
+scn.addEventListener('loaded',tryInitGame);
+setTimeout(tryInitGame,5000);
+// Progression visuelle pendant l'attente
+var _loadPct=5;
+var _loadInterval=setInterval(function(){
+  if(_initDone){clearInterval(_loadInterval);return;}
+  _loadPct=Math.min(75,_loadPct+Math.random()*8);
+  var msgs=['Chargement de l\'île... 🏝','Préparation de l\'océan... 🌊','Stitch arrive... 👽','Nani prépare les glaces... 🍦'];
+  setLoadMsg(msgs[Math.floor(_loadPct/20)]||msgs[0],_loadPct);
+},300);
 
 function initGame(){
   var THREE=AFRAME.THREE;
@@ -482,20 +541,40 @@ function initGame(){
   var CAM={yaw:Math.PI,pitch:.22,dist:6.5};
   var jLX=0,jLY=0,jid=-1,rjLX=0,rjLY=0,rjid=-1,KY={},sprint=false;
   var waveT=0,lastT=performance.now(),windLeaves=null,fishEls=null,_pressingDown=false;
+  // Cache des éléments DOM pour éviter getElementById à chaque frame
+  var _elCache={};
+  function gel(id){if(!_elCache[id])_elCache[id]=document.getElementById(id);return _elCache[id];}
+  var _loopFrame=0; // compteur de frames pour throttling
+  var _lastState='ground'; // pour détecter changements de zone
 
   function loop(){
     requestAnimationFrame(loop);
     try{
+    _loopFrame++;
     var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;waveT+=dt;
+
+    // NPC mixers — toujours
     if(window._npcMixers){for(var mi=0;mi<window._npcMixers.length;mi++){window._npcMixers[mi].update(dt);}}
-    if(!windLeaves)windLeaves=document.querySelectorAll('.wind-leaf');
-    windLeaves.forEach(function(lf){var ph=parseFloat(lf.dataset.windPhase||0),brx=parseFloat(lf.dataset.brx||0),bry=lf.dataset.bry||'0';var s=Math.sin(waveT*1.15+ph)*3.2;lf.setAttribute('rotation',(brx+s).toFixed(1)+' '+bry+' '+Math.cos(waveT*.75+ph).toFixed(1));});
-    if(!fishEls)fishEls=document.querySelectorAll('.fish-anim');
-    fishEls.forEach(function(fish){var ph=parseFloat(fish.dataset.fishPhase||0),r=parseFloat(fish.dataset.fishR||10),dep=parseFloat(fish.dataset.fishDepth||-2),spd=parseFloat(fish.dataset.fishSpeed||.3),t=waveT*spd;var offX=parseFloat(fish.dataset.fishOffX||0),offZ=parseFloat(fish.dataset.fishOffZ||0);var fx=offX+Math.sin(t+ph)*r,fz=offZ+Math.cos(t+ph)*r,fy=dep+Math.sin(waveT*.5+ph)*.3;fish.setAttribute('position',fx.toFixed(2)+' '+fy.toFixed(2)+' '+fz.toFixed(2));fish.setAttribute('rotation','0 '+(Math.atan2(Math.cos(t+ph),-Math.sin(t+ph))*180/Math.PI).toFixed(1)+' 0');});
-    if(!window._turtleEls)window._turtleEls=document.querySelectorAll('.turtle-anim');
-    window._turtleEls.forEach(function(t){var ph=parseFloat(t.dataset.tPhase||0),r=parseFloat(t.dataset.tR||18),dep=parseFloat(t.dataset.tDepth||-2),sp=parseFloat(t.dataset.tSpeed||.07),tm=waveT*sp;t.setAttribute('position',(Math.sin(tm+ph)*r).toFixed(2)+' '+(dep+Math.sin(waveT*.4+ph)*.8).toFixed(2)+' '+(Math.cos(tm+ph)*r).toFixed(2));t.setAttribute('rotation','0 '+(Math.atan2(Math.cos(tm+ph),-Math.sin(tm+ph))*180/Math.PI).toFixed(1)+' 0');});
-    if(!window._sharkEls)window._sharkEls=document.querySelectorAll('.shark-anim');
-    window._sharkEls.forEach(function(s){var ph=parseFloat(s.dataset.sPhase||0),r=parseFloat(s.dataset.sR||50),dep=parseFloat(s.dataset.sDepth||-8),sp=parseFloat(s.dataset.sSpeed||.04),tm=waveT*sp;s.setAttribute('position',(Math.sin(tm+ph)*r).toFixed(2)+' '+(dep+Math.sin(waveT*.3+ph)*1.5).toFixed(2)+' '+(Math.cos(tm+ph)*r).toFixed(2));s.setAttribute('rotation','0 '+(Math.atan2(Math.cos(tm+ph),-Math.sin(tm+ph))*180/Math.PI).toFixed(1)+' 0');});
+
+    // Wind leaves — 1 frame sur 4 seulement (économie CPU)
+    if(_loopFrame%4===0){
+      if(!windLeaves)windLeaves=document.querySelectorAll('.wind-leaf');
+      windLeaves.forEach(function(lf){var ph=parseFloat(lf.dataset.windPhase||0),brx=parseFloat(lf.dataset.brx||0),bry=lf.dataset.bry||'0';var s=Math.sin(waveT*1.15+ph)*3.2;lf.setAttribute('rotation',(brx+s).toFixed(1)+' '+bry+' '+Math.cos(waveT*.75+ph).toFixed(1));});
+    }
+
+    // Poissons — 1 frame sur 2
+    if(_loopFrame%2===0){
+      if(!fishEls)fishEls=document.querySelectorAll('.fish-anim');
+      fishEls.forEach(function(fish){var ph=parseFloat(fish.dataset.fishPhase||0),r=parseFloat(fish.dataset.fishR||10),dep=parseFloat(fish.dataset.fishDepth||-2),spd=parseFloat(fish.dataset.fishSpeed||.3),t=waveT*spd;var offX=parseFloat(fish.dataset.fishOffX||0),offZ=parseFloat(fish.dataset.fishOffZ||0);var fx=offX+Math.sin(t+ph)*r,fz=offZ+Math.cos(t+ph)*r,fy=dep+Math.sin(waveT*.5+ph)*.3;fish.setAttribute('position',fx.toFixed(2)+' '+fy.toFixed(2)+' '+fz.toFixed(2));fish.setAttribute('rotation','0 '+(Math.atan2(Math.cos(t+ph),-Math.sin(t+ph))*180/Math.PI).toFixed(1)+' 0');});
+    }
+
+    // Tortues et requin — 1 frame sur 3
+    if(_loopFrame%3===0){
+      if(!window._turtleEls)window._turtleEls=document.querySelectorAll('.turtle-anim');
+      window._turtleEls.forEach(function(t){var ph=parseFloat(t.dataset.tPhase||0),r=parseFloat(t.dataset.tR||18),dep=parseFloat(t.dataset.tDepth||-2),sp=parseFloat(t.dataset.tSpeed||.07),tm=waveT*sp;t.setAttribute('position',(Math.sin(tm+ph)*r).toFixed(2)+' '+(dep+Math.sin(waveT*.4+ph)*.8).toFixed(2)+' '+(Math.cos(tm+ph)*r).toFixed(2));t.setAttribute('rotation','0 '+(Math.atan2(Math.cos(tm+ph),-Math.sin(tm+ph))*180/Math.PI).toFixed(1)+' 0');});
+      if(!window._sharkEls)window._sharkEls=document.querySelectorAll('.shark-anim');
+      window._sharkEls.forEach(function(s){var ph=parseFloat(s.dataset.sPhase||0),r=parseFloat(s.dataset.sR||50),dep=parseFloat(s.dataset.sDepth||-8),sp=parseFloat(s.dataset.sSpeed||.04),tm=waveT*sp;s.setAttribute('position',(Math.sin(tm+ph)*r).toFixed(2)+' '+(dep+Math.sin(waveT*.3+ph)*1.5).toFixed(2)+' '+(Math.cos(tm+ph)*r).toFixed(2));s.setAttribute('rotation','0 '+(Math.atan2(Math.cos(tm+ph),-Math.sin(tm+ph))*180/Math.PI).toFixed(1)+' 0');});
+    }
     var fwd=0,lat=0;
     if(KY['KeyW']||KY['KeyZ']||KY['ArrowUp'])fwd=1;if(KY['KeyS']||KY['ArrowDown'])fwd=-1;if(KY['KeyD']||KY['ArrowRight'])lat=1;if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft'])lat=-1;
     fwd-=jLY;lat+=jLX;
@@ -543,14 +622,41 @@ function initGame(){
     document.getElementById('mainCam').components.camera.camera.lookAt(P.x,P.y+(P.state==='diving'?0.0:.9),P.z);
     ['w0','w1','w2'].forEach(function(id,i){var wEl=document.getElementById(id);if(!wEl)return;wEl.setAttribute('scale',(1+Math.sin(waveT*.8+i*1.4)*.05)+' 1 '+(1+Math.sin(waveT*.8+i*1.4)*.05));wEl.setAttribute('position','0 '+(-.42+Math.sin(waveT*1.6+i*1.4)*.04).toFixed(3)+' 0');});
     var lg=document.getElementById('lagon');if(lg)lg.setAttribute('position','0 '+(-.35+Math.sin(waveT*.45)*.012).toFixed(3)+' 0');
-    var inWater=(P.state==='diving'||P.state==='surface');
-    var breathBar=document.getElementById('breath-bar'),breathFill=document.getElementById('breath-fill');
-    var waterOv=document.getElementById('water-overlay'),causticOv=document.getElementById('caustic-overlay');
-    var diveHint=document.getElementById('dive-hint'),ambLightEl=document.getElementById('ambientLight'),scnEl=document.querySelector('a-scene');
-    if(inWater){breathBar.style.display='flex';var pct=P.breath/MAX_BREATH;breathFill.style.width=(pct*100).toFixed(0)+'%';breathFill.style.background=pct>.5?'linear-gradient(90deg,#00ffcc,#0088ff)':pct>.25?'linear-gradient(90deg,#ffcc00,#ff6600)':'linear-gradient(90deg,#ff2200,#ff6600)';}else{breathBar.style.display='none';}
-    if(P.state==='diving'){waterOv.className='underwater';causticOv.style.opacity='0.5';ambLightEl.setAttribute('intensity','2.2');ambLightEl.setAttribute('color','#88ddcc');document.getElementById('sunLight').setAttribute('intensity','0');document.getElementById('hemiLight').setAttribute('intensity','0');['uwLight1','uwLight2','uwLight3','uwLight4','uwLight5'].forEach(function(id){var l=document.getElementById(id);if(l)l.setAttribute('intensity','4.5');});scnEl.setAttribute('fog','type:exponential;color:#005566;density:0.006');document.getElementById('skyEl').setAttribute('color','#003355');diveHint.style.display='block';diveHint.textContent='🌊 ⬆ SURF = remonter  ·  ⬇ PLONGE = descendre';if(P.breath<20&&Math.floor(waveT*2)%2===0)diveHint.style.color='#ff3300';else diveHint.style.color='#88ffee';}
-    else if(P.state==='surface'){waterOv.className='underwater';causticOv.style.opacity='0';['uwLight1','uwLight2','uwLight3','uwLight4','uwLight5'].forEach(function(id){var l=document.getElementById(id);if(l)l.setAttribute('intensity','0');});document.getElementById('sunLight').setAttribute('intensity','2.2');document.getElementById('hemiLight').setAttribute('intensity','.7');ambLightEl.setAttribute('intensity','.25');ambLightEl.setAttribute('color','#ffeedd');scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.007');document.getElementById('skyEl').setAttribute('color','#4ab8f0');diveHint.style.display='block';diveHint.textContent='🌊 Appuie ⬇ PLONGE pour descendre';diveHint.style.color='#88ffee';}
-    else{waterOv.className='';causticOv.style.opacity='0';['uwLight1','uwLight2','uwLight3','uwLight4','uwLight5'].forEach(function(id){var l=document.getElementById(id);if(l)l.setAttribute('intensity','0');});document.getElementById('sunLight').setAttribute('intensity','2.2');document.getElementById('hemiLight').setAttribute('intensity','.7');ambLightEl.setAttribute('intensity','.25');ambLightEl.setAttribute('color','#ffeedd');scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.007');document.getElementById('skyEl').setAttribute('color','#4ab8f0');diveHint.style.display='none';}
+    var breathBar=gel('breath-bar'),breathFill=gel('breath-fill');
+    var waterOv=gel('water-overlay'),causticOv=gel('caustic-overlay');
+    var diveHint=gel('dive-hint'),ambLightEl=gel('ambientLight'),scnEl=document.querySelector('a-scene');
+    if(P.state==='diving'||P.state==='surface'){breathBar.style.display='flex';var pct=P.breath/MAX_BREATH;breathFill.style.width=(pct*100).toFixed(0)+'%';breathFill.style.background=pct>.5?'linear-gradient(90deg,#00ffcc,#0088ff)':pct>.25?'linear-gradient(90deg,#ffcc00,#ff6600)':'linear-gradient(90deg,#ff2200,#ff6600)';}else{breathBar.style.display='none';}
+    // Lumières/fog : seulement si le state change (pas à chaque frame!)
+    if(P.state!==_lastState){
+      _lastState=P.state;
+      var uwL=['uwLight1','uwLight2','uwLight3','uwLight4','uwLight5'];
+      if(P.state==='diving'){
+        waterOv.className='underwater';causticOv.style.opacity='0.5';
+        ambLightEl.setAttribute('intensity','2.2');ambLightEl.setAttribute('color','#88ddcc');
+        gel('sunLight').setAttribute('intensity','0');gel('hemiLight').setAttribute('intensity','0');
+        uwL.forEach(function(id){var l=gel(id);if(l)l.setAttribute('intensity','4.5');});
+        scnEl.setAttribute('fog','type:exponential;color:#005566;density:0.006');
+        gel('skyEl').setAttribute('color','#003355');
+      } else if(P.state==='surface'){
+        waterOv.className='underwater';causticOv.style.opacity='0';
+        uwL.forEach(function(id){var l=gel(id);if(l)l.setAttribute('intensity','0');});
+        gel('sunLight').setAttribute('intensity','2.2');gel('hemiLight').setAttribute('intensity','.7');
+        ambLightEl.setAttribute('intensity','.25');ambLightEl.setAttribute('color','#ffeedd');
+        scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.007');
+        gel('skyEl').setAttribute('color','#4ab8f0');
+      } else {
+        waterOv.className='';causticOv.style.opacity='0';
+        uwL.forEach(function(id){var l=gel(id);if(l)l.setAttribute('intensity','0');});
+        gel('sunLight').setAttribute('intensity','2.2');gel('hemiLight').setAttribute('intensity','.7');
+        ambLightEl.setAttribute('intensity','.25');ambLightEl.setAttribute('color','#ffeedd');
+        scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.007');
+        gel('skyEl').setAttribute('color','#4ab8f0');
+      }
+    }
+    // Hint dive toujours mis à jour (texte)
+    if(P.state==='diving'){diveHint.style.display='block';diveHint.textContent='🌊 ⬆ SURF = remonter · ⬇ PLONGE = descendre';if(P.breath<20&&Math.floor(waveT*2)%2===0)diveHint.style.color='#ff3300';else diveHint.style.color='#88ffee';}
+    else if(P.state==='surface'){diveHint.style.display='block';diveHint.textContent='🌊 Appuie ⬇ PLONGE pour descendre';diveHint.style.color='#88ffee';}
+    else{diveHint.style.display='none';}
     var bubCont=document.getElementById('bubbles-container');
     if(P.state==='diving'){bubCont.style.display='block';if(moveMag>.05&&Math.floor(waveT*8)%2===0){var b=document.createElement('div');b.className='bubble';var sz=4+Math.random()*8;b.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(38+Math.random()*24)+'%;bottom:'+(35+Math.random()*15)+'%;animation-duration:'+(1.2+Math.random()*.8)+'s';bubCont.appendChild(b);setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b);},2000);}}else{bubCont.style.display='none';if(bubCont.children.length>0)bubCont.innerHTML='';}
 
