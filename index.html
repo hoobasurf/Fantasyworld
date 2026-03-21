@@ -3,7 +3,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Stitch Island</title>
-<script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+<script src="https://aframe.io/releases/1.4.0/aframe.min.js" crossorigin="anonymous"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 #joy{position:fixed;left:14px;bottom:14px;z-index:30;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(255,80,120,.25),rgba(180,20,60,.18));border:2.5px solid rgba(255,160,190,.5);touch-action:none;pointer-events:all;box-shadow:0 0 18px rgba(255,60,100,.2);}
@@ -86,7 +86,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 <a-scene 
 renderer="antialias:false;colorManagement:true;physicallyCorrectLights:false" 
 shadow="type:basic" 
-fog="type:exponential;color:#5ac8f0;density:0.007" 
+fog="type:exponential;color:#5ac8f0;density:0.004" 
 vr-mode-ui="enabled:false" 
 loading-screen="enabled:false"
 device-orientation-permission-ui="enabled:false">
@@ -281,13 +281,18 @@ function hideLoadingScreen(){
 }
 
 var scn=document.querySelector('a-scene');
-// Timeout de sécurité : démarrer quoi qu'il arrive après 5s
 var _initDone=false;
 function tryInitGame(){
-  if(_initDone)return;_initDone=true;
+  if(_initDone)return;
+  // Vérifier que AFRAME.THREE est disponible
+  if(typeof AFRAME==='undefined'||!AFRAME.THREE){
+    setTimeout(tryInitGame,200);return;
+  }
+  _initDone=true;
+  clearInterval(_loadInterval);
   setLoadMsg('Île en construction... 🌴',80);
   setTimeout(function(){setLoadMsg('Prêt ! Aloha 🌺',100);setTimeout(hideLoadingScreen,400);},300);
-  initGame();
+  try{initGame();}catch(e){console.error('initGame error:',e);hideLoadingScreen();}
 }
 // Écouter l'événement loaded ET mettre un timeout de 5s
 scn.addEventListener('loaded',tryInitGame);
@@ -410,7 +415,14 @@ function initGame(){
       if(!mesh)return;
       var box=new AFRAME.THREE.Box3().setFromObject(mesh);
       var h=box.max.y-box.min.y;
-      if(h>0.01){var sc=8/h;houseEl.setAttribute('scale',sc+' '+sc+' '+sc);}
+      var sc=1;
+      if(h>0.01){sc=8/h;houseEl.setAttribute('scale',sc+' '+sc+' '+sc);}
+      // Corriger la position Y pour que la base du modèle touche le sol (Y=0)
+      // On recalcule après scale
+      var mesh2=houseEl.getObject3D('mesh');
+      var box2=new AFRAME.THREE.Box3().setFromObject(mesh2);
+      var yOffset=-box2.min.y; // décaler vers le haut pour poser au sol
+      houseEl.setAttribute('position','-8 '+yOffset.toFixed(3)+' -6');
     });
     houseEl.addEventListener('model-error',function(){
       // Fallback géométrique maison hawaïenne
@@ -420,30 +432,51 @@ function initGame(){
     W.appendChild(houseEl);
     setTimeout(function(){
       var chars=[
-        {id:'nani',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb',pos:'26 0 52',rot:'0 180 0',sc:'0.35'},
-        {id:'jumba',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/jumba.glb',pos:'-12 0 10',rot:'0 45 0',sc:'0.4'},
-        {id:'lilo',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb',pos:'8 0 20',rot:'0 200 0',sc:'0.38'},
-        {id:'pleakley',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb',pos:'-5 0 15',rot:'0 90 0',sc:'0.35'},
-        {id:'angel',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_and_stitch__oc_.glb',pos:'15 0 -5',rot:'0 270 0',sc:'0.38'},
-        {id:'lilo2',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lilo_et_scrump.glb',pos:'-8 0 25',rot:'0 150 0',sc:'0.38'},
-        {id:'hamster',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hamsterwiel_from_lilo_and_stitch.glb',pos:'20 0 30',rot:'0 220 0',sc:'0.35'},
-        {id:'cobra',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/cobra_bubbles_from_li...glb',pos:'-18 0 -10',rot:'0 30 0',sc:'0.35'},
-        {id:'councilwoman',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/grand_councilwoman_...glb',pos:'22 0 -12',rot:'0 200 0',sc:'0.35'},
-        {id:'wendy',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/wendy_pleakley_from_...glb',pos:'-20 0 20',rot:'0 100 0',sc:'0.35'}
+        {id:'nani',    src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb',   pos:'26 0 52',  rot:'0 180 0', ratio:2.8},
+        {id:'jumba',   src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/jumba.glb',                       pos:'-12 0 10', rot:'0 45 0',  ratio:3.0},
+        {id:'lilo',    src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb',                   pos:'8 0 20',   rot:'0 200 0', ratio:1.9},
+        {id:'pleakley',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb',      pos:'-5 0 15',  rot:'0 90 0',  ratio:2.3},
+        {id:'lilo2',   src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lilo_et_scrump.glb',              pos:'-8 0 25',  rot:'0 150 0', ratio:1.9}
       ];
       chars.forEach(function(c){
         var el=document.createElement('a-gltf-model');
-        el.setAttribute('src',c.src);el.setAttribute('position',c.pos);el.setAttribute('rotation',c.rot);el.setAttribute('scale','1 1 1');el.setAttribute('shadow','cast:true');
+        el.setAttribute('src',c.src);
+        el.setAttribute('position',c.pos);
+        el.setAttribute('rotation',c.rot);
+        el.setAttribute('scale','1 1 1');
+        el.setAttribute('shadow','cast:true');
         el.addEventListener('model-loaded',function(){
-          var mesh=el.getObject3D('mesh');if(!mesh)return;
-          var box=new AFRAME.THREE.Box3().setFromObject(mesh);var h=box.max.y-box.min.y;var finalSc=1;
-          if(h>0.05){var ratios={nani:2.8,jumba:3.0,lilo:1.9,pleakley:2.3,angel:1.4,lilo2:1.9,hamster:0.9,cobra:2.6,councilwoman:2.1,wendy:2.2};var ratio=ratios[c.id]||1.2;finalSc=(1.4*ratio)/h;el.setAttribute('scale',finalSc+' '+finalSc+' '+finalSc);}
-          var shadow=document.createElement('a-circle');shadow.setAttribute('radius',(0.35*Math.min(finalSc*h/1.4,1.2)).toFixed(2));shadow.setAttribute('rotation','-90 0 0');shadow.setAttribute('segments','8');shadow.setAttribute('material','color:#000000;transparent:true;opacity:0.35');var pos=c.pos.split(' ');var px=parseFloat(pos[0]),pz=parseFloat(pos[2]);shadow.setAttribute('position',px.toFixed(2)+' 0.02 '+pz.toFixed(2));document.getElementById('world').appendChild(shadow);
-          var obj=el.getObject3D('mesh');var clips=[],cur=obj;while(cur){if(cur.animations&&cur.animations.length){clips=cur.animations;break;}cur=cur.parent;}
-          if(clips.length>0){var mixer=new AFRAME.THREE.AnimationMixer(cur);var action=mixer.clipAction(clips[0]);action.setLoop(AFRAME.THREE.LoopRepeat,Infinity);action.play();if(!window._npcMixers)window._npcMixers=[];window._npcMixers.push(mixer);}
-          if(clips.length===0){el.setAttribute('animation','property:rotation;to:0 360 0;loop:true;dur:8000;easing:linear');}
+          try{
+            var mesh=el.getObject3D('mesh');if(!mesh)return;
+            var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+            var h=box.max.y-box.min.y;
+            if(h>0.05){
+              var finalSc=(1.4*(c.ratio||1.5))/h;
+              el.setAttribute('scale',finalSc+' '+finalSc+' '+finalSc);
+              // Ombre au sol
+              var shadow=document.createElement('a-circle');
+              shadow.setAttribute('radius','0.4');
+              shadow.setAttribute('rotation','-90 0 0');
+              shadow.setAttribute('segments','8');
+              shadow.setAttribute('material','color:#000;transparent:true;opacity:0.3');
+              var pp=c.pos.split(' ');
+              shadow.setAttribute('position',pp[0]+' 0.02 '+pp[2]);
+              document.getElementById('world').appendChild(shadow);
+            }
+            // Animation GLB intégrée
+            var obj=el.getObject3D('mesh');var clips=[],cur=obj;
+            while(cur){if(cur.animations&&cur.animations.length){clips=cur.animations;break;}cur=cur.parent;}
+            if(clips.length>0){
+              var mixer=new AFRAME.THREE.AnimationMixer(cur);
+              mixer.clipAction(clips[0]).setLoop(AFRAME.THREE.LoopRepeat,Infinity).play();
+              if(!window._npcMixers)window._npcMixers=[];
+              window._npcMixers.push(mixer);
+            } else {
+              el.setAttribute('animation','property:rotation;to:0 360 0;loop:true;dur:8000;easing:linear');
+            }
+          }catch(err){console.warn('NPC load err',c.id,err);}
         });
-        el.addEventListener('model-error',function(){el.parentNode&&el.parentNode.removeChild(el);});
+        el.addEventListener('model-error',function(){try{el.parentNode&&el.parentNode.removeChild(el);}catch(e){}});
         document.getElementById('world').appendChild(el);
       });
       var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
@@ -617,7 +650,8 @@ function initGame(){
     requestAnimationFrame(loop);
     try{
     _loopFrame++;
-    var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;waveT+=dt;
+    var now=performance.now(),dt=Math.min((now-lastT)/1000,.033);lastT=now;waveT+=dt;
+    if(dt<=0)dt=0.016;
 
     // NPC mixers — toujours
     if(window._npcMixers){for(var mi=0;mi<window._npcMixers.length;mi++){window._npcMixers[mi].update(dt);}}
@@ -664,10 +698,17 @@ function initGame(){
       if(P.breath<=0){P.vy=7;P.state='surface';P.breath=25;toast('Plus d air ! 😮‍💨',2000);}
     }
     var PRAD=1.0,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
+    // Limiter la zone de déplacement en surface pour éviter l'écran gris (hors-limites)
+    if(P.state==='ground'||P.state==='surface'){
+      var WORLD_LIMIT=380;
+      if(nx>WORLD_LIMIT)nx=WORLD_LIMIT;if(nx<-WORLD_LIMIT)nx=-WORLD_LIMIT;
+      if(nz>WORLD_LIMIT)nz=WORLD_LIMIT;if(nz<-WORLD_LIMIT)nz=-WORLD_LIMIT;
+    }
     for(var wi=0;wi<walls.length;wi++){var w=walls[wi];if(P.y-P.yOff>w.y0+w.h)continue;var inX=nx+PRAD>w.x1&&nx-PRAD<w.x2,inZ=nz+PRAD>w.z1&&nz-PRAD<w.z2;var curX=P.x+PRAD>w.x1&&P.x-PRAD<w.x2,curZ=P.z+PRAD>w.z1&&P.z-PRAD<w.z2;if(inX&&inZ){if(!curX){P.vx=0;nx=P.x;}if(!curZ){P.vz=0;nz=P.z;}}}
     P.x=nx;P.z=nz;
-    var stEl=document.getElementById('stitch-root');
-    var shadowEl=document.getElementById('stitch-shadow');
+    var stEl=gel('stitch-root');
+    var shadowEl=gel('stitch-shadow');
+    if(!stEl)return;
     if(shadowEl){if(P.state==='ground'||P.state==='air'){var feetY=P.y-P.yOff;var gy2=getGroundY(P.x,P.z);var shadowY=gy2!==null?(gy2+0.01):(feetY+0.01);var ha=Math.max(0,feetY-(shadowY-0.02));var sc=Math.max(0.2,0.85-ha*0.04);var op=Math.max(0,0.46-ha*0.04);shadowEl.setAttribute('position',P.x.toFixed(2)+' '+shadowY.toFixed(3)+' '+P.z.toFixed(2));shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.62).toFixed(3));shadowEl.setAttribute('material','color:#000000;transparent:true;opacity:'+op.toFixed(3));shadowEl.setAttribute('visible','true');}else{shadowEl.setAttribute('visible','false');}}
     var tiltX=0;if(P.state==='diving'){tiltX=Math.max(-20,Math.min(15,P.vy*4));}else if(P.state==='surface'){tiltX=5;}
     stEl.setAttribute('position',P.x.toFixed(2)+' '+P.y.toFixed(2)+' '+P.z.toFixed(2));
@@ -683,14 +724,27 @@ function initGame(){
     var camDist=CAM.dist,camPitch=CAM.pitch;
     if(P.state==='diving'){camDist=5.0;camPitch=0.10;}
     var cr=camDist*Math.cos(camPitch),cX=P.x+Math.sin(CAM.yaw)*cr,cZ=P.z+Math.cos(CAM.yaw)*cr,cY=P.y+camDist*Math.sin(camPitch)+(P.state==='diving'?0.5:1.8);
-    var camRig=document.getElementById('cam-rig');var cp=camRig.getAttribute('position'),lf2=Math.min(1,dt*10);
-    camRig.setAttribute('position',(cp.x+(cX-cp.x)*lf2).toFixed(2)+' '+(cp.y+(cY-cp.y)*lf2).toFixed(2)+' '+(cp.z+(cZ-cp.z)*lf2).toFixed(2));
-    document.getElementById('mainCam').components.camera.camera.lookAt(P.x,P.y+(P.state==='diving'?0.0:.9),P.z);
+    // Empêcher la caméra de descendre sous le sol ou sous l'eau (cause écran gris)
+    var camMinY=(P.state==='diving')?-10.0:1.2;
+    cY=Math.max(cY,camMinY);
+    var camRig=document.getElementById('cam-rig');
+    if(camRig){
+      var cp=camRig.getAttribute('position');
+      var lf2=Math.min(1,dt*10);
+      if(cp){
+        camRig.setAttribute('position',(cp.x+(cX-cp.x)*lf2).toFixed(2)+' '+(cp.y+(cY-cp.y)*lf2).toFixed(2)+' '+(cp.z+(cZ-cp.z)*lf2).toFixed(2));
+      }
+    }
+    var _mainCam=document.getElementById('mainCam');
+    if(_mainCam&&_mainCam.components&&_mainCam.components.camera&&_mainCam.components.camera.camera){
+      try{_mainCam.components.camera.camera.lookAt(P.x,P.y+(P.state==='diving'?0.0:.9),P.z);}catch(e){}
+    }
     ['w0','w1','w2'].forEach(function(id,i){var wEl=document.getElementById(id);if(!wEl)return;wEl.setAttribute('scale',(1+Math.sin(waveT*.8+i*1.4)*.05)+' 1 '+(1+Math.sin(waveT*.8+i*1.4)*.05));wEl.setAttribute('position','0 '+(-.42+Math.sin(waveT*1.6+i*1.4)*.04).toFixed(3)+' 0');});
     var lg=document.getElementById('lagon');if(lg)lg.setAttribute('position','0 '+(-.35+Math.sin(waveT*.45)*.012).toFixed(3)+' 0');
     var breathBar=gel('breath-bar'),breathFill=gel('breath-fill');
     var waterOv=gel('water-overlay'),causticOv=gel('caustic-overlay');
     var diveHint=gel('dive-hint'),ambLightEl=gel('ambientLight'),scnEl=document.querySelector('a-scene');
+    if(!breathBar||!waterOv||!diveHint||!ambLightEl||!scnEl)return;
     if(P.state==='diving'||P.state==='surface'){breathBar.style.display='flex';var pct=P.breath/MAX_BREATH;breathFill.style.width=(pct*100).toFixed(0)+'%';breathFill.style.background=pct>.5?'linear-gradient(90deg,#00ffcc,#0088ff)':pct>.25?'linear-gradient(90deg,#ffcc00,#ff6600)':'linear-gradient(90deg,#ff2200,#ff6600)';}else{breathBar.style.display='none';}
     // Lumières/fog : seulement si le state change (pas à chaque frame!)
     if(P.state!==_lastState){
@@ -708,14 +762,14 @@ function initGame(){
         uwL.forEach(function(id){var l=gel(id);if(l)l.setAttribute('intensity','0');});
         gel('sunLight').setAttribute('intensity','2.2');gel('hemiLight').setAttribute('intensity','.7');
         ambLightEl.setAttribute('intensity','.25');ambLightEl.setAttribute('color','#ffeedd');
-        scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.007');
+        scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.004');
         gel('skyEl').setAttribute('color','#4ab8f0');
       } else {
         waterOv.className='';causticOv.style.opacity='0';
         uwL.forEach(function(id){var l=gel(id);if(l)l.setAttribute('intensity','0');});
         gel('sunLight').setAttribute('intensity','2.2');gel('hemiLight').setAttribute('intensity','.7');
         ambLightEl.setAttribute('intensity','.25');ambLightEl.setAttribute('color','#ffeedd');
-        scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.007');
+        scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.004');
         gel('skyEl').setAttribute('color','#4ab8f0');
       }
     }
