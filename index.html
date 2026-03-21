@@ -116,7 +116,7 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <button class="decline" onclick="closeMissionDialog()">❌ Non merci</button>
 </div>
 <div id="mission-hud">
-  🍦 <span id="mission-count">0</span>/50 glaces &nbsp;|&nbsp; ⏱ <span id="mission-timer">90</span>s
+  🍦 <span id="mission-count">0</span>/20 glaces &nbsp;|&nbsp; ⏱ <span id="mission-timer">90</span>s
 </div>
 <div id="map-overlay" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);align-items:center;justify-content:center;">
   <div style="background:#1a2a1a;border:2px solid #7de8ff;border-radius:16px;padding:16px;width:280px;position:relative;">
@@ -162,7 +162,7 @@ function initGame(){
     for(var i=0;i<20;i++){var a=i/20*Math.PI*2,r=10+Math.random()*250;uwGlb('#coralGLB',Math.sin(a)*r,Math.cos(a)*r,2.5+Math.random()*2,i*18);}
     var CC=['#ff55bb','#ff6622','#ff1166','#ffaa33','#00bbdd','#ff4433','#00ffcc','#ff55ff'];
     for(var i=0;i<100;i++){var a=Math.random()*Math.PI*2,r=10+Math.random()*400;var col=CC[i%CC.length],h=0.8+Math.random()*2.5;var ex=Math.sin(a)*r,ez=Math.cos(a)*r;var e=document.createElement('a-cylinder');e.setAttribute('radius-bottom','0.18');e.setAttribute('radius-top','0.05');e.setAttribute('height',h.toFixed(2));e.setAttribute('position',ex.toFixed(1)+' '+(SEABED+h/2).toFixed(1)+' '+ez.toFixed(1));e.setAttribute('material','color:'+col+';roughness:.5;emissive:'+col+';emissiveIntensity:.3');W2.appendChild(e);}
-    for(var i=0;i<50;i++){var a=Math.random()*Math.PI*2,r=5+Math.random()*380,ah=0.6+Math.random()*2.5;var gc=['#1a8820','#0d7018','#22aa30','#0a6015'][i%4];var e=document.createElement('a-plane');e.setAttribute('width',(0.1+Math.random()*0.15).toFixed(2));e.setAttribute('height',ah.toFixed(2));e.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' '+(SEABED+ah/2).toFixed(1)+' '+(Math.cos(a)*r).toFixed(1));e.setAttribute('rotation','0 '+(i*12)+' 0');e.setAttribute('material','side:double;color:'+gc+';emissive:'+gc+';emissiveIntensity:.2');e.classList.add('wind-leaf');e.dataset.windPhase=(i*.4).toFixed(2);e.dataset.brx='0';e.dataset.bry=(i*12).toString();W2.appendChild(e);}
+    for(var i=0;i<20;i++){var a=Math.random()*Math.PI*2,r=5+Math.random()*380,ah=0.6+Math.random()*2.5;var gc=['#1a8820','#0d7018','#22aa30','#0a6015'][i%4];var e=document.createElement('a-plane');e.setAttribute('width',(0.1+Math.random()*0.15).toFixed(2));e.setAttribute('height',ah.toFixed(2));e.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' '+(SEABED+ah/2).toFixed(1)+' '+(Math.cos(a)*r).toFixed(1));e.setAttribute('rotation','0 '+(i*12)+' 0');e.setAttribute('material','side:double;color:'+gc+';emissive:'+gc+';emissiveIntensity:.2');e.classList.add('wind-leaf');e.dataset.windPhase=(i*.4).toFixed(2);e.dataset.brx='0';e.dataset.bry=(i*12).toString();W2.appendChild(e);}
     for(var i=0;i<25;i++){var a=Math.random()*Math.PI*2,r=5+Math.random()*200;var c=['#ff4400','#ff6600','#ff8800'][i%3];var e=document.createElement('a-sphere');e.setAttribute('radius','0.35');e.setAttribute('scale','1 .12 1');e.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' '+(SEABED+0.05)+' '+(Math.cos(a)*r).toFixed(1));e.setAttribute('material','color:'+c+';roughness:.6;emissive:'+c+';emissiveIntensity:.3');W2.appendChild(e);}
     [0,Math.PI].forEach(function(ph,i){var e=document.createElement('a-gltf-model');e.setAttribute('src','#turtleGLB');e.setAttribute('scale','3 3 3');e.classList.add('turtle-anim');e.dataset.tPhase=ph.toFixed(2);e.dataset.tR=(80+i*60).toFixed(0);e.dataset.tDepth='-3';e.dataset.tSpeed='.06';W2.appendChild(e);});
     var sh=document.createElement('a-entity');var shBody=document.createElement('a-sphere');shBody.setAttribute('radius','1.5');shBody.setAttribute('scale','3.5 .65 .8');shBody.setAttribute('material','color:#607080;roughness:.6');sh.appendChild(shBody);sh.classList.add('shark-anim');sh.dataset.sPhase='0';sh.dataset.sR='35';sh.dataset.sDepth='-5';sh.dataset.sSpeed='.03';W2.appendChild(sh);
@@ -190,6 +190,37 @@ function initGame(){
     for(var vi=0;vi<40;vi++){var va=vi/40*Math.PI*2,vr=4+Math.random()*35;var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;makeGiantHibiscus(vx,GY+0.01,vz2);if(vi%2===0)makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);if(vi%3===0)makeFern(vx-1,GY+0.01,vz2-1);if(vi%4===0)makeMonstera(vx+1,GY+0.01,vz2-2);}
     for(var vi=0;vi<50;vi++){var va=Math.random()*Math.PI*2,vr=3+Math.random()*40;makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);}
     mk('gltf-model',{src:'#hutGLB',position:'-8 0 -6',rotation:'0 140 0',scale:'12 12 12',shadow:'cast:true'});
+    // ── PERSONNAGES Lilo & Stitch disponibles ──
+    // Nani près du chariot (chargement différé)
+    setTimeout(function(){
+      var chars=[
+        {id:'nani',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb',pos:'26 0 52',rot:'0 180 0',sc:'1.8'},
+        {id:'jumba',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/jumba.glb',pos:'-12 0 10',rot:'0 45 0',sc:'1.6'},
+        {id:'lilo',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb',pos:'8 0 20',rot:'0 200 0',sc:'1.5'},
+        {id:'pleakley',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb',pos:'-5 0 15',rot:'0 90 0',sc:'1.6'},
+        {id:'angel',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_an...glb',pos:'15 0 -5',rot:'0 270 0',sc:'1.5'}
+      ];
+      chars.forEach(function(c){
+        var el=document.createElement('a-gltf-model');
+        el.setAttribute('src',c.src);
+        el.setAttribute('position',c.pos);
+        el.setAttribute('rotation',c.rot);
+        el.setAttribute('scale',c.sc+' '+c.sc+' '+c.sc);
+        el.setAttribute('shadow','cast:true');
+        document.getElementById('world').appendChild(el);
+      });
+    },3000);
+    // ── DÉCO : Hibiscus GLB ──
+    setTimeout(function(){
+      for(var i=0;i<8;i++){
+        var a=i/8*Math.PI*2,r=15+Math.random()*25;
+        var el=document.createElement('a-gltf-model');
+        el.setAttribute('src','https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hibiscus%20flower.glb');
+        el.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' 0 '+(Math.cos(a)*r).toFixed(1));
+        el.setAttribute('scale','3 3 3');
+        document.getElementById('world').appendChild(el);
+      }
+    },4000);
     [[-35,50],[-42,28],[38,45],[44,24],[-18,65],[20,68]].forEach(function(p,i){mk('sphere',{radius:(2+i*.35).toFixed(1),position:p[0]+' 0.6 '+p[1],scale:'1 .5 1',material:'color:#7a6040;roughness:.95',shadow:'cast:true'});});
     [[-28,2],[30,-2],[14,-4],[-18,3]].forEach(function(p,i){mk('sphere',{radius:(1.5+i*.2).toFixed(1),position:p[0]+' -.2 '+p[1],scale:'1 .4 1',material:'color:#6a5030;roughness:.95'});});
   })();
@@ -217,7 +248,7 @@ function initGame(){
 
   function buildMission(){
     var GY=0.0;
-    mk('gltf-model',{src:'#cartGLB',position:'30 0 55',scale:'2 2 2',shadow:'cast:true'});
+    mk('gltf-model',{src:'#cartGLB',position:'30 1.5 55',scale:'2 2 2',shadow:'cast:true'});
     addWall(30,55,3,3,GY);
     // Vendeuse géométrique (Nani) — pas de GLB externe
     var nani=mk('entity',{id:'paulo',position:'25 0 54'});
@@ -231,18 +262,18 @@ function initGame(){
       if(Math.sqrt(px*px+pz*pz)>72)continue;
       var pa=document.createElement('a-gltf-model');
       pa.setAttribute('src','#sundaeGLB');
-      pa.setAttribute('position',px.toFixed(1)+' 0 '+pz.toFixed(1));
-      pa.setAttribute('scale','0.8 0.8 0.8');
+      pa.setAttribute('position',px.toFixed(1)+' 0.8 '+pz.toFixed(1));
+      pa.setAttribute('scale','3.5 3.5 3.5');
       pa.classList.add('pineapple');
       W.appendChild(pa);
       window.pineappleEls.push(pa);
     }
-    window.MISSION={active:false,count:0,timer:0,done:false};
+    window.MISSION={active:false,count:0,timer:0,done:false,total:20};
     window._pauloDialogShown=false;
   }
 
   window.closeMissionDialog=function(){document.getElementById('mission-truck').style.display='none';};
-  window.startMission=function(){document.getElementById('mission-truck').style.display='none';window.MISSION.active=true;window.MISSION.count=0;window.MISSION.timer=90;document.getElementById('mission-hud').style.display='block';toast('🍦 Mission démarrée ! Ramasse 50 glaces !',3000);};
+  window.startMission=function(){document.getElementById('mission-truck').style.display='none';window.MISSION.active=true;window.MISSION.count=0;window.MISSION.timer=90;document.getElementById('mission-hud').style.display='block';toast('🍦 Mission démarrée ! Ramasse 20 glaces !',3000);};
 
   var SFX='_Stitch_Armature',BONES={},BONE_REST={},ANIM_T=0,stitchMixer=null,nativeAction=null;
   var BONE_MAP={root:'ROOT'+SFX,spine0:'Spine_start'+SFX,spine1:'Spine.001'+SFX,shoulders:'Shoulders'+SFX,neck:'Neck'+SFX,head:'Head'+SFX,shoulderL:'Shoulder.L'+SFX,armL:'Arm.L'+SFX,foreArmL:'ForeArm.L'+SFX,shoulderR:'Shoulder.R'+SFX,armR:'Arm.R'+SFX,foreArmR:'ForeArm.R'+SFX,hipL:'Hip.L'+SFX,legL:'Leg.L'+SFX,foreLegL:'ForeLeg.L'+SFX,heelL:'Heel.L'+SFX,hipR:'Hip.R'+SFX,legR:'Leg.R'+SFX,foreLegR:'ForeLeg.R'+SFX,heelR:'Heel.R'+SFX,butt:'Butt'+SFX,tail:'Tail'+SFX,earAL:'Ear_A.L'+SFX,earAR:'Ear_A.R'+SFX};
@@ -298,7 +329,10 @@ function initGame(){
     if(KY['KeyW']||KY['KeyZ']||KY['ArrowUp'])fwd=1;if(KY['KeyS']||KY['ArrowDown'])fwd=-1;if(KY['KeyD']||KY['ArrowRight'])lat=1;if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft'])lat=-1;
     fwd-=jLY;lat+=jLX;
     var moveMag=Math.sqrt(fwd*fwd+lat*lat),gy=getGroundY(P.x,P.z),spd=sprint?9.5:5.2;
-    if(moveMag>.05){var mx=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);var mz=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));var mn=Math.sqrt(mx*mx+mz*mz);var spdM=(P.state==='surface')?.7:(P.state==='diving')?.65:1.0;P.vx=mx/mn*spd*spdM;P.vz=mz/mn*spd*spdM;var ty=Math.atan2(mx/mn,mz/mn),dyw=ty-P.yaw;while(dyw>Math.PI)dyw-=Math.PI*2;while(dyw<-Math.PI)dyw+=Math.PI*2;P.yaw+=dyw*Math.min(1,dt*14);}else{P.vx=0;P.vz=0;}
+    if(moveMag>.05){var mx=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);var mz=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));var mn=Math.sqrt(mx*mx+mz*mz);var spdM=(P.state==='surface')?.7:(P.state==='diving')?.65:1.0;P.vx=mx/mn*spd*spdM;P.vz=mz/mn*spd*spdM;var ty=Math.atan2(mx/mn,mz/mn),dyw=ty-P.yaw;while(dyw>Math.PI)dyw-=Math.PI*2;while(dyw<-Math.PI)dyw+=Math.PI*2;// Ralentir Stitch proportionnellement à l'angle de virage
+var turnFactor=Math.min(1,1-Math.abs(dyw)/Math.PI*0.55);
+P.vx*=turnFactor;P.vz*=turnFactor;
+P.yaw+=dyw*Math.min(1,dt*9);}else{P.vx=0;P.vz=0;}
     if(P.state==='ground'||P.state==='air'){
       P.vy-=22*dt;if(P.vy<-25)P.vy=-25;P.y+=P.vy*dt;
       if(gy!==null&&P.y<=gy+P.yOff){if(gy<WATER_SURFACE-0.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}else if(P.y<=WATER_SURFACE+WATER_ENTER_THRESHOLD&&gy<=WATER_SURFACE){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;}else{P.y=gy+P.yOff;P.vy=0;P.onGround=true;P.state='ground';}}
@@ -352,18 +386,27 @@ function initGame(){
       window.MISSION.timer-=dt;
       if(window.MISSION.timer<=0){
         window.MISSION.active=false;document.getElementById('mission-hud').style.display='none';
-        var txt=window.MISSION.count>=50?'🎉 Bravo ! Voici ton 🔫 pistolet à eau !':'😢 Temps écoulé ! '+window.MISSION.count+'/50 glaces récupérées.';
+        var txt=window.MISSION.count>=20?'🎉 Bravo ! Voici ton 🔫 pistolet à eau !':'😢 Temps écoulé ! '+window.MISSION.count+'/20 glaces récupérées.';
         var md=document.getElementById('mission-truck');
-        document.getElementById('mission-text').innerHTML=txt+(window.MISSION.count>=50?'<br><b>Nani te remercie !</b>':'<br>Retente ta chance !');
-        md.querySelector('button').textContent=window.MISSION.count>=50?'🎊 Super !':'🔄 Réessayer';
-        md.querySelector('button').onclick=window.MISSION.count>=50?window.closeMissionDialog:function(){window.MISSION={active:false,count:0,timer:0,done:false};window.pineappleEls.forEach(function(p){p.setAttribute('visible','true');});window.closeMissionDialog();};
-        md.querySelector('.decline').style.display='none';md.style.display='block';
-        window.MISSION.done=window.MISSION.count>=50;
+        document.getElementById('mission-text').innerHTML=txt+(window.MISSION.count>=20?'<br><b>Nani te remercie !</b>':'<br>Retente ta chance !');
+        if(window.MISSION.count>=20){
+          md.querySelector('button').textContent='🎊 Super !';
+          md.querySelector('button').onclick=window.closeMissionDialog;
+          md.querySelector('.decline').style.display='none';
+        } else {
+          md.querySelector('button').textContent='✅ Oui, réessayer !';
+          md.querySelector('button').onclick=function(){window.MISSION={active:false,count:0,timer:0,done:false,total:20};window.pineappleEls.forEach(function(p){p.setAttribute('visible','true');});window.closeMissionDialog();};
+          md.querySelector('.decline').textContent='❌ Non, à bientôt';
+          md.querySelector('.decline').onclick=function(){window.MISSION.done=true;window.closeMissionDialog();toast('À bientôt Nani ! 👋',2500);};
+          md.querySelector('.decline').style.display='';
+        }
+        md.style.display='block';
+        window.MISSION.done=window.MISSION.count>=20;
         if(window.MISSION.done){var gunEl=document.createElement('a-gltf-model');gunEl.setAttribute('src','#watergunGLB');gunEl.setAttribute('position',P.x+' '+(P.y+1.5)+' '+P.z);gunEl.setAttribute('scale','3 3 3');gunEl.setAttribute('rotation','0 '+(P.yaw*180/Math.PI)+' 0');document.getElementById('world').appendChild(gunEl);}
       }
       document.getElementById('mission-timer').textContent=Math.ceil(window.MISSION.timer);
       document.getElementById('mission-count').textContent=window.MISSION.count;
-      if(window.pineappleEls){window.pineappleEls.forEach(function(pa){if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;var pp=pa.getAttribute('position');if(!pp)return;var dx=P.x-parseFloat(pp.x||pp.split(' ')[0]);var dz=P.z-parseFloat(pp.z||pp.split(' ')[2]);if(dx*dx+dz*dz<2.5){pa.setAttribute('visible','false');window.MISSION.count++;toast('🍦 +1 glace !',600);}});}
+      if(window.pineappleEls){window.pineappleEls.forEach(function(pa){if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;var pp=pa.getAttribute('position');if(!pp)return;var dx=P.x-parseFloat(pp.x||pp.split(' ')[0]);var dz=P.z-parseFloat(pp.z||pp.split(' ')[2]);if(dx*dx+dz*dz<3.5){pa.setAttribute('visible','false');window.MISSION.count++;toast('🍦 +1 glace !',600);}});}
     }
     var zone='🌊 OCEAN';
     if(P.state==='diving')zone='🤿 SOUS L EAU';
