@@ -35,6 +35,12 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 #mission-truck button.decline{background:#555}
 #mission-hud{position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(0,0,0,.8);border:1.5px solid #ffcc00;border-radius:12px;padding:6px 14px;font-family:Georgia,serif;font-size:11px;color:#ffcc00;text-align:center;pointer-events:none}
 #dive-hint{position:fixed;bottom:148px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(0,10,30,.88);border:1.5px solid rgba(0,220,200,.5);border-radius:12px;padding:5px 14px;color:#88ffee;font-size:10px;font-family:Georgia,serif;display:none;white-space:nowrap;pointer-events:none}
+#backpack-btn{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:30;background:rgba(0,8,22,.82);border:2px solid #ffaa00;border-radius:20px;padding:5px 14px;font-family:Georgia,serif;font-size:10px;color:#ffaa00;cursor:pointer;touch-action:manipulation}
+#backpack-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.8);align-items:center;justify-content:center;}
+#backpack-box{background:linear-gradient(135deg,#2a1a0a,#3a2a10);border:3px solid #ffaa00;border-radius:20px;padding:20px;width:280px;max-height:70vh;overflow-y:auto;position:relative;}
+#backpack-box h2{color:#ffaa00;font-family:Georgia,serif;font-size:15px;text-align:center;margin-bottom:14px}
+.bp-item{display:flex;align-items:center;gap:10px;background:rgba(255,170,0,.12);border-radius:10px;padding:8px 12px;margin-bottom:8px;font-family:Georgia,serif;font-size:12px;color:#fff}
+.bp-item span{font-size:22px}
 </style>
 </head>
 <body>
@@ -109,6 +115,14 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <div class="btn" style="border-color:#ffd700;color:#ffd700" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">⚡<br>RUN</div>
 </div>
 <div id="toast"></div>
+<button id="backpack-btn" onclick="openBackpack()">🎒 Sac à dos</button>
+<div id="backpack-overlay" onclick="if(event.target===this)closeBackpack()">
+  <div id="backpack-box">
+    <h2>🎒 Sac à dos de Stitch</h2>
+    <div id="backpack-items"></div>
+    <button onclick="closeBackpack()" style="width:100%;margin-top:10px;background:#ff6600;border:none;color:#fff;padding:8px;border-radius:10px;font-size:12px;cursor:pointer">✕ Fermer</button>
+  </div>
+</div>
 <div id="mission-truck">
   <h3>🍦 Chariot de Glaces</h3>
   <p id="mission-text">Aloha ! Je suis Nani, la vendeuse de glaces.<br>Mes <b>50 glaces</b> se sont éparpillées partout !<br>Aide-moi à les récupérer en <b>90 secondes</b><br>et je te donne un <b>🔫 pistolet à eau</b> !</p>
@@ -194,21 +208,34 @@ function initGame(){
     // Nani près du chariot (chargement différé)
     setTimeout(function(){
       var chars=[
-        {id:'nani',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb',pos:'26 0 52',rot:'0 180 0',sc:'1.8'},
-        {id:'jumba',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/jumba.glb',pos:'-12 0 10',rot:'0 45 0',sc:'1.6'},
-        {id:'lilo',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb',pos:'8 0 20',rot:'0 200 0',sc:'1.5'},
-        {id:'pleakley',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb',pos:'-5 0 15',rot:'0 90 0',sc:'1.6'},
-        {id:'angel',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_and_stitch__oc_.glb',pos:'15 0 -5',rot:'0 270 0',sc:'1.5'},
-        {id:'lilo2',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lilo_et_scrump.glb',pos:'-8 0 25',rot:'0 150 0',sc:'1.5'},
-        {id:'hamster',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hamsterwiel_from_lilo_and_stitch.glb',pos:'20 0 30',rot:'0 220 0',sc:'1.4'}
+        {id:'nani',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb',pos:'26 0 52',rot:'0 180 0',sc:'0.35'},
+        {id:'jumba',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/jumba.glb',pos:'-12 0 10',rot:'0 45 0',sc:'0.4'},
+        {id:'lilo',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb',pos:'8 0 20',rot:'0 200 0',sc:'0.38'},
+        {id:'pleakley',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb',pos:'-5 0 15',rot:'0 90 0',sc:'0.35'},
+        {id:'angel',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_and_stitch__oc_.glb',pos:'15 0 -5',rot:'0 270 0',sc:'0.38'},
+        {id:'lilo2',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lilo_et_scrump.glb',pos:'-8 0 25',rot:'0 150 0',sc:'0.38'},
+        {id:'hamster',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hamsterwiel_from_lilo_and_stitch.glb',pos:'20 0 30',rot:'0 220 0',sc:'0.35'}
       ];
       chars.forEach(function(c){
         var el=document.createElement('a-gltf-model');
         el.setAttribute('src',c.src);
         el.setAttribute('position',c.pos);
         el.setAttribute('rotation',c.rot);
-        el.setAttribute('scale',c.sc+' '+c.sc+' '+c.sc);
+        el.setAttribute('scale','1 1 1');
         el.setAttribute('shadow','cast:true');
+        // Auto-scale au chargement pour que chaque perso fasse ~1.4 unités
+        el.addEventListener('model-loaded',function(){
+          var mesh=el.getObject3D('mesh');
+          if(!mesh)return;
+          var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+          var h=box.max.y-box.min.y;
+          if(h>0.05){
+            var target=1.4; // même hauteur que Stitch
+            var sc=target/h;
+            el.setAttribute('scale',sc+' '+sc+' '+sc);
+          }
+        });
+        el.addEventListener('model-error',function(){el.parentNode&&el.parentNode.removeChild(el);});
         document.getElementById('world').appendChild(el);
       });
       // Rochers GLB sur la plage
@@ -260,7 +287,7 @@ function initGame(){
 
   function buildMission(){
     var GY=0.0;
-    mk('gltf-model',{src:'#cartGLB',position:'30 1.5 55',scale:'2 2 2',shadow:'cast:true'});
+    mk('gltf-model',{src:'#cartGLB',position:'30 2.5 55',scale:'2 2 2',shadow:'cast:true'});
     addWall(30,55,3,3,GY);
     // Vendeuse géométrique (Nani) — pas de GLB externe
     var nani=mk('entity',{id:'paulo',position:'25 0 54'});
@@ -276,6 +303,7 @@ function initGame(){
       pa.setAttribute('src','#sundaeGLB');
       pa.setAttribute('position',px.toFixed(1)+' 0.8 '+pz.toFixed(1));
       pa.setAttribute('scale','3.5 3.5 3.5');
+      pa.setAttribute('visible','false');
       pa.classList.add('pineapple');
       W.appendChild(pa);
       window.pineappleEls.push(pa);
@@ -285,7 +313,7 @@ function initGame(){
   }
 
   window.closeMissionDialog=function(){document.getElementById('mission-truck').style.display='none';};
-  window.startMission=function(){document.getElementById('mission-truck').style.display='none';window.MISSION.active=true;window.MISSION.count=0;window.MISSION.timer=90;document.getElementById('mission-hud').style.display='block';toast('🍦 Mission démarrée ! Ramasse 20 glaces !',3000);};
+  window.startMission=function(){document.getElementById('mission-truck').style.display='none';window.MISSION.active=true;window.MISSION.count=0;window.MISSION.timer=90;document.getElementById('mission-hud').style.display='block';if(window.pineappleEls)window.pineappleEls.forEach(function(p){p.setAttribute('visible','true');});toast('🍦 Mission démarrée ! Ramasse 20 glaces !',3000);};
 
   var SFX='_Stitch_Armature',BONES={},BONE_REST={},ANIM_T=0,stitchMixer=null,nativeAction=null;
   var BONE_MAP={root:'ROOT'+SFX,spine0:'Spine_start'+SFX,spine1:'Spine.001'+SFX,shoulders:'Shoulders'+SFX,neck:'Neck'+SFX,head:'Head'+SFX,shoulderL:'Shoulder.L'+SFX,armL:'Arm.L'+SFX,foreArmL:'ForeArm.L'+SFX,shoulderR:'Shoulder.R'+SFX,armR:'Arm.R'+SFX,foreArmR:'ForeArm.R'+SFX,hipL:'Hip.L'+SFX,legL:'Leg.L'+SFX,foreLegL:'ForeLeg.L'+SFX,heelL:'Heel.L'+SFX,hipR:'Hip.R'+SFX,legR:'Leg.R'+SFX,foreLegR:'ForeLeg.R'+SFX,heelR:'Heel.R'+SFX,butt:'Butt'+SFX,tail:'Tail'+SFX,earAL:'Ear_A.L'+SFX,earAR:'Ear_A.R'+SFX};
@@ -342,9 +370,9 @@ function initGame(){
     fwd-=jLY;lat+=jLX;
     var moveMag=Math.sqrt(fwd*fwd+lat*lat),gy=getGroundY(P.x,P.z),spd=sprint?9.5:5.2;
     if(moveMag>.05){var mx=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);var mz=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));var mn=Math.sqrt(mx*mx+mz*mz);var spdM=(P.state==='surface')?.7:(P.state==='diving')?.65:1.0;P.vx=mx/mn*spd*spdM;P.vz=mz/mn*spd*spdM;var ty=Math.atan2(mx/mn,mz/mn),dyw=ty-P.yaw;while(dyw>Math.PI)dyw-=Math.PI*2;while(dyw<-Math.PI)dyw+=Math.PI*2;// Ralentir Stitch proportionnellement à l'angle de virage
-var turnFactor=Math.min(1,1-Math.abs(dyw)/Math.PI*0.55);
+var turnFactor=Math.min(1,1-Math.abs(dyw)/Math.PI*0.75);
 P.vx*=turnFactor;P.vz*=turnFactor;
-P.yaw+=dyw*Math.min(1,dt*9);}else{P.vx=0;P.vz=0;}
+P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     if(P.state==='ground'||P.state==='air'){
       P.vy-=22*dt;if(P.vy<-25)P.vy=-25;P.y+=P.vy*dt;
       if(gy!==null&&P.y<=gy+P.yOff){if(gy<WATER_SURFACE-0.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}else if(P.y<=WATER_SURFACE+WATER_ENTER_THRESHOLD&&gy<=WATER_SURFACE){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;}else{P.y=gy+P.yOff;P.vy=0;P.onGround=true;P.state='ground';}}
@@ -414,11 +442,13 @@ P.yaw+=dyw*Math.min(1,dt*9);}else{P.vx=0;P.vz=0;}
         }
         md.style.display='block';
         window.MISSION.done=window.MISSION.count>=20;
-        if(window.MISSION.done){var gunEl=document.createElement('a-gltf-model');gunEl.setAttribute('src','#watergunGLB');gunEl.setAttribute('position',P.x+' '+(P.y+1.5)+' '+P.z);gunEl.setAttribute('scale','3 3 3');gunEl.setAttribute('rotation','0 '+(P.yaw*180/Math.PI)+' 0');document.getElementById('world').appendChild(gunEl);}
+        if(window.MISSION.done){var gunEl=document.createElement('a-gltf-model');gunEl.setAttribute('src','#watergunGLB');gunEl.setAttribute('position',P.x+' '+(P.y+1.5)+' '+P.z);gunEl.setAttribute('scale','3 3 3');gunEl.setAttribute('rotation','0 '+(P.yaw*180/Math.PI)+' 0');document.getElementById('world').appendChild(gunEl);
+          window.INVENTAIRE.push({icon:'🔫',name:'Pistolet à eau',desc:'Cadeau de Nani pour avoir ramassé les 20 glaces !'});
+          toast('🔫 Pistolet à eau ajouté dans ton sac !',3000);}
       }
       document.getElementById('mission-timer').textContent=Math.ceil(window.MISSION.timer);
       document.getElementById('mission-count').textContent=window.MISSION.count;
-      if(window.pineappleEls){window.pineappleEls.forEach(function(pa){if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;var pp=pa.getAttribute('position');if(!pp)return;var dx=P.x-parseFloat(pp.x||pp.split(' ')[0]);var dz=P.z-parseFloat(pp.z||pp.split(' ')[2]);if(dx*dx+dz*dz<3.5){pa.setAttribute('visible','false');window.MISSION.count++;toast('🍦 +1 glace !',600);}});}
+      if(window.pineappleEls){window.pineappleEls.forEach(function(pa){if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;var pp=pa.getAttribute('position');if(!pp)return;var dx=P.x-parseFloat(pp.x||pp.split(' ')[0]);var dz=P.z-parseFloat(pp.z||pp.split(' ')[2]);if(dx*dx+dz*dz<3.5&&window.MISSION.count<20){pa.setAttribute('visible','false');window.MISSION.count++;toast('🍦 +1 glace !',600);if(window.MISSION.count>=20){window.MISSION.timer=0.01;}}});}
     }
     var zone='🌊 OCEAN';
     if(P.state==='diving')zone='🤿 SOUS L EAU';
@@ -451,6 +481,20 @@ P.yaw+=dyw*Math.min(1,dt*9);}else{P.vx=0;P.vz=0;}
   function drawMap(){var canvas=document.getElementById('mapCanvas');if(!canvas)return;var ctx=canvas.getContext('2d');var W=248,H=248,scale=0.28,cx=W/2,cy=H/2;ctx.fillStyle='#1a5a7a';ctx.fillRect(0,0,W,H);[{x:0,z:0,r:80,col:'#4a8a1a',label:'PRINCIPALE'},{x:-165,z:-140,r:48,col:'#3a7a14',label:'VOLCANIQUE'},{x:165,z:-125,r:48,col:'#5aaa28',label:'TROPICALE'},{x:0,z:-220,r:48,col:'#3a9a18',label:'NORD'},{x:-220,z:50,r:48,col:'#6aaa30',label:'OUEST'},{x:220,z:80,r:48,col:'#4a8a22',label:'EST'},{x:100,z:-300,r:48,col:'#3a7a18',label:'LOINTAINE'},{x:-300,z:-200,r:48,col:'#5a9a25',label:'CACHEE'}].forEach(function(il){var ix=cx+il.x*scale,iy=cy+il.z*scale,ir=Math.max(3,il.r*scale);ctx.beginPath();ctx.arc(ix,iy,ir,0,Math.PI*2);ctx.fillStyle=il.col;ctx.fill();ctx.fillStyle='#fff';ctx.font='7px Georgia';ctx.textAlign='center';ctx.fillText(il.label,ix,iy-ir-2);});var px=cx+P.x*scale,py=cy+P.z*scale;ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fillStyle='#ff4466';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+Math.sin(P.yaw)*10,py+Math.cos(P.yaw)*10);ctx.strokeStyle='#ffcc00';ctx.lineWidth=2;ctx.stroke();document.getElementById('mapLabel').textContent='📍 '+(P.state==='diving'?'SOUS L\'EAU':'SUR L\'ILE')+' — X:'+P.x.toFixed(0)+' Z:'+P.z.toFixed(0);}
 
   document.querySelector('a-scene').addEventListener('click',function(e){var el=e.target;if(el&&el.id==='totem-plaque'){var mo=document.getElementById('map-overlay');mo.style.display='flex';drawMap();}});
+  // ── SAC À DOS ──
+  window.INVENTAIRE=[];
+  window.openBackpack=function(){
+    var ov=document.getElementById('backpack-overlay');
+    var items=document.getElementById('backpack-items');
+    ov.style.display='flex';
+    if(window.INVENTAIRE.length===0){
+      items.innerHTML='<div class="bp-item"><span>📭</span><div>Sac vide - rien encore !</div></div>';
+    } else {
+      items.innerHTML=window.INVENTAIRE.map(function(it){return '<div class="bp-item"><span>'+it.icon+'</span><div><b>'+it.name+'</b><br><small style="color:#aaa">'+it.desc+'</small></div></div>';}).join('');
+    }
+  };
+  window.closeBackpack=function(){document.getElementById('backpack-overlay').style.display='none';};
+
   window.addEventListener('keydown',function(e){KY[e.code]=1;if(e.code==='Space'){e.preventDefault();window.doJump();}if(e.code==='ShiftLeft')sprint=true;});
   window.addEventListener('keyup',function(e){KY[e.code]=0;if(e.code==='ShiftLeft')sprint=false;});
 }
