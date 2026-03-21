@@ -1,5 +1,1420 @@
 <!DOCTYPE html><html lang="fr"><head>
+<!DOCTYPE html><html lang="fr"><head>
 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Stitch Island</title>
+<script src="https://aframe.io/releases/1.4.0/aframe.min.js" crossorigin="anonymous"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+#joy{position:fixed;left:14px;bottom:14px;z-index:30;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(255,80,120,.25),rgba(180,20,60,.18));border:2.5px solid rgba(255,160,190,.5);touch-action:none;pointer-events:all;box-shadow:0 0 18px rgba(255,60,100,.2);}
+#jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,#ff88bb,#e8174a 60%,#8a0020);border:2.5px solid rgba(255,180,200,.8);box-shadow:0 3px 10px rgba(200,20,60,.5);}
+#rjoy{position:fixed;right:14px;bottom:14px;z-index:30;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(0,220,180,.22),rgba(0,120,100,.16));border:2px solid rgba(100,255,220,.45);touch-action:none;pointer-events:all;box-shadow:0 0 14px rgba(0,200,160,.2);}
+#rjnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:radial-gradient(circle,#5fffdc,#00c8a8 60%,#005a50);border:2px solid rgba(100,255,220,.7);box-shadow:0 3px 8px rgba(0,150,120,.5);}
+/* ── ÉCRAN DE CHARGEMENT ── */
+#loading-screen{
+  position:fixed;inset:0;z-index:999;
+  background:linear-gradient(160deg,#1a5a8a 0%,#0a2a50 40%,#1a0a30 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:Georgia,serif;
+  transition:opacity .8s ease;
+}
+#loading-screen.fade-out{opacity:0;pointer-events:none;}
+#loading-title{font-size:28px;color:#fff;text-shadow:0 2px 12px rgba(255,150,100,.6);margin-bottom:6px;letter-spacing:2px;}
+#loading-sub{font-size:13px;color:#ffcc88;margin-bottom:30px;letter-spacing:1px;}
+#loading-flowers{font-size:32px;margin-bottom:20px;animation:spinFlower 3s linear infinite;}
+@keyframes spinFlower{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(1.2)}100%{transform:rotate(360deg) scale(1)}}
+#loading-bar-bg{width:220px;height:10px;border-radius:5px;background:rgba(255,255,255,.15);border:1px solid rgba(255,200,150,.3);overflow:hidden;margin-bottom:12px;}
+#loading-bar-fill{height:100%;width:0%;border-radius:5px;background:linear-gradient(90deg,#ff6fa0,#ff9900,#ffe566);transition:width .3s ease;}
+#loading-msg{font-size:10px;color:#aaddff;letter-spacing:.5px;min-height:16px;}
+#btns{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:10px;pointer-events:none;align-items:flex-end;}
+.btn{width:62px;height:62px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;touch-action:manipulation;pointer-events:all;position:relative;overflow:hidden;transition:transform .1s,box-shadow .1s;box-shadow:0 4px 14px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);}
+.btn:active{transform:scale(.91);}
+.btn .btn-icon{font-size:22px;line-height:1;margin-bottom:2px;}
+.btn .btn-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.5px;opacity:.92;}
+#btn-jump{background:radial-gradient(circle at 40% 35%,#ff6fa0 0%,#e8174a 55%,#9e0030 100%);border:2.5px solid #ffaacc;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+#btn-dive{background:radial-gradient(circle at 40% 35%,#5fffdc 0%,#00c8a8 50%,#006e70 100%);border:2.5px solid #88ffee;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+#btn-run{background:radial-gradient(circle at 40% 35%,#ffe566 0%,#ff9900 55%,#c85000 100%);border:2.5px solid #ffd966;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+#btn-pickup{background:radial-gradient(circle at 40% 35%,#88ff66 0%,#22cc44 50%,#0a6622 100%);border:2.5px solid #aaffbb;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+.btn::before{content:'';position:absolute;inset:-4px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(0 30 30)'/%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(60 30 30)'/%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(120 30 30)'/%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(180 30 30)'/%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(240 30 30)'/%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(300 30 30)'/%3E%3C/svg%3E");background-size:cover;pointer-events:none;border-radius:50%;}
+#hud{position:fixed;top:10px;left:0;right:0;display:flex;justify-content:space-between;padding:0 12px;pointer-events:none;z-index:30}
+.pill{background:linear-gradient(135deg,rgba(255,100,150,.85),rgba(255,60,80,.75));border-radius:18px;padding:5px 14px;font-family:Georgia,serif;font-size:9px;color:#fff;border:1.5px solid rgba(255,180,200,.5);text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(0,0,0,.3);font-weight:bold;letter-spacing:.3px;}
+#toast{position:fixed;top:52px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;z-index:80;background:linear-gradient(135deg,rgba(255,80,130,.95),rgba(220,20,60,.92));border:1.5px solid rgba(255,180,200,.6);border-radius:18px;padding:7px 16px;color:#fff;font-size:10px;font-family:Georgia,serif;white-space:nowrap;pointer-events:none;transition:all .18s;text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 4px 16px rgba(220,20,60,.4);}
+#toast.show{transform:translateX(-50%) scale(1);opacity:1}
+#bubbles-container{position:fixed;inset:0;pointer-events:none;z-index:21;overflow:hidden;display:none}
+.bubble{position:absolute;border-radius:50%;background:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.6);animation:rise linear forwards}
+@keyframes rise{0%{transform:translateY(0) scale(1);opacity:.7}100%{transform:translateY(-60vh) scale(1.5);opacity:0}}
+#breath-bar{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:40;display:none;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
+#breath-label{font-family:Georgia,serif;font-size:9px;color:#88ffee;text-shadow:0 0 6px #00ffcc}
+#breath-bg{width:140px;height:12px;border-radius:6px;background:rgba(0,20,40,.7);border:1.5px solid rgba(0,255,200,.4);overflow:hidden}
+#breath-fill{height:100%;width:100%;border-radius:6px;background:linear-gradient(90deg,#00ffcc,#0088ff);transition:background .3s}
+#water-overlay{position:fixed;inset:0;pointer-events:none;z-index:20;background:rgba(0,60,160,0);transition:background .8s ease}
+#water-overlay.underwater{background:rgba(0,40,120,.35)}
+#caustic-overlay{position:fixed;inset:0;pointer-events:none;z-index:19;opacity:0;transition:opacity .6s;
+background:repeating-linear-gradient(45deg,rgba(0,200,255,0.05) 0px,rgba(0,200,255,0) 8px,rgba(0,150,200,0.04) 12px,rgba(0,200,255,0) 20px),
+repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px,rgba(0,200,255,0.05) 15px,rgba(0,255,200,0) 24px)}
+#mission-truck{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(0,8,22,.95);border:2px solid #ffcc00;border-radius:16px;padding:12px 18px;font-family:Georgia,serif;color:#fff;text-align:center;max-width:300px}
+#mission-truck h3{color:#ffcc00;font-size:13px;margin-bottom:6px}
+#mission-truck p{font-size:10px;line-height:1.5;margin-bottom:10px;color:#ddd}
+#mission-truck button{background:#ff6600;border:none;color:#fff;padding:6px 16px;border-radius:8px;font-size:11px;cursor:pointer;margin:3px}
+#mission-truck button.decline{background:#555}
+#mission-hud{position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(0,0,0,.8);border:1.5px solid #ffcc00;border-radius:12px;padding:6px 14px;font-family:Georgia,serif;font-size:11px;color:#ffcc00;text-align:center;pointer-events:none}
+#dive-hint{position:fixed;bottom:148px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(0,10,30,.88);border:1.5px solid rgba(0,220,200,.5);border-radius:12px;padding:5px 14px;color:#88ffee;font-size:10px;font-family:Georgia,serif;display:none;white-space:nowrap;pointer-events:none}
+#backpack-btn{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:30;background:linear-gradient(135deg,#ff9900,#e85000);border:2px solid #ffd966;border-radius:20px;padding:6px 16px;font-family:Georgia,serif;font-size:10px;color:#fff;cursor:pointer;touch-action:manipulation;font-weight:bold;text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 3px 10px rgba(200,80,0,.5);}
+#gun-btns{position:fixed;bottom:110px;right:14px;z-index:30;display:none;flex-direction:column;gap:8px;align-items:flex-end}
+#btn-fire{background:radial-gradient(circle at 40% 35%,#ff88aa,#e8174a 60%,#8a0020 100%);border:2.5px solid #ffaacc;border-radius:50%;width:62px;height:62px;color:#fff;font-size:9px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(220,20,60,.5);text-shadow:0 1px 3px rgba(0,0,0,.5);}
+#btn-holster{background:radial-gradient(circle at 40% 35%,#ffe566,#ff9900 60%,#7a3000 100%);border:2.5px solid #ffd966;border-radius:50%;width:52px;height:52px;color:#fff;font-size:8px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(200,100,0,.5);text-shadow:0 1px 3px rgba(0,0,0,.5);}
+/* Pistolet collectible flottant */
+#gun-pickup-hint{position:fixed;bottom:160px;left:50%;transform:translateX(-50%);z-index:40;background:linear-gradient(135deg,rgba(0,180,120,.92),rgba(0,100,80,.9));border:2px solid #88ffcc;border-radius:12px;padding:6px 16px;color:#fff;font-size:11px;font-family:Georgia,serif;display:none;white-space:nowrap;pointer-events:none;animation:pulse 1s infinite alternate;text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 3px 12px rgba(0,150,100,.5);}
+@keyframes pulse{from{border-color:#88ffcc;box-shadow:0 3px 12px rgba(0,150,100,.5)}to{border-color:#ffffff;box-shadow:0 3px 18px rgba(0,200,150,.8)}}
+/* HUD Jetpack */
+#jetpack-hud{position:fixed;top:115px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(0,20,60,.88);border:2px solid #00ffee;border-radius:14px;padding:5px 14px;font-family:Georgia,serif;font-size:11px;color:#00ffee;text-align:center;pointer-events:none;text-shadow:0 0 8px #00ffee;}
+/* Dialogue Jumba */
+#jumba-dialog{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(10,0,40,.96);border:2px solid #00ffee;border-radius:16px;padding:12px 18px;font-family:Georgia,serif;color:#fff;text-align:center;max-width:300px;}
+#jumba-dialog h3{color:#00ffee;font-size:13px;margin-bottom:6px;}
+#jumba-dialog p{font-size:10px;line-height:1.5;margin-bottom:10px;color:#ddd;}
+#jumba-dialog button{background:#0066cc;border:none;color:#fff;padding:6px 16px;border-radius:8px;font-size:11px;cursor:pointer;margin:3px;}
+#jumba-dialog button.decline{background:#555;}
+#backpack-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);align-items:center;justify-content:center;}
+#backpack-box{background:linear-gradient(135deg,#3a1a10,#5a2a10,#3a1a10);border:3px solid #ff9900;border-radius:20px;padding:20px;width:290px;max-height:70vh;overflow-y:auto;position:relative;box-shadow:0 8px 30px rgba(200,80,0,.5);}
+#backpack-box h2{color:#ffd966;font-family:Georgia,serif;font-size:15px;text-align:center;margin-bottom:14px;text-shadow:0 1px 6px rgba(255,150,0,.5);}
+.bp-item{display:flex;align-items:center;gap:10px;background:rgba(255,150,50,.15);border:1px solid rgba(255,180,80,.25);border-radius:10px;padding:8px 12px;margin-bottom:8px;font-family:Georgia,serif;font-size:12px;color:#fff;}
+.bp-item span{font-size:22px}
+</style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div id="loading-title">🏝 STITCH ISLAND</div>
+  <div id="loading-sub">Aloha ! Chargement en cours...</div>
+  <div id="loading-flowers">🌺</div>
+  <div id="loading-bar-bg"><div id="loading-bar-fill"></div></div>
+  <div id="loading-msg">Initialisation...</div>
+</div>
+
+<a-scene 
+renderer="antialias:false;colorManagement:true;physicallyCorrectLights:false" 
+shadow="type:basic" 
+fog="type:exponential;color:#5ac8f0;density:0.004" 
+vr-mode-ui="enabled:false" 
+loading-screen="enabled:false"
+device-orientation-permission-ui="enabled:false">
+<a-assets timeout="8000">
+<a-asset-item id="stitchGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/stitch2.glb"              crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="palmGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Palm%20Tree.glb"           crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="houseGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lilo_and_stitch_house_remake_12.04.21_3d_object%202.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="coralGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set.glb"    crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="turtleGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Turtle.glb"               crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="mountainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Mountain.glb"             crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="cartGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Street%20Vendor%20Cart.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="sundaeGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb"               crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb"           crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="spaceshipGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hover_ship.vehicle_from_lilo_and_stitch.%202.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<audio id="sndCollect"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Ice%20cream.wav"          preload="none"></audio>
+<audio id="sndSplash"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Splash.wav"               preload="none"></audio>
+<audio id="sndWin"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Aloha!.mp3"         preload="none"></audio>
+<audio id="sndStepSand" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20sand.wav"      preload="none"></audio>
+<audio id="sndStepWater" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20water.wav"    preload="none"></audio>
+<audio id="sndEek"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GROWLING)%20Eek!.mp3" preload="none"></audio>
+<audio id="sndLaugh"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20LAUGHING%20-%20Sound%20Effect).mp3" preload="none"></audio>
+<audio id="sndOhana"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Ohana.mp3"          preload="none"></audio>
+<audio id="sndHiii"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Stitch%20hiiii.mp3" preload="none"></audio>
+<audio id="sndAaaah"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Aaaah.mp3"                preload="none"></audio>
+<audio id="sndNah"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Nah!.mp3"           preload="none"></audio>
+<audio id="sndGobble"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GOBBLING%20-%20Sound%20Effect).mp3" preload="none"></audio>
+<audio id="sndBeach"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Beach.wav"                loop preload="none"></audio>
+<audio id="bgMusic1"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="none"></audio>
+<audio id="bgMusic2"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="none"></audio>
+<audio id="bgMusic3"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/peterkolaiko-tropical-happy-ukulele-231561.mp3" preload="none"></audio>
+</a-assets>
+
+<a-sky id="skyEl" color="#4ab8f0"></a-sky>
+<a-light type="directional" id="sunLight" position="-40 80 30" color="#fff4dd" intensity="2.2" cast-shadow="true" shadow-camera-left="-120" shadow-camera-right="120" shadow-camera-top="120" shadow-camera-bottom="-120" shadow-map-width="512" shadow-map-height="512"></a-light>
+<a-light type="hemisphere" id="hemiLight" color="#88ccff" ground-color="#446622" intensity=".7"></a-light>
+<a-light type="ambient" id="ambientLight" color="#ffeedd" intensity=".25"></a-light>
+<a-light type="point" id="uwLight1" position="0 -5 0"    color="#00eedd" intensity="0" distance="70"></a-light>
+<a-light type="point" id="uwLight2" position="15 -6 15"  color="#00ccff" intensity="0" distance="60"></a-light>
+<a-light type="point" id="uwLight3" position="-15 -6 -15" color="#22ffdd" intensity="0" distance="60"></a-light>
+<a-light type="point" id="uwLight4" position="0 -7 20"   color="#00eeff" intensity="0" distance="65"></a-light>
+<a-light type="point" id="uwLight5" position="-20 -6 5"  color="#44ffcc" intensity="0" distance="60"></a-light>
+
+<a-sphere position="-60 55 -180" radius="18" color="#fff" material="roughness:0.9"></a-sphere>
+<a-sphere position="-45 58 -178" radius="13" color="#fff" material="roughness:0.9"></a-sphere>
+<a-sphere position="30 60 -190" radius="20" color="#fff" material="roughness:0.9"></a-sphere>
+<a-sphere position="48 57 -188" radius="14" color="#fff" material="roughness:0.9"></a-sphere>
+<a-sphere position="120 50 -200" radius="16" color="#fff" material="roughness:0.9"></a-sphere>
+<a-sphere position="-120 52 -195" radius="15" color="#fff" material="roughness:0.9"></a-sphere>
+
+<a-plane id="waterSurf" width="3000" height="3000" rotation="-90 0 0" position="0 -0.3 0" color="#00d4e8" material="transparent:true;opacity:0.30;roughness:0.02;metalness:0.15;side:double"></a-plane>
+<a-cylinder id="lagon" radius="90" height=".25" position="0 -0.4 0" color="#00f0d0" material="transparent:true;opacity:0.22;roughness:0.02"></a-cylinder>
+<a-cylinder radius="200" height=".2" position="0 -1.5 0" color="#00b8e8" material="transparent:true;opacity:0.28;roughness:0.03"></a-cylinder>
+<a-cylinder id="oceanFloor" radius="2000" height=".5" position="0 -12 0" color="#d4c070" material="roughness:0.95" shadow="receive:true"></a-cylinder>
+<a-torus id="w0" radius="72"  radius-tubular=".2" segments-tubular="64" rotation="90 0 0" position="0 -.42 0" color="#fff" material="transparent:true;opacity:0.5"></a-torus>
+<a-torus id="w1" radius="92"  radius-tubular=".2" segments-tubular="64" rotation="90 0 0" position="0 -.42 0" color="#fff" material="transparent:true;opacity:0.42"></a-torus>
+<a-torus id="w2" radius="112" radius-tubular=".2" segments-tubular="64" rotation="90 0 0" position="0 -.42 0" color="#fff" material="transparent:true;opacity:0.35"></a-torus>
+
+<a-entity id="world"></a-entity>
+
+<a-entity id="stitch-root" position="0 2 5">
+  <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false"></a-gltf-model>
+</a-entity>
+<a-circle id="stitch-shadow" radius="0.6" rotation="-90 0 0" position="0 0.03 5" segments="8" material="color:#000000;transparent:true;opacity:0.0"></a-circle>
+
+<a-entity id="cam-rig" position="0 5 12">
+  <a-camera id="mainCam" look-controls="enabled:false;reverseMouseDrag:false;touchEnabled:false;magicWindowTrackingEnabled:false" wasd-controls="enabled:false" fov="62" near=".01" far="700"></a-camera>
+</a-entity>
+</a-scene>
+
+<div id="hud">
+  <div class="pill" id="zL">🏝 ILE PRINCIPALE</div>
+  <div class="pill">🏝 STITCH ISLAND</div>
+</div>
+<div id="breath-bar">
+  <div id="breath-label">🤿 RESPIRATION</div>
+  <div id="breath-bg"><div id="breath-fill"></div></div>
+</div>
+<div id="water-overlay"></div>
+<div id="bubbles-container"></div>
+<div id="caustic-overlay"></div>
+<div id="dive-hint"></div>
+<div id="jetpack-hud">🚀 JETPACK ACTIF — ⬆ JUMP pour voler !</div>
+<div id="jumba-dialog">
+  <h3>👽 Jumba</h3>
+  <p id="jumba-text">Aloha Stitch ! Mon <b>cristal de propulsion</b><br>est cassé en <b>5 morceaux</b> partout sur l'île !<br>Rapporte-les moi, j'assemblerai ton <b>jetpack</b>.<br>Ensuite va chercher <b>Lilo</b> — elle t'accompagnera<br>jusqu'au vaisseau ! 🚀</p>
+  <button onclick="startFlightMission()">✅ Je les ramasse !</button>
+  <button class="decline" onclick="closeJumbaDialog()">❌ Plus tard</button>
+</div>
+<div id="joy"><div id="jnub"></div></div>
+<div id="rjoy"><div id="rjnub"></div></div>
+<div id="btns">
+  <div class="btn" id="btn-jump"
+    ontouchstart="doJump(event);if(window._jetpackEquipped)window._jumpHeld=true;"
+    ontouchend="window._jumpHeld=false;"
+    onclick="doJump()">
+    <span class="btn-icon">🌺</span><span class="btn-lbl">JUMP</span>
+  </div>
+  <div class="btn" id="btn-dive" ontouchstart="startDive(event)" ontouchend="stopDive(event)" onmousedown="startDive()" onmouseup="stopDive()">
+    <span class="btn-icon">🐚</span><span class="btn-lbl">PLONGE</span>
+  </div>
+  <div class="btn" id="btn-run" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">
+    <span class="btn-icon">🌴</span><span class="btn-lbl">RUN</span>
+  </div>
+  <div class="btn" id="btn-pickup" style="display:none" ontouchstart="pickupNearby(event)" onclick="pickupNearby()">
+    <span class="btn-icon">🤲</span><span class="btn-lbl">RAMASSER</span>
+  </div>
+</div>
+<div id="toast"></div>
+<div id="gun-btns">
+  <div id="btn-fire" ontouchstart="fireGun(event)" onclick="fireGun()">
+    <span style="font-size:22px;line-height:1">💦</span><span style="font-size:7px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px">TIR</span>
+  </div>
+  <div id="btn-holster" ontouchstart="holsterGun(event)" onclick="holsterGun()">
+    <span style="font-size:18px;line-height:1">🌺</span><span style="font-size:6.5px;font-weight:bold;text-transform:uppercase;letter-spacing:.4px">RANGER</span>
+  </div>
+</div>
+<button id="backpack-btn" onclick="openBackpack()">🌺 Sac à dos</button>
+<div id="backpack-overlay" onclick="if(event.target===this)closeBackpack()">
+  <div id="backpack-box">
+    <h2>🎒 Sac à dos de Stitch</h2>
+    <div id="backpack-items"></div>
+    <button onclick="closeBackpack()" style="width:100%;margin-top:10px;background:#ff6600;border:none;color:#fff;padding:8px;border-radius:10px;font-size:12px;cursor:pointer">✕ Fermer</button>
+  </div>
+</div>
+<div id="mission-truck">
+  <h3>🍦 Chariot de Glaces</h3>
+  <p id="mission-text">Aloha ! Je suis Nani, la vendeuse de glaces.<br>Mes <b>20 glaces</b> se sont éparpillées partout !<br>Aide-moi à les récupérer en <b>90 secondes</b><br>et je te donne un <b>🔫 pistolet à eau</b> !</p>
+  <button onclick="startMission()">✅ Oui, j'aide !</button>
+  <button class="decline" onclick="closeMissionDialog()">❌ Non merci</button>
+</div>
+<div id="mission-hud">
+  🍦 <span id="mission-count">0</span>/20 glaces &nbsp;|&nbsp; ⏱ <span id="mission-timer">90</span>s
+</div>
+<div id="map-overlay" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);align-items:center;justify-content:center;">
+  <div style="background:#1a2a1a;border:2px solid #7de8ff;border-radius:16px;padding:16px;width:280px;position:relative;">
+    <div style="color:#7de8ff;font-family:Georgia,serif;font-size:13px;text-align:center;margin-bottom:10px">🗺 CARTE DE STITCH ISLAND</div>
+    <canvas id="mapCanvas" width="248" height="248" style="border-radius:8px;display:block"></canvas>
+    <div style="color:#aaffee;font-size:9px;font-family:Georgia,serif;text-align:center;margin-top:6px" id="mapLabel">📍 Position actuelle</div>
+    <button onclick="document.getElementById('map-overlay').style.display='none'" style="position:absolute;top:8px;right:10px;background:none;border:none;color:#7de8ff;font-size:16px;cursor:pointer">✕</button>
+  </div>
+</div>
+
+<script>
+// ── AUDIO ──
+function playSound(id){
+  try{
+    var s=document.getElementById(id);
+    if(!s)return;
+    s.currentTime=0;
+    var voixStitch=['sndHiii','sndOhana','sndGobble','sndLaugh','sndAaaah','sndEek','sndNah','sndWin'];
+    s.volume=voixStitch.indexOf(id)>=0?1.0:0.75;
+    s.play().catch(function(){});
+  }catch(e){}
+}
+var _audioState='none';
+function startMusic(){
+  if(window._musicStarted)return;
+  window._musicStarted=true;
+  _audioState='island';
+  var beach=document.getElementById('sndBeach');
+  if(beach){beach.loop=true;beach.volume=0.18;beach.play().catch(function(){});}
+  var isle=document.getElementById('bgMusic2');
+  if(isle){isle.loop=true;isle.volume=0.32;isle.play().catch(function(){});}
+}
+function updateAudioZone(state){
+  if(!window._musicStarted)return;
+  var isUnderwater=(state==='diving'||state==='surface');
+  var beach=document.getElementById('sndBeach');
+  var isle=document.getElementById('bgMusic2');
+  var water=document.getElementById('bgMusic1');
+  if(isUnderwater && _audioState!=='water'){
+    _audioState='water';
+    try{if(isle&&!isle.paused)isle.pause();}catch(e){}
+    try{if(beach&&!beach.paused)beach.pause();}catch(e){}
+    if(water){
+      water.loop=true;water.volume=0.20;
+      if(water.readyState===0){water.load();}
+      var tryPlay=function(){water.currentTime=0;var p=water.play();if(p&&p.catch)p.catch(function(){});};
+      if(water.readyState>=2){tryPlay();}else{water.addEventListener('canplay',tryPlay,{once:true});}
+    }
+  } else if(!isUnderwater && _audioState!=='island'){
+    _audioState='island';
+    try{if(water&&!water.paused)water.pause();}catch(e){}
+    if(beach){beach.loop=true;beach.volume=0.10;var p1=beach.play();if(p1&&p1.catch)p1.catch(function(){});}
+    if(isle){isle.loop=true;isle.volume=0.18;if(isle.readyState===0){isle.load();}var tryIsle=function(){var p2=isle.play();if(p2&&p2.catch)p2.catch(function(){});};if(isle.readyState>=2){tryIsle();}else{isle.addEventListener('canplay',tryIsle,{once:true});}}
+  }
+}
+document.addEventListener('touchstart',startMusic,{once:true});
+document.addEventListener('click',startMusic,{once:true});
+
+function toast(m,d){var t=document.getElementById('toast');t.textContent=m;t.className='show';clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='';},d||3000);}
+
+// ── CHARGEMENT : démarrer dès que A-Frame est prêt, sans attendre tous les assets ──
+function setLoadMsg(msg,pct){
+  var lm=document.getElementById('loading-msg');if(lm)lm.textContent=msg;
+  var lf=document.getElementById('loading-bar-fill');if(lf)lf.style.width=(pct||0)+'%';
+}
+function hideLoadingScreen(){
+  var ls=document.getElementById('loading-screen');
+  if(ls){ls.classList.add('fade-out');setTimeout(function(){ls.style.display='none';},900);}
+}
+
+var scn=document.querySelector('a-scene');
+var _initDone=false;
+function tryInitGame(){
+  if(_initDone)return;
+  // Vérifier que AFRAME.THREE est disponible
+  if(typeof AFRAME==='undefined'||!AFRAME.THREE){
+    setTimeout(tryInitGame,200);return;
+  }
+  _initDone=true;
+  clearInterval(_loadInterval);
+  setLoadMsg('Île en construction... 🌴',80);
+  setTimeout(function(){setLoadMsg('Prêt ! Aloha 🌺',100);setTimeout(hideLoadingScreen,400);},300);
+  try{initGame();}catch(e){console.error('initGame error:',e);hideLoadingScreen();}
+}
+// Écouter l'événement loaded ET mettre un timeout de 5s
+scn.addEventListener('loaded',tryInitGame);
+setTimeout(tryInitGame,5000);
+// Progression visuelle pendant l'attente
+var _loadPct=5;
+var _loadInterval=setInterval(function(){
+  if(_initDone){clearInterval(_loadInterval);return;}
+  _loadPct=Math.min(75,_loadPct+Math.random()*8);
+  var msgs=['Chargement de l\'île... 🏝','Préparation de l\'océan... 🌊','Stitch arrive... 👽','Nani prépare les glaces... 🍦'];
+  setLoadMsg(msgs[Math.floor(_loadPct/20)]||msgs[0],_loadPct);
+},300);
+
+function initGame(){
+  var THREE=AFRAME.THREE;
+  var W=document.getElementById('world');
+  var platforms=[],walls=[],islandDefs=[],bridgeSegs=[];
+  function addPlatform(cx,cz,y,rx,rz){platforms.push({cx:cx,cz:cz,y:y,rx:rx,rz:rz});}
+  function addBridgeSeg(x1,z1,x2,z2,y,hw){bridgeSegs.push({x1:x1,z1:z1,x2:x2,z2:z2,y:y,hw:hw});}
+  function addWall(x,z,r,h,y0){walls.push({x1:x-r,z1:z-r,x2:x+r,z2:z+r,h:h||5,y0:y0||0});}
+  function mk(tag,attrs,par){var e=document.createElement('a-'+tag);for(var k in attrs)e.setAttribute(k,attrs[k]);(par||W).appendChild(e);return e;}
+  function segRot(dx,dy,dz){var up=new THREE.Vector3(0,1,0);var dir=new THREE.Vector3(dx,dy,dz).normalize();var q=new THREE.Quaternion().setFromUnitVectors(up,dir);var e=new THREE.Euler().setFromQuaternion(q,'YXZ');return (e.x*180/Math.PI).toFixed(1)+' '+(e.y*180/Math.PI).toFixed(1)+' '+(e.z*180/Math.PI).toFixed(1);}
+  function getGroundY(px,pz){
+    var best=null;
+    for(var i=0;i<platforms.length;i++){var pl=platforms[i];if(Math.abs(px-pl.cx)<=pl.rx+.4&&Math.abs(pz-pl.cz)<=pl.rz+.4){if(best===null||pl.y>best)best=pl.y;}}
+    for(var i=0;i<bridgeSegs.length;i++){var seg=bridgeSegs[i];var dx=seg.x2-seg.x1,dz=seg.z2-seg.z1,len=Math.sqrt(dx*dx+dz*dz);if(len<0.001)continue;var nx2=dx/len,nz2=dz/len;var px2=px-seg.x1,pz2=pz-seg.z1;var along=px2*nx2+pz2*nz2;var perp=Math.abs(px2*(-nz2)+pz2*nx2);if(along>=-0.5&&along<=len+0.5&&perp<=seg.hw){if(best===null||seg.y>best)best=seg.y;}}
+    return best;
+  }
+
+  function makePalm(x,gy,z,h,lx,lz,par){par=par||W;var NS=14,pts=[];for(var i=0;i<=NS;i++){var t=i/NS;pts.push({x:x+lx*h*t*t*.7,y:gy+h*t,z:z+lz*h*t*t*.7});}for(var i=0;i<NS;i++){var p0=pts[i],p1=pts[i+1];var dx=p1.x-p0.x,dy=p1.y-p0.y,dz=p1.z-p0.z,len=Math.sqrt(dx*dx+dy*dy+dz*dz);var tr=i/NS;var rB=Math.max(.022,.055-tr*.032),rT=Math.max(.018,.042-tr*.022);mk('cylinder',{'radius-bottom':rB.toFixed(4),'radius-top':rT.toFixed(4),height:len.toFixed(3),'segments-radial':'6',position:((p0.x+p1.x)/2).toFixed(2)+' '+((p0.y+p1.y)/2).toFixed(2)+' '+((p0.z+p1.z)/2).toFixed(2),rotation:segRot(dx,dy,dz),material:'roughness:.93;color:'+(i%2===0?'#c8a86a':'#b09050'),shadow:'cast:true'},par);}var top=pts[NS];var nL=11+Math.floor(Math.random()*4);for(var i=0;i<nL;i++){var ang=i/nL*Math.PI*2+(Math.random()-.5)*.2;var ll=5+Math.random()*4;var lw=.5+Math.random()*.35;var droop=.5+Math.random()*.48;var fx=top.x+Math.sin(ang)*.28,fy=top.y+.06,fz=top.z+Math.cos(ang)*.28;var brx=(-droop*64).toFixed(1),bry=((ang+Math.PI/2)*180/Math.PI).toFixed(1);var gv=.62+Math.random()*.3;var lf=mk('plane',{width:ll.toFixed(2),height:lw.toFixed(2),position:fx.toFixed(2)+' '+fy.toFixed(2)+' '+fz.toFixed(2),rotation:brx+' '+bry+' 0',material:'roughness:.65;side:double;color:#'+Math.floor(gv*.38*255).toString(16).padStart(2,'0')+Math.floor(gv*255).toString(16).padStart(2,'0')+Math.floor(gv*.2*255).toString(16).padStart(2,'0'),shadow:'cast:true'},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx=brx;lf.dataset.bry=bry;lf.classList.add('wind-leaf');}}
+  function makeTallGrass(x,gy,z,par){par=par||W;var nc=3+Math.floor(Math.random()*3);for(var i=0;i<nc;i++){var ang=i/nc*Math.PI*2+Math.random()*.5,r=.05+Math.random()*.2,sh=0.4+Math.random()*0.7;var gcol=['#4a9a20','#3a8a18','#5aaa28','#2a7a10','#6aba30'][Math.floor(Math.random()*5)];var lf=mk('plane',{width:(.05+Math.random()*.04).toFixed(3),height:sh.toFixed(2),position:(x+Math.sin(ang)*r).toFixed(2)+' '+(gy+sh*.5).toFixed(2)+' '+(z+Math.cos(ang)*r).toFixed(2),rotation:'0 '+(ang*180/Math.PI).toFixed(1)+' '+(Math.random()*10-5).toFixed(1),material:'roughness:.8;side:double;color:'+gcol},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='0';lf.dataset.bry=(ang*180/Math.PI).toFixed(1);lf.classList.add('wind-leaf');}}
+  function makeBirdOfParadise(x,gy,z,par){par=par||W;var sh=2.2+Math.random()*1.2;for(var i=0;i<4;i++){var ang=i/4*Math.PI*2+.2,r=.15+Math.random()*.2,stemH=sh+Math.random()*.5;mk('cylinder',{radius:'.012',height:stemH.toFixed(2),position:(x+Math.sin(ang)*r).toFixed(2)+' '+(gy+stemH*.5).toFixed(2)+' '+(z+Math.cos(ang)*r).toFixed(2),material:'color:#1a6010;roughness:.88'},par);var lf=mk('plane',{width:(.38+Math.random()*.18).toFixed(2),height:(1.4+Math.random()*.6).toFixed(2),position:(x+Math.sin(ang)*r).toFixed(2)+' '+(gy+stemH+.5).toFixed(2)+' '+(z+Math.cos(ang)*r).toFixed(2),rotation:(-20-Math.random()*15).toFixed(1)+' '+(ang*180/Math.PI).toFixed(1)+' 0',material:'roughness:.7;side:double;color:#1a7a22'},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='-22';lf.dataset.bry=(ang*180/Math.PI).toFixed(1);lf.classList.add('wind-leaf');}mk('plane',{width:'.22',height:'.6',position:x+' '+(gy+sh+.6)+' '+z,rotation:'-15 0 0',material:'side:double;color:#1a5a08'},par);for(var pi=0;pi<3;pi++){mk('plane',{width:'.18',height:'.38',position:(x+.06+pi*.04)+' '+(gy+sh+.75+pi*.06)+' '+z,rotation:(-30-pi*12)+' '+(pi*25)+' '+(pi*15),material:'side:double;color:#ff6600;roughness:.5'},par);}for(var pi=0;pi<2;pi++){mk('plane',{width:'.14',height:'.32',position:(x-.04)+' '+(gy+sh+.82+pi*.08)+' '+z,rotation:(-20+pi*10)+' '+(pi*30+15)+' -12',material:'side:double;color:#4422cc;roughness:.5'},par);}}
+  function makeGiantHibiscus(x,gy,z,par){par=par||W;var cols=['#ff1155','#ff3300','#ff0088','#ff6600','#cc0044','#ff4422'];var c=cols[Math.floor(Math.random()*cols.length)],sh=1.2+Math.random()*.8;mk('cylinder',{radius:'.025',height:sh.toFixed(2),position:x+' '+(gy+sh/2)+' '+z,material:'color:#1a7010'},par);for(var i=0;i<5;i++){var ang=i/5*Math.PI*2,pr=.32+Math.random()*.08;mk('plane',{width:(pr*1.1).toFixed(3),height:(pr*1.9).toFixed(3),position:(x+Math.sin(ang)*pr*.55).toFixed(2)+' '+(gy+sh+pr*.4).toFixed(2)+' '+(z+Math.cos(ang)*pr*.55).toFixed(2),rotation:'-58 '+(ang*180/Math.PI).toFixed(1)+' 0',material:'roughness:.5;side:double;color:'+c},par);}mk('sphere',{radius:'.07',position:x+' '+(gy+sh+.06)+' '+z,material:'color:#ffee00;emissive:#ffcc00;emissiveIntensity:.6'},par);}
+  function makeFern(x,gy,z,par){par=par||W;for(var i=0;i<5+Math.floor(Math.random()*4);i++){var ang=i/(5+4)*Math.PI*2,r=.15+Math.random()*.25,sh=.5+Math.random()*.7;var lf=mk('plane',{width:(.12+Math.random()*.1).toFixed(3),height:sh.toFixed(2),position:(x+Math.sin(ang)*r).toFixed(2)+' '+(gy+sh*.55).toFixed(2)+' '+(z+Math.cos(ang)*r).toFixed(2),rotation:(-25-Math.random()*20).toFixed(1)+' '+(ang*180/Math.PI+90).toFixed(1)+' 0',material:'roughness:.8;side:double;color:#2a7a14'},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='-30';lf.dataset.bry=(ang*180/Math.PI+90).toFixed(1);lf.classList.add('wind-leaf');}}
+  function makeMonstera(x,gy,z,par){par=par||W;var sh=.9+Math.random()*.5;mk('cylinder',{radius:'.025',height:sh.toFixed(2),position:x+' '+(gy+sh/2)+' '+z,material:'color:#1a6010'},par);for(var i=0;i<3;i++){var ang=i/3*Math.PI*2+.3,lsize=.55+Math.random()*.3;var lf=mk('plane',{width:lsize.toFixed(2),height:(lsize*.8).toFixed(2),position:(x+Math.sin(ang)*.4).toFixed(2)+' '+(gy+sh+.2+i*.05).toFixed(2)+' '+(z+Math.cos(ang)*.4).toFixed(2),rotation:(-35-i*8)+' '+(ang*180/Math.PI)+' '+(i*12),material:'roughness:.7;side:double;color:#1e9918'},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx=(-35-i*8).toFixed(1);lf.dataset.bry=(ang*180/Math.PI).toFixed(1);lf.classList.add('wind-leaf');}}
+  function makeRock(x,gy,z,s,sy,par){par=par||W;var cols=[['#6a5a40','#3a8020'],['#7a6a55','#4a9030'],['#504030','#226018']];var p=cols[Math.floor(Math.random()*cols.length)];var scX=(0.7+Math.random()*.55).toFixed(2),scZ=(0.7+Math.random()*.5).toFixed(2);mk('sphere',{radius:s,position:x.toFixed(1)+' '+(gy+s*sy*.35-.08).toFixed(2)+' '+z.toFixed(1),scale:scX+' '+sy+' '+scZ,material:'roughness:.96;color:'+p[0],shadow:'cast:true'},par);mk('sphere',{radius:(s*.5).toFixed(2),position:x.toFixed(1)+' '+(gy+s*sy*.64).toFixed(2)+' '+z.toFixed(1),scale:scX+' .34 '+scZ,material:'roughness:.95;color:'+p[1]},par);}
+
+  function buildUnderwaterWorld(){
+    var SEABED=-11.8,W2=document.getElementById('world');
+    function uwGlb(id,x,z,sc,ry){var e=document.createElement('a-gltf-model');e.setAttribute('src',id);e.setAttribute('position',x.toFixed(1)+' '+SEABED+' '+z.toFixed(1));e.setAttribute('rotation','0 '+(ry||0)+' 0');e.setAttribute('scale',sc+' '+sc+' '+sc);W2.appendChild(e);}
+    for(var i=0;i<20;i++){var a=i/20*Math.PI*2,r=10+Math.random()*250;uwGlb('#coralGLB',Math.sin(a)*r,Math.cos(a)*r,2.5+Math.random()*2,i*18);}
+    var CC=['#ff55bb','#ff6622','#ff1166','#ffaa33','#00bbdd','#ff4433','#00ffcc','#ff55ff'];
+    for(var i=0;i<100;i++){var a=Math.random()*Math.PI*2,r=10+Math.random()*400;var col=CC[i%CC.length],h=0.8+Math.random()*2.5;var ex=Math.sin(a)*r,ez=Math.cos(a)*r;var e=document.createElement('a-cylinder');e.setAttribute('radius-bottom','0.18');e.setAttribute('radius-top','0.05');e.setAttribute('height',h.toFixed(2));e.setAttribute('position',ex.toFixed(1)+' '+(SEABED+h/2).toFixed(1)+' '+ez.toFixed(1));e.setAttribute('material','color:'+col+';roughness:.5;emissive:'+col+';emissiveIntensity:.3');W2.appendChild(e);}
+    for(var i=0;i<20;i++){var a=Math.random()*Math.PI*2,r=5+Math.random()*380,ah=0.6+Math.random()*2.5;var gc=['#1a8820','#0d7018','#22aa30','#0a6015'][i%4];var e=document.createElement('a-plane');e.setAttribute('width',(0.1+Math.random()*0.15).toFixed(2));e.setAttribute('height',ah.toFixed(2));e.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' '+(SEABED+ah/2).toFixed(1)+' '+(Math.cos(a)*r).toFixed(1));e.setAttribute('rotation','0 '+(i*12)+' 0');e.setAttribute('material','side:double;color:'+gc+';emissive:'+gc+';emissiveIntensity:.2');e.classList.add('wind-leaf');e.dataset.windPhase=(i*.4).toFixed(2);e.dataset.brx='0';e.dataset.bry=(i*12).toString();W2.appendChild(e);}
+    for(var i=0;i<25;i++){var a=Math.random()*Math.PI*2,r=5+Math.random()*200;var c=['#ff4400','#ff6600','#ff8800'][i%3];var e=document.createElement('a-sphere');e.setAttribute('radius','0.35');e.setAttribute('scale','1 .12 1');e.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' '+(SEABED+0.05)+' '+(Math.cos(a)*r).toFixed(1));e.setAttribute('material','color:'+c+';roughness:.6;emissive:'+c+';emissiveIntensity:.3');W2.appendChild(e);}
+    [0,Math.PI].forEach(function(ph,i){var e=document.createElement('a-gltf-model');e.setAttribute('src','#turtleGLB');e.setAttribute('scale','3 3 3');e.classList.add('turtle-anim');e.dataset.tPhase=ph.toFixed(2);e.dataset.tR=(80+i*60).toFixed(0);e.dataset.tDepth='-3';e.dataset.tSpeed='.06';W2.appendChild(e);});
+    var sh=document.createElement('a-entity');var shBody=document.createElement('a-sphere');shBody.setAttribute('radius','1.5');shBody.setAttribute('scale','3.5 .65 .8');shBody.setAttribute('material','color:#607080;roughness:.6');sh.appendChild(shBody);sh.classList.add('shark-anim');sh.dataset.sPhase='0';sh.dataset.sR='35';sh.dataset.sDepth='-5';sh.dataset.sSpeed='.03';W2.appendChild(sh);
+    for(var i=0;i<20;i++){var fish=document.createElement('a-entity');var fc=['ff8800','ff0044','00ccff','ffff00','ff44aa','88ffcc'][i%6];var fr=0.12+Math.random()*0.18;var fb=document.createElement('a-sphere');fb.setAttribute('radius',fr.toFixed(3));fb.setAttribute('material','color:#'+fc+';emissive:#'+fc+';emissiveIntensity:.4');fish.appendChild(fb);fish.classList.add('fish-anim');fish.dataset.fishPhase=(i/20*Math.PI*2).toFixed(3);fish.dataset.fishR=(4+Math.random()*20).toFixed(1);fish.dataset.fishDepth=(-1.5-Math.random()*5).toFixed(1);fish.dataset.fishSpeed=(.25+Math.random()*.35).toFixed(3);fish.dataset.fishOffX=((Math.random()-.5)*200).toFixed(1);fish.dataset.fishOffZ=((Math.random()-.5)*200).toFixed(1);W2.appendChild(fish);}
+  }
+
+  // ÎLE PRINCIPALE
+  (function(){
+    var GY=0.0,R=80;
+    // Sol sable — base
+    mk('cylinder',{radius:R,height:'.4',position:'0 -0.2 0',material:'color:#f5e8b0;roughness:.9',shadow:'receive:true'});
+    // Herbe verte centrale — bien au-dessus du sable pour éviter z-fighting
+    mk('cylinder',{radius:'38',height:'.15',position:'0 0.02 0',material:'color:#5a9a25;roughness:.85',shadow:'receive:true'});
+    addPlatform(0,0,GY,R-1,R-1);
+    islandDefs.push({cx:0,cz:0,y:GY,label:'ILE PRINCIPALE'});
+    var mtnEl=document.createElement('a-gltf-model');
+    mtnEl.setAttribute('src','#mountainGLB');mtnEl.setAttribute('position','0 0 -20');mtnEl.setAttribute('scale','5 5 5');mtnEl.setAttribute('shadow','cast:true');
+    mtnEl.addEventListener('model-error',function(){mk('cone',{'radius-bottom':'18','radius-top':'1',height:'20',position:'0 10 -20',material:'color:#7a6a50;roughness:.92',shadow:'cast:true'});mk('cone',{'radius-bottom':'12','radius-top':'1',height:'14',position:'-8 7 -25',material:'color:#6a5a40;roughness:.93',shadow:'cast:true'});mk('sphere',{radius:'10',position:'0 14 -20',scale:'1.2 .5 1',material:'color:#3a7a14;roughness:.85',shadow:'cast:true'});});
+    W.appendChild(mtnEl);
+
+    // ── VAISSEAU DE STITCH sur le sommet de la montagne ──
+    setTimeout(function(){
+      var shipEl=document.createElement('a-gltf-model');
+      shipEl.setAttribute('src','#spaceshipGLB');
+      shipEl.setAttribute('position','0 28 -20');
+      shipEl.setAttribute('rotation','0 30 0');
+      shipEl.setAttribute('scale','1 1 1');
+      shipEl.setAttribute('shadow','cast:true');
+      shipEl.setAttribute('animation','property:position;from:0 28 -20;to:0 31 -20;loop:true;dur:2800;dir:alternate;easing:easeInOutSine');
+      shipEl.setAttribute('animation__rot2','property:rotation;from:0 25 -3;to:0 35 3;loop:true;dur:3500;dir:alternate;easing:easeInOutSine');
+      shipEl.addEventListener('model-loaded',function(){
+        var mesh=shipEl.getObject3D('mesh');
+        if(!mesh)return;
+        var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+        var h=box.max.y-box.min.y;
+        var w=box.max.x-box.min.x;
+        var biggest=Math.max(h,w);
+        if(biggest>0.01){var sc=10/biggest;shipEl.setAttribute('scale',sc+' '+sc+' '+sc);}
+        // Lumière rouge sous le vaisseau
+        var l=document.createElement('a-light');
+        l.setAttribute('type','point');l.setAttribute('color','#ff2200');
+        l.setAttribute('intensity','2.0');l.setAttribute('distance','30');
+        l.setAttribute('position','0 0 0');
+        shipEl.appendChild(l);
+        toast('🚀 Vaisseau de Stitch sur la montagne !',3000);
+      });
+      shipEl.addEventListener('model-error',function(){
+        // Fallback géométrique rouge si le GLB échoue
+        var ship=document.createElement('a-entity');
+        ship.setAttribute('position','0 28 -20');
+        ship.setAttribute('animation','property:position;from:0 28 -20;to:0 30.5 -20;loop:true;dur:2800;dir:alternate;easing:easeInOutSine');
+        var body=document.createElement('a-sphere');body.setAttribute('radius','3.8');body.setAttribute('scale','1 0.36 1');body.setAttribute('material','color:#cc1111;roughness:.25;metalness:.55;emissive:#550000;emissiveIntensity:.3');ship.appendChild(body);
+        var dome=document.createElement('a-sphere');dome.setAttribute('radius','1.7');dome.setAttribute('position','0 1.1 0');dome.setAttribute('scale','1 0.85 1');dome.setAttribute('material','color:#88ddff;transparent:true;opacity:.6;roughness:.05;metalness:.7');ship.appendChild(dome);
+        var ring=document.createElement('a-torus');ring.setAttribute('radius','4.1');ring.setAttribute('radius-tubular','.14');ring.setAttribute('rotation','90 0 0');ring.setAttribute('material','color:#ffcc00;emissive:#ffaa00;emissiveIntensity:1.0');ship.appendChild(ring);
+        var sl=document.createElement('a-light');sl.setAttribute('type','point');sl.setAttribute('color','#ff2200');sl.setAttribute('intensity','1.5');sl.setAttribute('distance','25');ship.appendChild(sl);
+        W.appendChild(ship);
+      });
+      W.appendChild(shipEl);
+    },1500);
+    mk('cylinder',{radius:'.15',height:'1.4',position:'0 1.2 -12',material:'color:#8a5010;roughness:.9',shadow:'cast:true'});
+    mk('cylinder',{radius:'1.0',height:'.12',position:'0 2.0 -12',material:'color:#c8a060;roughness:.7',shadow:'cast:true'});
+    var plaque=mk('box',{id:'totem-plaque',width:'2.4',height:'1.2',depth:'.14',position:'0 1.5 -11.2',material:'color:#f5dfa0;roughness:.5',shadow:'cast:true'});
+    plaque.setAttribute('class','clickable');
+    mk('cone',{'radius-bottom':'.18','radius-top':'.01',height:'.4',position:'0 2.1 -12',material:'color:#cc2200'});
+    // Collision totem uniquement
+    addWall(0,-12,0.8,3,0);
+    // Palmiers — collision tronc fin seulement
+    [[18,48],[30,35],[45,15],[-18,50],[-32,33],[-46,12],[22,-22],[38,-10],[-24,-20],[-40,-8],[12,20],[-14,18],[28,5],[-30,5]].forEach(function(p,i){
+      mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],rotation:'0 '+(i*26)+' 0',scale:'5 5 5',shadow:'cast:true'});
+      addWall(p[0],p[1],0.35,12,0);
+    });
+    // Montagne base
+    addWall(0,-20,7,30,0);
+    // Maison Lilo
+    addWall(-8,-6,4,8,0);
+    // Chariot Nani
+    addWall(30,55,2,3,0);
+    // Fleurs et herbes : AUCUNE collision — Stitch passe à travers librement
+    for(var vi=0;vi<20;vi++){var va=vi/20*Math.PI*2,vr=4+Math.random()*30;var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;makeGiantHibiscus(vx,GY+0.01,vz2);if(vi%2===0)makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);if(vi%3===0)makeFern(vx-1,GY+0.01,vz2-1);if(vi%4===0)makeMonstera(vx+1,GY+0.01,vz2-2);}
+    for(var vi=0;vi<20;vi++){var va=Math.random()*Math.PI*2,vr=3+Math.random()*35;makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);}
+    // ── MAISON DE LILO ──
+    var houseEl=document.createElement('a-gltf-model');
+    houseEl.setAttribute('src','#houseGLB');
+    houseEl.setAttribute('rotation','0 140 0');
+    houseEl.setAttribute('scale','1 1 1');
+    houseEl.setAttribute('position','-8 0 -6');
+    houseEl.setAttribute('shadow','cast:true');
+    houseEl.addEventListener('model-loaded',function(){
+      try{
+        var mesh=houseEl.getObject3D('mesh');if(!mesh)return;
+        // Mesurer à scale=1 (natif)
+        var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+        var hN=box.max.y-box.min.y;
+        var wN=Math.max(box.max.x-box.min.x,box.max.z-box.min.z,0.0001);
+        var bigN=Math.max(hN,wN,0.0001);
+        // Viser 12 unités de haut
+        var sc=12/bigN;
+        sc=Math.min(Math.max(sc,0.01),50000);
+        // Y sol = -min.y * sc (déplacer pour que le bas soit à 0)
+        var groundY=Math.max(0,-box.min.y*sc);
+        if(groundY>100)groundY=0; // sécurité valeur aberrante
+        houseEl.setAttribute('scale',sc+' '+sc+' '+sc);
+        houseEl.setAttribute('position','-8 '+groundY.toFixed(2)+' -6');
+        toast('🏠 Maison de Lilo !',2500);
+      }catch(e){houseEl.setAttribute('scale','500 500 500');houseEl.setAttribute('position','-8 0 -6');}
+    });
+    houseEl.addEventListener('model-error',function(){
+      mk('box',{width:'10',height:'6',depth:'8',position:'-8 3 -6',material:'color:#d4a060;roughness:.85',shadow:'cast:true'});
+      mk('cone',{'radius-bottom':'7','radius-top':'.3',height:'5',position:'-8 8.5 -6',material:'color:#8b3a0a;roughness:.9',shadow:'cast:true'});
+    });
+    W.appendChild(houseEl);
+    setTimeout(function(){
+      var chars=[
+        {id:'nani',    src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb',   pos:'26 0 52',  rot:'0 180 0', ratio:2.8},
+        {id:'jumba',   src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/jumba.glb',                       pos:'-12 0 10', rot:'0 45 0',  ratio:3.0},
+        {id:'lilo',    src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb',                   pos:'8 0 20',   rot:'0 200 0', ratio:1.9},
+        {id:'pleakley',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb',      pos:'-5 0 15',  rot:'0 90 0',  ratio:2.3},
+        {id:'lilo2',   src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lilo_et_scrump.glb',              pos:'-8 0 25',  rot:'0 150 0', ratio:1.9}
+      ];
+      chars.forEach(function(c){
+        var el=document.createElement('a-gltf-model');
+        el.setAttribute('src',c.src);
+        el.setAttribute('position',c.pos);
+        el.setAttribute('rotation',c.rot);
+        el.setAttribute('scale','1 1 1');
+        el.setAttribute('shadow','cast:true');
+        el.addEventListener('model-loaded',function(){
+          try{
+            var mesh=el.getObject3D('mesh');if(!mesh)return;
+            var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+            var h=box.max.y-box.min.y;
+            if(h>0.05){
+              var finalSc=(1.4*(c.ratio||1.5))/h;
+              el.setAttribute('scale',finalSc+' '+finalSc+' '+finalSc);
+              // Ombre au sol
+              var shadow=document.createElement('a-circle');
+              shadow.setAttribute('radius','0.4');
+              shadow.setAttribute('rotation','-90 0 0');
+              shadow.setAttribute('segments','8');
+              shadow.setAttribute('material','color:#000;transparent:true;opacity:0.3');
+              var pp=c.pos.split(' ');
+              shadow.setAttribute('position',pp[0]+' 0.02 '+pp[2]);
+              document.getElementById('world').appendChild(shadow);
+            }
+            // Animation GLB intégrée
+            var obj=el.getObject3D('mesh');var clips=[],cur=obj;
+            while(cur){if(cur.animations&&cur.animations.length){clips=cur.animations;break;}cur=cur.parent;}
+            if(clips.length>0){
+              var mixer=new AFRAME.THREE.AnimationMixer(cur);
+              mixer.clipAction(clips[0]).setLoop(AFRAME.THREE.LoopRepeat,Infinity).play();
+              if(!window._npcMixers)window._npcMixers=[];
+              window._npcMixers.push(mixer);
+            } else {
+              el.setAttribute('animation','property:rotation;to:0 360 0;loop:true;dur:8000;easing:linear');
+            }
+          }catch(err){console.warn('NPC load err',c.id,err);}
+        });
+        el.addEventListener('model-error',function(){try{el.parentNode&&el.parentNode.removeChild(el);}catch(e){}});
+        document.getElementById('world').appendChild(el);
+      });
+      var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
+      [['Rock.glb','38 0 30',3],['Rock.glb','-35 0 25',3.5],['Rocks.glb','42 0 -10',4],['Rock%202.glb','-40 0 -5',3.5],['Rock%20Large.glb','50 0 20',5],['Rock%20Large%202.glb','-48 0 15',4.5]].forEach(function(r){var el=document.createElement('a-gltf-model');el.setAttribute('src',BASE+r[0]);el.setAttribute('position',r[1]);el.setAttribute('scale',r[2]+' '+r[2]+' '+r[2]);document.getElementById('world').appendChild(el);});
+    },3000);
+    setTimeout(function(){
+      for(var i=0;i<8;i++){var a=i/8*Math.PI*2,r=15+Math.random()*25;var el=document.createElement('a-gltf-model');el.setAttribute('src','https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hibiscus%20flower.glb');el.setAttribute('position',(Math.sin(a)*r).toFixed(1)+' 0 '+(Math.cos(a)*r).toFixed(1));el.setAttribute('scale','3 3 3');document.getElementById('world').appendChild(el);}
+    },4000);
+    [[-35,50],[-42,28],[38,45],[44,24],[-18,65],[20,68]].forEach(function(p,i){mk('sphere',{radius:(2+i*.35).toFixed(1),position:p[0]+' 0.6 '+p[1],scale:'1 .5 1',material:'color:#7a6040;roughness:.95',shadow:'cast:true'});});
+    [[-28,2],[30,-2],[14,-4],[-18,3]].forEach(function(p,i){mk('sphere',{radius:(1.5+i*.2).toFixed(1),position:p[0]+' -.2 '+p[1],scale:'1 .4 1',material:'color:#6a5030;roughness:.95'});});
+  })();
+
+  function makeIsle(CX,CZ,label,col,palmN){
+    var GY=0.1,R=48;
+    mk('cylinder',{radius:R,height:'.12',position:CX+' .01 '+CZ,material:'color:#f0e090;roughness:.9',shadow:'receive:true'});
+    mk('cylinder',{radius:20,height:'.14',position:CX+' .02 '+CZ,material:'color:'+col+';roughness:.85'});
+    mk('cylinder',{radius:R,height:'.3',position:CX+' -.15 '+CZ,material:'color:#d8c880;roughness:.95'});
+    addPlatform(CX,CZ,GY,R-1,R-1);
+    islandDefs.push({cx:CX,cz:CZ,y:GY,label:label});
+    for(var i=0;i<Math.min(palmN,4);i++){var a=i/Math.min(palmN,4)*Math.PI*2,r=16+i*3;mk('gltf-model',{src:'#palmGLB',position:(CX+Math.sin(a)*r).toFixed(1)+' 0 '+(CZ+Math.cos(a)*r).toFixed(1),rotation:'0 '+(i*90)+' 0',scale:'5 5 5'});}
+    for(var i=0;i<3;i++){var ra=i/3*Math.PI*2,rr=22+i*4;mk('sphere',{radius:(2+i*.5).toFixed(1),position:(CX+Math.sin(ra)*rr).toFixed(1)+' 0.5 '+(CZ+Math.cos(ra)*rr).toFixed(1),scale:'1 .5 1',material:'color:#7a6a50;roughness:.95'});}
+  }
+  makeIsle(-165,-140,'ILE VOLCANIQUE','#4a7a20',4);
+  makeIsle(165,-125,'ILE TROPICALE','#5aaa28',4);
+  makeIsle(0,-220,'ILE NORD','#3a9a18',3);
+  makeIsle(-220,50,'ILE OUEST','#6aaa30',3);
+  makeIsle(220,80,'ILE EST','#4a8a22',3);
+  makeIsle(100,-300,'ILE LOINTAINE','#3a7a18',3);
+  makeIsle(-300,-200,'ILE CACHEE','#5a9a25',3);
+
+  buildUnderwaterWorld();
+  buildMission();
+
+  // ─────────────────────────────────────────────
+  // MISSION — CORRECTIONS DES 3 BUGS
+  // ─────────────────────────────────────────────
+  function buildMission(){
+    var GY=0.0;
+    mk('gltf-model',{src:'#cartGLB',position:'30 2.5 55',scale:'2 2 2',shadow:'cast:true'});
+    addWall(30,55,3,3,GY);
+    var nani=mk('entity',{id:'paulo',position:'25 0 54'});
+    mk('cylinder',{'radius-bottom':'.14','radius-top':'.12',height:'.9',position:'0 .5 0',material:'color:#ff6688;roughness:.8'},nani);
+    mk('sphere',{radius:'.16',position:'0 1.08 0',material:'color:#f4a060;roughness:.8'},nani);
+    mk('sphere',{radius:'.16',scale:'1 .55 1',position:'0 1.15 0',material:'color:#3a1a00;roughness:.9'},nani);
+
+    // Créer exactement 30 glaces — 3 anneaux de 10 positions garanties dans l'île
+    window.pineappleEls=[];
+    var RINGS=[
+      {count:8, r:10},   // anneau intérieur
+      {count:12, r:28},  // anneau moyen
+      {count:10, r:48},  // anneau extérieur
+    ];
+    var idx=0;
+    RINGS.forEach(function(ring){
+      for(var i=0;i<ring.count;i++,idx++){
+        var a=(i/ring.count)*Math.PI*2+(idx*0.22);
+        var px=Math.sin(a)*ring.r, pz=Math.cos(a)*ring.r;
+        var pa=document.createElement('a-gltf-model');
+        pa.setAttribute('src','#sundaeGLB');
+        pa.setAttribute('position',px.toFixed(1)+' 0.8 '+pz.toFixed(1));
+        pa.setAttribute('scale','3.5 3.5 3.5');
+        pa.setAttribute('visible','false');
+        pa.classList.add('pineapple');
+        W.appendChild(pa);
+        window.pineappleEls.push(pa);
+      }
+    });
+
+    // ── PISTOLET COLLECTIBLE dans le monde ──
+    // Posé près du chariot, collectible en s'approchant
+    window._gunWorldEl=null;
+    window._gunPickable=false;  // devient true après mission gagnée
+    window._gunCollected=false; // devient true une fois ramassé
+
+    window.MISSION={active:false,count:0,timer:90,done:false,total:20};
+    window._pauloDialogShown=false;
+
+    // ── MISSION VOL : cristal de propulsion sur l'île ──
+    buildFlightMission();
+  }
+
+  function buildFlightMission(){
+    window.FLIGHT_MISSION={
+      active:false, done:false, dialogShown:false,
+      step:'collect', // 'collect' → 'return_jumba' → 'find_lilo' → 'fly' → 'done'
+      crystals:0
+    };
+    window._jetpackEl3D=null;
+    window._jetpackEquipped=false;
+    window._inShip=false;
+    window._liloFollowing=false;
+    window._liloEl3D=null;
+    window._crystalShards=[];
+
+    // Créer les 5 morceaux de cristal cassé sur l'île (positions variées)
+    var shardPositions=[
+      {x:20,  z:35,  ry:0},
+      {x:-25, z:15,  ry:45},
+      {x:10,  z:-15, ry:90},
+      {x:-15, z:-30, ry:120},
+      {x:40,  z:10,  ry:200}
+    ];
+    shardPositions.forEach(function(sp,i){
+      var shard=document.createElement('a-entity');
+      shard.id='shard-'+i;
+      // Morceau de cristal cassé : petit prisme irrégulier cyan
+      var s1=document.createElement('a-sphere');
+      s1.setAttribute('radius','0.28');
+      s1.setAttribute('scale',(0.5+Math.random()*0.3).toFixed(2)+' '+(0.8+Math.random()*0.6).toFixed(2)+' '+(0.4+Math.random()*0.3).toFixed(2));
+      s1.setAttribute('material','color:#00ffee;emissive:#00ccff;emissiveIntensity:1.4;transparent:true;opacity:0.9;roughness:0;metalness:0.9');
+      shard.appendChild(s1);
+      var s2=document.createElement('a-sphere');
+      s2.setAttribute('radius','0.16');
+      s2.setAttribute('position','0.1 0.3 0.05');
+      s2.setAttribute('material','color:#ffffff;emissive:#aaffff;emissiveIntensity:2.0;transparent:true;opacity:0.7');
+      shard.appendChild(s2);
+      var sl=document.createElement('a-light');
+      sl.setAttribute('type','point');sl.setAttribute('color','#00ffee');
+      sl.setAttribute('intensity','1.4');sl.setAttribute('distance','8');
+      shard.appendChild(sl);
+      shard.setAttribute('position',sp.x+' 0.8 '+sp.z);
+      shard.setAttribute('rotation','0 '+sp.ry+' 15');
+      shard.setAttribute('animation','property:position;from:'+sp.x+' 0.8 '+sp.z+';to:'+sp.x+' 1.5 '+sp.z+';loop:true;dur:'+(1400+i*200)+';dir:alternate;easing:easeInOutSine');
+      shard.setAttribute('animation__r','property:rotation;from:0 '+sp.ry+' 15;to:0 '+(sp.ry+360)+' 15;loop:true;dur:'+(2000+i*300)+';easing:linear');
+      shard._shardPos={x:sp.x,z:sp.z};
+      shard.setAttribute('visible','false'); // invisible jusqu'au début de la mission
+      shard._collected=false;
+      W.appendChild(shard);
+      window._crystalShards.push(shard);
+    });
+  }
+
+  window.closeJumbaDialog=function(){
+    document.getElementById('jumba-dialog').style.display='none';
+    window.FLIGHT_MISSION.dialogShown=false;
+  };
+
+  window.startFlightMission=function(){
+    document.getElementById('jumba-dialog').style.display='none';
+    window.FLIGHT_MISSION.active=true;
+    window.FLIGHT_MISSION.step='collect';
+    window.FLIGHT_MISSION.crystals=0;
+    // Rendre les cristaux visibles
+    window._crystalShards.forEach(function(s){s.setAttribute('visible','true');});
+    document.getElementById('jetpack-hud').textContent='💎 Cristaux : 0/5 — Ramasse les morceaux !';
+    document.getElementById('jetpack-hud').style.display='block';
+    toast('💎 5 morceaux de cristal sur l\'île ! Ramasse-les !',4000);
+  };
+
+  window.equipJetpack=function(){
+    window._jetpackEquipped=true;
+    if(!window._jetpackEl3D){
+      var jp=document.createElement('a-entity');
+      jp.id='jetpack-visual';
+      // Corps du jetpack — boîte métallique dans le dos
+      var jpb=document.createElement('a-box');
+      jpb.setAttribute('width','0.52');jpb.setAttribute('height','0.72');jpb.setAttribute('depth','0.26');
+      jpb.setAttribute('position','0 0 0');
+      jpb.setAttribute('material','color:#223355;roughness:.2;metalness:.8;emissive:#1144cc;emissiveIntensity:.5');
+      jp.appendChild(jpb);
+      // Détails cristal au centre
+      var jpc=document.createElement('a-sphere');
+      jpc.setAttribute('radius','0.12');jpc.setAttribute('position','0 0.1 0.14');
+      jpc.setAttribute('material','color:#00ffee;emissive:#00ccff;emissiveIntensity:2.0;transparent:true;opacity:.9');
+      jp.appendChild(jpc);
+      // 2 propulseurs orange
+      [-0.16,0.16].forEach(function(ox){
+        var noz=document.createElement('a-cylinder');
+        noz.setAttribute('radius','0.10');noz.setAttribute('height','0.26');
+        noz.setAttribute('position',ox+' -0.38 0');
+        noz.setAttribute('material','color:#ff6600;emissive:#ff4400;emissiveIntensity:2.0');
+        jp.appendChild(noz);
+        // Flamme du propulseur
+        var flame=document.createElement('a-sphere');
+        flame.setAttribute('radius','0.10');flame.setAttribute('position',ox+' -0.56 0');
+        flame.setAttribute('material','color:#ffff00;emissive:#ffcc00;emissiveIntensity:3.0;transparent:true;opacity:.8');
+        jp.appendChild(flame);
+      });
+      jp.setAttribute('position','-0.02 0.52 -0.38');
+      jp.setAttribute('rotation','0 180 0');
+      var sr=document.getElementById('stitch-root');
+      if(sr)sr.appendChild(jp);
+      window._jetpackEl3D=jp;
+    } else {
+      window._jetpackEl3D.setAttribute('visible','true');
+    }
+    window.FLIGHT_MISSION.step='find_lilo';
+    document.getElementById('jetpack-hud').textContent='🌺 Va chercher Lilo ! (près de la maison)';
+    document.getElementById('jetpack-hud').style.display='block';
+
+    // Halo doré autour de Lilo pour la repérer
+    var halo=document.createElement('a-torus');
+    halo.id='lilo-halo';
+    halo.setAttribute('radius','1.1');halo.setAttribute('radius-tubular','.07');
+    halo.setAttribute('position','8 0.5 20');
+    halo.setAttribute('material','color:#ffcc00;emissive:#ffaa00;emissiveIntensity:2.0;transparent:true;opacity:0.9');
+    halo.setAttribute('animation','property:rotation;from:0 0 0;to:0 360 0;loop:true;dur:1200;easing:linear');
+    halo.setAttribute('animation__bob','property:position;from:8 0.5 20;to:8 1.4 20;loop:true;dur:800;dir:alternate;easing:easeInOutSine');
+    W.appendChild(halo);
+    window._liloHalo=halo;
+
+    toast('🚀 Jetpack assemblé par Jumba ! Va chercher Lilo !',4000);
+    playSound('sndWin');
+    window.INVENTAIRE.push({icon:'🚀',name:'Jetpack Cristal',desc:'Assemblé par Jumba — pour aller au vaisseau !'});
+  };
+
+  // ── BUG 1 CORRIGÉ : timer toujours réinitialisé à 90 ──
+  window.startMission=function(){
+    document.getElementById('mission-truck').style.display='none';
+    // Réinitialisation complète à chaque lancement
+    window.MISSION.active=true;
+    window.MISSION.count=0;
+    window.MISSION.timer=90;   // ← TOUJOURS 90s, pas reprise de l'ancienne valeur
+    window.MISSION.done=false;
+    document.getElementById('mission-hud').style.display='block';
+    // ── BUG 2 CORRIGÉ : rendre toutes les glaces visibles ──
+    if(window.pineappleEls){
+      window.pineappleEls.forEach(function(p){
+        p.setAttribute('visible','true');
+        p._collected=false; // reset état collecte
+      });
+    }
+    toast('🍦 Mission démarrée ! Ramasse 20 glaces en 90s !',3000);
+  };
+
+  // ── BUG 3 CORRIGÉ : pistolet posé sur le sol, à ramasser ──
+  window._spawnGunOnGround=function(){
+    if(window._gunWorldEl){
+      // Déjà créé (mission rejouée) — le remettre visible
+      window._gunWorldEl.setAttribute('visible','true');
+      window._gunWorldEl.setAttribute('position','28 0.5 52');
+    } else {
+      var g=document.createElement('a-gltf-model');
+      g.setAttribute('src','#watergunGLB');
+      g.setAttribute('position','28 0.5 52');  // posé sur le sol près de Nani
+      g.setAttribute('scale','3 3 3');
+      g.setAttribute('rotation','0 45 0');
+      g.id='gun-world-object';
+      // Animation de flottement doux sur place
+      g.setAttribute('animation','property:position;from:28 0.5 52;to:28 1.0 52;loop:true;dur:1200;dir:alternate;easing:easeInOutSine');
+      document.getElementById('world').appendChild(g);
+      window._gunWorldEl=g;
+    }
+    window._gunPickable=true;
+    window._gunCollected=false;
+  };
+
+  var SFX='_Stitch_Armature',BONES={},BONE_REST={},ANIM_T=0,stitchMixer=null,nativeAction=null;
+  var BONE_MAP={root:'ROOT'+SFX,spine0:'Spine_start'+SFX,spine1:'Spine.001'+SFX,shoulders:'Shoulders'+SFX,neck:'Neck'+SFX,head:'Head'+SFX,shoulderL:'Shoulder.L'+SFX,armL:'Arm.L'+SFX,foreArmL:'ForeArm.L'+SFX,shoulderR:'Shoulder.R'+SFX,armR:'Arm.R'+SFX,foreArmR:'ForeArm.R'+SFX,hipL:'Hip.L'+SFX,legL:'Leg.L'+SFX,foreLegL:'ForeLeg.L'+SFX,heelL:'Heel.L'+SFX,hipR:'Hip.R'+SFX,legR:'Leg.R'+SFX,foreLegR:'ForeLeg.R'+SFX,heelR:'Heel.R'+SFX,butt:'Butt'+SFX,tail:'Tail'+SFX,earAL:'Ear_A.L'+SFX,earAR:'Ear_A.R'+SFX};
+  function findBone(root,name){var f=null;root.traverse(function(o){if(!f&&o.name===name)f=o;});return f;}
+  function saveBoneRest(k,b){if(b)BONE_REST[k]={x:b.rotation.x,y:b.rotation.y,z:b.rotation.z};}
+  function rb(k,rx,ry,rz){var b=BONES[k];if(!b)return;var r=BONE_REST[k]||{x:0,y:0,z:0};b.rotation.x=r.x+(rx||0);b.rotation.y=r.y+(ry||0);b.rotation.z=r.z+(rz||0);}
+
+  var stitchModel=document.getElementById('stitch-model');
+  stitchModel.addEventListener('model-loaded',function(){
+    var mesh=stitchModel.getObject3D('mesh');if(!mesh)return;
+    var box=new THREE.Box3().setFromObject(mesh);var h=box.max.y-box.min.y;
+    if(h>.05){var sc=1.4/h;stitchModel.setAttribute('scale',sc+' '+sc+' '+sc);}
+    setTimeout(function(){
+      var mesh2=stitchModel.getObject3D('mesh');if(!mesh2)return;
+      var b2=new THREE.Box3().setFromObject(mesh2);P.yOff=Math.abs(b2.min.y)+.06;
+      var gy0=getGroundY(P.x,P.z);if(gy0!==null)P.y=gy0+P.yOff;
+      for(var k in BONE_MAP){BONES[k]=findBone(mesh2,BONE_MAP[k]);saveBoneRest(k,BONES[k]);}
+      var clips=[],cur=mesh2;while(cur){if(cur.animations&&cur.animations.length){clips=cur.animations;break;}cur=cur.parent;}
+      if(clips.length>0){stitchMixer=new THREE.AnimationMixer(cur);nativeAction=stitchMixer.clipAction(clips[0]);nativeAction.setLoop(THREE.LoopRepeat,Infinity);nativeAction.timeScale=0;nativeAction.play();}
+    },300);
+    toast('Bienvenue sur Stitch Island ! 🏝',4000);
+  });
+
+  function animateStitch(dt,moveMag,state,sprint){
+    if(!Object.keys(BONES).length)return;
+    if(stitchMixer&&nativeAction){if(state==='ground'&&moveMag>.05){stitchMixer.update(dt*(sprint?2.5:1.4));nativeAction.timeScale=1;}else{nativeAction.timeScale=0;nativeAction.time=0;stitchMixer.update(0);}}
+    ANIM_T+=dt*2.5;var s=Math.sin(ANIM_T);
+    if(state==='ground'&&moveMag>.05){var freq=sprint?9:6,ampL=sprint?1.2:.95,ampA=sprint?1:.75;ANIM_T+=dt*(freq-2.5);var sw=Math.sin(ANIM_T);rb('hipL',sw*ampL,0,0);rb('hipR',-sw*ampL,0,0);rb('legL',Math.max(0,sw)*.9,0,0);rb('legR',Math.max(0,-sw)*.9,0,0);rb('foreLegL',Math.max(0,-sw)*.65,0,0);rb('foreLegR',Math.max(0,sw)*.65,0,0);rb('heelL',-sw*.55,0,0);rb('heelR',sw*.55,0,0);rb('armL',-sw*ampA,0,sw*.12);rb('armR',sw*ampA,0,-sw*.12);rb('foreArmL',Math.max(0,-sw)*.65,0,0);rb('foreArmR',Math.max(0,sw)*.65,0,0);rb('spine0',0,-sw*.12,sw*.08);rb('earAL',Math.abs(sw)*.2,0,0);rb('earAR',Math.abs(sw)*.2,0,0);}
+    else if(state==='air'){rb('hipL',-.30,0,0);rb('hipR',-.30,0,0);rb('legL',.65,0,0);rb('legR',.65,0,0);rb('armL',-.70,0,-.45);rb('armR',-.70,0,.45);}
+    else if(state==='surface'){rb('spine0',.22,0,0);rb('armL',s*.8-.25,0,-.40);rb('armR',-s*.8-.25,0,.40);rb('hipL',s*.35,0,0);rb('hipR',-s*.35,0,0);rb('legL',Math.max(0,s)*.4,0,0);rb('legR',Math.max(0,-s)*.4,0,0);}
+    else if(state==='diving'){ANIM_T+=dt*5;var sw2=Math.sin(ANIM_T*3);rb('spine0',-.15,0,0);rb('armL',-1.4+Math.max(0,sw2)*2.2,0,-.12);rb('armR',-1.4+Math.max(0,-sw2)*2.2,0,.12);rb('foreArmL',Math.max(0,-sw2)*.6,0,0);rb('foreArmR',Math.max(0,sw2)*.6,0,0);rb('hipL',sw2*.7,0,0);rb('hipR',-sw2*.7,0,0);rb('legL',Math.max(0,sw2)*.45,0,0);rb('legR',Math.max(0,-sw2)*.45,0,0);rb('foreLegL',Math.max(0,-sw2)*.3,0,0);rb('foreLegR',Math.max(0,sw2)*.3,0,0);rb('tail',sw2*.28,0,0);rb('earAL',Math.abs(sw2)*.12,0,0);rb('earAR',Math.abs(sw2)*.12,0,0);}
+    else{var breathe=Math.sin(ANIM_T*.65)*.035,earWave=Math.sin(ANIM_T*.4)*.06;rb('spine0',breathe,0,0);rb('earAL',earWave,0,0);rb('earAR',earWave,0,0);rb('tail',Math.sin(ANIM_T*.7)*.1,0,0);}
+  }
+
+  var WATER_SURFACE=-0.3,WATER_ENTER_THRESHOLD=0.25,MAX_BREATH=100,BREATH_LOSE=4,BREATH_GAIN=30;
+  var P={x:0,y:2.5,z:5,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,state:'ground',breath:MAX_BREATH,swimBob:0};
+  var CAM={yaw:Math.PI,pitch:.22,dist:6.5};
+  var jLX=0,jLY=0,jid=-1,rjLX=0,rjLY=0,rjid=-1,KY={},sprint=false;
+  var waveT=0,lastT=performance.now(),windLeaves=null,fishEls=null,_pressingDown=false;
+  window._jumpHeld=false;
+  // Cache des éléments DOM pour éviter getElementById à chaque frame
+  var _elCache={};
+  function gel(id){if(!_elCache[id])_elCache[id]=document.getElementById(id);return _elCache[id];}
+  var _loopFrame=0; // compteur de frames pour throttling
+  var _lastState='ground'; // pour détecter changements de zone
+
+  function loop(){
+    requestAnimationFrame(loop);
+    try{
+    _loopFrame++;
+    var now=performance.now(),dt=Math.min((now-lastT)/1000,.033);lastT=now;waveT+=dt;
+    if(dt<=0)dt=0.016;
+
+    // NPC mixers — toujours
+    if(window._npcMixers){for(var mi=0;mi<window._npcMixers.length;mi++){window._npcMixers[mi].update(dt);}}
+
+    // Wind leaves — 1 frame sur 4 seulement (économie CPU)
+    if(_loopFrame%4===0){
+      if(!windLeaves)windLeaves=document.querySelectorAll('.wind-leaf');
+      windLeaves.forEach(function(lf){var ph=parseFloat(lf.dataset.windPhase||0),brx=parseFloat(lf.dataset.brx||0),bry=lf.dataset.bry||'0';var s=Math.sin(waveT*1.15+ph)*3.2;lf.setAttribute('rotation',(brx+s).toFixed(1)+' '+bry+' '+Math.cos(waveT*.75+ph).toFixed(1));});
+    }
+
+    // Poissons — 1 frame sur 2
+    if(_loopFrame%2===0){
+      if(!fishEls)fishEls=document.querySelectorAll('.fish-anim');
+      fishEls.forEach(function(fish){var ph=parseFloat(fish.dataset.fishPhase||0),r=parseFloat(fish.dataset.fishR||10),dep=parseFloat(fish.dataset.fishDepth||-2),spd=parseFloat(fish.dataset.fishSpeed||.3),t=waveT*spd;var offX=parseFloat(fish.dataset.fishOffX||0),offZ=parseFloat(fish.dataset.fishOffZ||0);var fx=offX+Math.sin(t+ph)*r,fz=offZ+Math.cos(t+ph)*r,fy=dep+Math.sin(waveT*.5+ph)*.3;fish.setAttribute('position',fx.toFixed(2)+' '+fy.toFixed(2)+' '+fz.toFixed(2));fish.setAttribute('rotation','0 '+(Math.atan2(Math.cos(t+ph),-Math.sin(t+ph))*180/Math.PI).toFixed(1)+' 0');});
+    }
+
+    // Tortues et requin — 1 frame sur 3
+    if(_loopFrame%3===0){
+      if(!window._turtleEls)window._turtleEls=document.querySelectorAll('.turtle-anim');
+      window._turtleEls.forEach(function(t){var ph=parseFloat(t.dataset.tPhase||0),r=parseFloat(t.dataset.tR||18),dep=parseFloat(t.dataset.tDepth||-2),sp=parseFloat(t.dataset.tSpeed||.07),tm=waveT*sp;t.setAttribute('position',(Math.sin(tm+ph)*r).toFixed(2)+' '+(dep+Math.sin(waveT*.4+ph)*.8).toFixed(2)+' '+(Math.cos(tm+ph)*r).toFixed(2));t.setAttribute('rotation','0 '+(Math.atan2(Math.cos(tm+ph),-Math.sin(tm+ph))*180/Math.PI).toFixed(1)+' 0');});
+      if(!window._sharkEls)window._sharkEls=document.querySelectorAll('.shark-anim');
+      window._sharkEls.forEach(function(s){var ph=parseFloat(s.dataset.sPhase||0),r=parseFloat(s.dataset.sR||50),dep=parseFloat(s.dataset.sDepth||-8),sp=parseFloat(s.dataset.sSpeed||.04),tm=waveT*sp;s.setAttribute('position',(Math.sin(tm+ph)*r).toFixed(2)+' '+(dep+Math.sin(waveT*.3+ph)*1.5).toFixed(2)+' '+(Math.cos(tm+ph)*r).toFixed(2));s.setAttribute('rotation','0 '+(Math.atan2(Math.cos(tm+ph),-Math.sin(tm+ph))*180/Math.PI).toFixed(1)+' 0');});
+    }
+    var fwd=0,lat=0;
+    if(KY['KeyW']||KY['KeyZ']||KY['ArrowUp'])fwd=1;if(KY['KeyS']||KY['ArrowDown'])fwd=-1;if(KY['KeyD']||KY['ArrowRight'])lat=1;if(KY['KeyA']||KY['KeyQ']||KY['ArrowLeft'])lat=-1;
+    fwd-=jLY;lat+=jLX;
+    var moveMag=Math.sqrt(fwd*fwd+lat*lat),gy=getGroundY(P.x,P.z),spd=sprint?9.5:5.2;
+    if(moveMag>.05){var mx=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);var mz=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));var mn=Math.sqrt(mx*mx+mz*mz);var spdM=(P.state==='surface')?.7:(P.state==='diving')?.65:1.0;P.vx=mx/mn*spd*spdM;P.vz=mz/mn*spd*spdM;var ty=Math.atan2(mx/mn,mz/mn),dyw=ty-P.yaw;while(dyw>Math.PI)dyw-=Math.PI*2;while(dyw<-Math.PI)dyw+=Math.PI*2;var turnFactor=Math.min(1,1-Math.abs(dyw)/Math.PI*0.75);P.vx*=turnFactor;P.vz*=turnFactor;P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
+    if(P.state==='ground'||P.state==='air'){
+      P.vy-=22*dt;if(P.vy<-25)P.vy=-25;P.y+=P.vy*dt;
+      if(gy!==null&&P.y<=gy+P.yOff){if(gy<WATER_SURFACE-0.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;playSound('sndSplash');toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}else if(P.y<=WATER_SURFACE+WATER_ENTER_THRESHOLD&&gy<=WATER_SURFACE){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;}else{P.y=gy+P.yOff;P.vy=0;P.onGround=true;P.state='ground';}}
+      else if(gy===null&&P.y<=WATER_SURFACE+0.05){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;playSound('sndSplash');toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}
+      else{P.onGround=false;if(P.state==='ground')P.state='air';}
+    }else if(P.state==='surface'){
+      P.swimBob+=dt;P.breath=Math.min(MAX_BREATH,P.breath+BREATH_GAIN*dt);P.y=WATER_SURFACE+Math.sin(P.swimBob*2.2)*.06;P.vy=0;P.onGround=true;
+      if(gy!==null&&gy>WATER_SURFACE+0.4){P.state='ground';P.y=gy+P.yOff;P.vy=0;}
+      if(_pressingDown||jLY>0.4){P.state='diving';P.vy=-7;P.y=WATER_SURFACE-1.2;P.onGround=false;}
+    }else if(P.state==='diving'){
+      var swimSpd=sprint?18:11;if(moveMag>.05){var mx2=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);var mz2=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));var mn2=Math.sqrt(mx2*mx2+mz2*mz2);P.vx=mx2/mn2*swimSpd;P.vz=mz2/mn2*swimSpd;}
+      if(_pressingDown||jLY>0.3){P.vy=Math.max(P.vy-14*dt,-11);}else if(KY['Space']){P.vy=Math.min(P.vy+14*dt,11);}else{P.vy=P.vy*.88+.5*dt;}
+      P.y+=P.vy*dt;P.onGround=false;P.breath=Math.max(0,P.breath-BREATH_LOSE*dt);
+      if(P.y>=WATER_SURFACE-.05){P.y=WATER_SURFACE;P.state='surface';P.vy=0;toast('Stitch reprend son souffle ! 💨',2000);}
+      if(P.y<-11.5){P.y=-11.5;P.vy=0;}
+      if(P.breath<=0){P.vy=7;P.state='surface';P.breath=25;toast('Plus d air ! 😮‍💨',2000);}
+    }
+    var PRAD=1.0,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
+    // Limiter la zone de déplacement en surface pour éviter l'écran gris (hors-limites)
+    if(P.state==='ground'||P.state==='surface'){
+      var WORLD_LIMIT=380;
+      if(nx>WORLD_LIMIT)nx=WORLD_LIMIT;if(nx<-WORLD_LIMIT)nx=-WORLD_LIMIT;
+      if(nz>WORLD_LIMIT)nz=WORLD_LIMIT;if(nz<-WORLD_LIMIT)nz=-WORLD_LIMIT;
+    }
+    for(var wi=0;wi<walls.length;wi++){var w=walls[wi];if(P.y-P.yOff>w.y0+w.h)continue;var inX=nx+PRAD>w.x1&&nx-PRAD<w.x2,inZ=nz+PRAD>w.z1&&nz-PRAD<w.z2;var curX=P.x+PRAD>w.x1&&P.x-PRAD<w.x2,curZ=P.z+PRAD>w.z1&&P.z-PRAD<w.z2;if(inX&&inZ){if(!curX){P.vx=0;nx=P.x;}if(!curZ){P.vz=0;nz=P.z;}}}
+    P.x=nx;P.z=nz;
+    var stEl=gel('stitch-root');
+    var shadowEl=gel('stitch-shadow');
+    if(!stEl)return;
+    if(shadowEl){if(P.state==='ground'||P.state==='air'){var feetY=P.y-P.yOff;var gy2=getGroundY(P.x,P.z);var shadowY=gy2!==null?(gy2+0.01):(feetY+0.01);var ha=Math.max(0,feetY-(shadowY-0.02));var sc=Math.max(0.2,0.85-ha*0.04);var op=Math.max(0,0.46-ha*0.04);shadowEl.setAttribute('position',P.x.toFixed(2)+' '+shadowY.toFixed(3)+' '+P.z.toFixed(2));shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.62).toFixed(3));shadowEl.setAttribute('material','color:#000000;transparent:true;opacity:'+op.toFixed(3));shadowEl.setAttribute('visible','true');}else{shadowEl.setAttribute('visible','false');}}
+    var tiltX=0;if(P.state==='diving'){tiltX=Math.max(-20,Math.min(15,P.vy*4));}else if(P.state==='surface'){tiltX=5;}
+    stEl.setAttribute('position',P.x.toFixed(2)+' '+P.y.toFixed(2)+' '+P.z.toFixed(2));
+    stEl.setAttribute('rotation',tiltX.toFixed(1)+' '+(P.yaw*180/Math.PI).toFixed(1)+' 0');
+    animateStitch(dt,moveMag,P.state,sprint);
+    if(!window._stepT)window._stepT=0;
+    window._stepT+=dt;
+    if(P.state==='ground'&&moveMag>.05){if(window._stepT>0.38){window._stepT=0;playSound('sndStepSand');}}
+    else if(P.state==='surface'&&moveMag>.05){if(window._stepT>0.48){window._stepT=0;playSound('sndStepWater');}}
+    else{window._stepT=0;}
+    if(Math.abs(rjLX)>.04)CAM.yaw+=rjLX*dt*2.5;else if(moveMag>.1){var tc=P.yaw+Math.PI,cd=tc-CAM.yaw;while(cd>Math.PI)cd-=Math.PI*2;while(cd<-Math.PI)cd+=Math.PI*2;CAM.yaw+=cd*dt*2.2;}
+    if(Math.abs(rjLY)>.04)CAM.pitch=Math.max(.06,Math.min(.75,CAM.pitch+rjLY*dt*1.5));
+    var camDist=CAM.dist,camPitch=CAM.pitch;
+    if(P.state==='diving'){camDist=5.0;camPitch=0.10;}
+    var cr=camDist*Math.cos(camPitch),cX=P.x+Math.sin(CAM.yaw)*cr,cZ=P.z+Math.cos(CAM.yaw)*cr,cY=P.y+camDist*Math.sin(camPitch)+(P.state==='diving'?0.5:1.8);
+    // Empêcher la caméra de descendre sous le sol ou sous l'eau (cause écran gris)
+    var camMinY=(P.state==='diving')?-10.0:1.2;
+    cY=Math.max(cY,camMinY);
+    var camRig=document.getElementById('cam-rig');
+    if(camRig){
+      var cp=camRig.getAttribute('position');
+      var lf2=Math.min(1,dt*10);
+      if(cp){
+        camRig.setAttribute('position',(cp.x+(cX-cp.x)*lf2).toFixed(2)+' '+(cp.y+(cY-cp.y)*lf2).toFixed(2)+' '+(cp.z+(cZ-cp.z)*lf2).toFixed(2));
+      }
+    }
+    var _mainCam=document.getElementById('mainCam');
+    if(_mainCam&&_mainCam.components&&_mainCam.components.camera&&_mainCam.components.camera.camera){
+      try{_mainCam.components.camera.camera.lookAt(P.x,P.y+(P.state==='diving'?0.0:.9),P.z);}catch(e){}
+    }
+    ['w0','w1','w2'].forEach(function(id,i){var wEl=document.getElementById(id);if(!wEl)return;wEl.setAttribute('scale',(1+Math.sin(waveT*.8+i*1.4)*.05)+' 1 '+(1+Math.sin(waveT*.8+i*1.4)*.05));wEl.setAttribute('position','0 '+(-.42+Math.sin(waveT*1.6+i*1.4)*.04).toFixed(3)+' 0');});
+    var lg=document.getElementById('lagon');if(lg)lg.setAttribute('position','0 '+(-.35+Math.sin(waveT*.45)*.012).toFixed(3)+' 0');
+    var breathBar=gel('breath-bar'),breathFill=gel('breath-fill');
+    var waterOv=gel('water-overlay'),causticOv=gel('caustic-overlay');
+    var diveHint=gel('dive-hint'),ambLightEl=gel('ambientLight'),scnEl=document.querySelector('a-scene');
+    if(!breathBar||!waterOv||!diveHint||!ambLightEl||!scnEl)return;
+    if(P.state==='diving'||P.state==='surface'){breathBar.style.display='flex';var pct=P.breath/MAX_BREATH;breathFill.style.width=(pct*100).toFixed(0)+'%';breathFill.style.background=pct>.5?'linear-gradient(90deg,#00ffcc,#0088ff)':pct>.25?'linear-gradient(90deg,#ffcc00,#ff6600)':'linear-gradient(90deg,#ff2200,#ff6600)';}else{breathBar.style.display='none';}
+    // Lumières/fog : seulement si le state change (pas à chaque frame!)
+    if(P.state!==_lastState){
+      _lastState=P.state;
+      var uwL=['uwLight1','uwLight2','uwLight3','uwLight4','uwLight5'];
+      if(P.state==='diving'){
+        waterOv.className='underwater';causticOv.style.opacity='0.5';
+        ambLightEl.setAttribute('intensity','2.2');ambLightEl.setAttribute('color','#88ddcc');
+        gel('sunLight').setAttribute('intensity','0');gel('hemiLight').setAttribute('intensity','0');
+        uwL.forEach(function(id){var l=gel(id);if(l)l.setAttribute('intensity','4.5');});
+        scnEl.setAttribute('fog','type:exponential;color:#005566;density:0.006');
+        gel('skyEl').setAttribute('color','#003355');
+      } else if(P.state==='surface'){
+        waterOv.className='underwater';causticOv.style.opacity='0';
+        uwL.forEach(function(id){var l=gel(id);if(l)l.setAttribute('intensity','0');});
+        gel('sunLight').setAttribute('intensity','2.2');gel('hemiLight').setAttribute('intensity','.7');
+        ambLightEl.setAttribute('intensity','.25');ambLightEl.setAttribute('color','#ffeedd');
+        scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.004');
+        gel('skyEl').setAttribute('color','#4ab8f0');
+      } else {
+        waterOv.className='';causticOv.style.opacity='0';
+        uwL.forEach(function(id){var l=gel(id);if(l)l.setAttribute('intensity','0');});
+        gel('sunLight').setAttribute('intensity','2.2');gel('hemiLight').setAttribute('intensity','.7');
+        ambLightEl.setAttribute('intensity','.25');ambLightEl.setAttribute('color','#ffeedd');
+        scnEl.setAttribute('fog','type:exponential;color:#5ac8f0;density:0.004');
+        gel('skyEl').setAttribute('color','#4ab8f0');
+      }
+    }
+    // Hint dive toujours mis à jour (texte)
+    if(P.state==='diving'){diveHint.style.display='block';diveHint.textContent='🌊 ⬆ SURF = remonter · ⬇ PLONGE = descendre';if(P.breath<20&&Math.floor(waveT*2)%2===0)diveHint.style.color='#ff3300';else diveHint.style.color='#88ffee';}
+    else if(P.state==='surface'){diveHint.style.display='block';diveHint.textContent='🌊 Appuie ⬇ PLONGE pour descendre';diveHint.style.color='#88ffee';}
+    else{diveHint.style.display='none';}
+    var bubCont=document.getElementById('bubbles-container');
+    if(P.state==='diving'){bubCont.style.display='block';if(moveMag>.05&&Math.floor(waveT*8)%2===0){var b=document.createElement('div');b.className='bubble';var sz=4+Math.random()*8;b.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(38+Math.random()*24)+'%;bottom:'+(35+Math.random()*15)+'%;animation-duration:'+(1.2+Math.random()*.8)+'s';bubCont.appendChild(b);setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b);},2000);}}else{bubCont.style.display='none';if(bubCont.children.length>0)bubCont.innerHTML='';}
+
+    // ── DIALOGUE NANI ──
+    // Nani repropose toujours si la mission n'est pas active et pas encore gagnée
+    if(window.MISSION&&!window.MISSION.active&&!window.MISSION.done){
+      var pdx=P.x-26,pdz=P.z-55;var pDist=Math.sqrt(pdx*pdx+pdz*pdz);
+      if(pDist<4&&!window._pauloDialogShown){window._pauloDialogShown=true;document.getElementById('mission-truck').style.display='block';}
+      else if(pDist>6){window._pauloDialogShown=false;}
+    }
+
+    // ── TIMER MISSION ──
+    if(window.MISSION&&window.MISSION.active){
+      window.MISSION.timer-=dt;
+      document.getElementById('mission-timer').textContent=Math.max(0,Math.ceil(window.MISSION.timer));
+      document.getElementById('mission-count').textContent=window.MISSION.count;
+
+      // ── BUG 2 CORRIGÉ : collecte des glaces ──
+      if(window.pineappleEls){
+        window.pineappleEls.forEach(function(pa){
+          if(pa._collected)return;
+          if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;
+          var pp=pa.getAttribute('position');if(!pp)return;
+          var ppx=parseFloat(pp.x!==undefined?pp.x:pp.split(' ')[0]);
+          var ppz=parseFloat(pp.z!==undefined?pp.z:pp.split(' ')[2]);
+          var dx=P.x-ppx,dz=P.z-ppz;
+          if(dx*dx+dz*dz<9){  // rayon 3 unités
+            pa._collected=true;
+            pa.setAttribute('visible','false');
+            window.MISSION.count++;
+            playSound('sndCollect');
+            if(window.MISSION.count===10)setTimeout(function(){playSound('sndLaugh');},300);
+            toast('🍦 +1 glace ! ('+window.MISSION.count+'/20)',800);
+            // Dès 20 collectées → forcer la fin
+            if(window.MISSION.count>=20){
+              window.pineappleEls.forEach(function(p2){
+                if(!p2._collected){p2._collected=true;p2.setAttribute('visible','false');}
+              });
+              window.MISSION.timer=0.01; // forcer la fin
+            }
+          }
+        });
+      }
+
+      if(window.MISSION.timer<=0){
+        window.MISSION.active=false;
+        document.getElementById('mission-hud').style.display='none';
+        var won=window.MISSION.count>=20;
+        var txt=won?'🎉 Bravo ! Tu as ramassé 20 glaces !<br><b>Nani te remercie ! Va chercher ton cadeau !</b>':'😢 Temps écoulé ! '+window.MISSION.count+'/20 glaces récupérées.';
+        // ── Toutes les glaces disparaissent à la fin (mission terminée) ──
+        if(window.pineappleEls){window.pineappleEls.forEach(function(p){p._collected=true;p.setAttribute('visible','false');});}
+        document.getElementById('mission-text').innerHTML=txt;
+        var md=document.getElementById('mission-truck');
+        if(won){
+          md.querySelector('button').textContent='🎊 Super !';
+          md.querySelector('button').onclick=window.closeMissionDialog;
+          md.querySelector('.decline').style.display='none';
+          window.MISSION.done=true;
+          // ── BUG 3 CORRIGÉ : pistolet posé sur le sol à ramasser ──
+          window._spawnGunOnGround();
+          playSound('sndWin');
+          setTimeout(function(){playSound('sndOhana');},1500);
+          toast('🔫 Le pistolet est posé près de Nani ! Va le ramasser !',4000);
+        } else {
+          md.querySelector('button').textContent='✅ Réessayer !';
+          md.querySelector('button').onclick=function(){
+            // ── BUG 1 CORRIGÉ : reset complet avant de relancer ──
+            window.MISSION={active:false,count:0,timer:90,done:false,total:20};
+            window.closeMissionDialog();
+            window.startMission();
+          };
+          md.querySelector('.decline').textContent='❌ Non merci';
+          md.querySelector('.decline').onclick=function(){
+            playSound('sndNah');
+            // Ne pas mettre done=true → Nani reproposera quand on revient
+            window.MISSION.active=false;
+            window._pauloDialogShown=false;
+            window.closeMissionDialog();
+            toast('À bientôt Nani ! 👋 Reviens me voir !',2500);
+          };
+          md.querySelector('.decline').style.display='';
+        }
+        md.style.display='block';
+      }
+    }
+
+    // ── DIALOGUE JUMBA (mission vol) ──
+    if(window.FLIGHT_MISSION&&!window.FLIGHT_MISSION.active&&!window.FLIGHT_MISSION.done){
+      var jdx=P.x-(-12),jdz=P.z-10;
+      if(Math.sqrt(jdx*jdx+jdz*jdz)<4&&!window.FLIGHT_MISSION.dialogShown){
+        window.FLIGHT_MISSION.dialogShown=true;
+        document.getElementById('jumba-dialog').style.display='block';
+      } else if(Math.sqrt(jdx*jdx+jdz*jdz)>6){
+        window.FLIGHT_MISSION.dialogShown=false;
+      }
+    }
+
+    // ════ MISSION VOL ════
+    if(window.FLIGHT_MISSION&&window.FLIGHT_MISSION.active){
+      var fm=window.FLIGHT_MISSION;
+
+      // ÉTAPE 1 : Ramasser les 5 morceaux de cristal
+      if(fm.step==='collect'&&window._crystalShards){
+        window._crystalShards.forEach(function(shard){
+          if(shard._collected)return;
+          var sp=shard._shardPos;
+          var cdx=P.x-sp.x,cdz=P.z-sp.z;
+          if(cdx*cdx+cdz*cdz<6.25){ // rayon 2.5
+            shard._collected=true;
+            shard.setAttribute('visible','false');
+            fm.crystals++;
+            playSound('sndCollect');
+            toast('💎 Morceau '+fm.crystals+'/5 ! '+(fm.crystals<5?'Continue !':'Retourne voir Jumba !'),1800);
+            document.getElementById('jetpack-hud').textContent='💎 Cristaux : '+fm.crystals+'/5'+(fm.crystals>=5?' — Retourne voir Jumba !':'');
+            if(fm.crystals>=5){
+              fm.step='return_jumba';
+              playSound('sndLaugh');
+              toast('💎 Tous les morceaux ! Retourne voir Jumba !',4000);
+            }
+          }
+        });
+      }
+
+      // ÉTAPE 2 : Retourner chez Jumba (pos -12, 10)
+      if(fm.step==='return_jumba'){
+        var jdx2=P.x-(-12),jdz2=P.z-10;
+        if(jdx2*jdx2+jdz2*jdz2<9){
+          fm.step='assembling';
+          document.getElementById('jetpack-hud').textContent='⚙️ Jumba assemble le jetpack...';
+          // Animation d'assemblage (3s)
+          playSound('sndGobble');
+          toast('⚙️ Jumba assemble ton jetpack... 3 secondes !',3500);
+          setTimeout(function(){
+            fm.step='find_lilo';
+            window.equipJetpack();
+          },3000);
+        }
+      }
+
+      // ÉTAPE 3 : Trouver Lilo (pos 8, 20 — sa position habituelle)
+      if(fm.step==='find_lilo'){
+        var ldx=P.x-8,ldz=P.z-20;
+        if(ldx*ldx+ldz*ldz<9){
+          fm.step='fly';
+          // Cacher halo
+          if(window._liloHalo){window._liloHalo.setAttribute('visible','false');}
+          // Créer Lilo volante qui suit Stitch
+          var liloF=document.createElement('a-entity');
+          liloF.id='lilo-fly';
+          var lb=document.createElement('a-sphere');lb.setAttribute('radius','0.26');lb.setAttribute('material','color:#ff6688;roughness:.6;emissive:#ff2255;emissiveIntensity:.3');liloF.appendChild(lb);
+          var lh=document.createElement('a-sphere');lh.setAttribute('radius','0.20');lh.setAttribute('position','0 0.38 0');lh.setAttribute('material','color:#f4a060;roughness:.7');liloF.appendChild(lh);
+          var lhair=document.createElement('a-sphere');lhair.setAttribute('radius','0.22');lhair.setAttribute('scale','1 .5 1');lhair.setAttribute('position','0 0.44 0');lhair.setAttribute('material','color:#1a0a00;roughness:.9');liloF.appendChild(lhair);
+          // Ailes magiques (petites sphères jaunes)
+          [-0.28,0.28].forEach(function(ox){var w=document.createElement('a-sphere');w.setAttribute('radius','0.10');w.setAttribute('position',ox+' 0.08 0');w.setAttribute('material','color:#ffdd00;emissive:#ffaa00;emissiveIntensity:1.5;transparent:true;opacity:.85');liloF.appendChild(w);});
+          var ll=document.createElement('a-light');ll.setAttribute('type','point');ll.setAttribute('color','#ffaacc');ll.setAttribute('intensity','0.8');ll.setAttribute('distance','5');liloF.appendChild(ll);
+          liloF.setAttribute('position',P.x+' '+(P.y+0.8)+' '+P.z);
+          W.appendChild(liloF);
+          window._liloEl3D=liloF;
+          window._liloFollowing=true;
+          window._liloOffset={x:-1.2,y:0.8,z:0};
+
+          document.getElementById('jetpack-hud').textContent='🚀 JUMP pour voler ! Monte au vaisseau !';
+          playSound('sndOhana');
+          toast('🌺 Lilo te rejoint ! JUMP pour voler ! Montez au vaisseau !',4500);
+        }
+      }
+    }
+
+    // LILO SUIT STITCH (smooth follow)
+    if(window._liloFollowing&&window._liloEl3D){
+      var lf3d=window._liloEl3D;
+      var lo=window._liloOffset;
+      var targetX=P.x-Math.sin(P.yaw)*lo.x;
+      var targetZ=P.z-Math.cos(P.yaw)*lo.x;
+      var targetY=P.y+lo.y;
+      var lpos=lf3d.getAttribute('position');
+      if(lpos){
+        var lx2=lpos.x+(targetX-lpos.x)*dt*3.2;
+        var ly2=lpos.y+(targetY-lpos.y)*dt*3.2;
+        var lz2=lpos.z+(targetZ-lpos.z)*dt*3.2;
+        lf3d.setAttribute('position',lx2.toFixed(2)+' '+ly2.toFixed(2)+' '+lz2.toFixed(2));
+        var liloYaw=Math.atan2(P.x-lx2,P.z-lz2);
+        lf3d.setAttribute('rotation','0 '+(liloYaw*180/Math.PI).toFixed(1)+' 0');
+      }
+    }
+
+    // VOL JETPACK : maintien de JUMP en l'air = propulsion
+    if(window._jetpackEquipped&&(P.state==='air'||P.y>1)){
+      if(KY['Space']||window._jumpHeld){
+        P.vy=Math.min(P.vy+20*dt,14);
+        P.state='air';
+        // Flammes propulseurs clignotantes (changer opacité)
+        if(window._jetpackEl3D&&_loopFrame%6===0){
+          var flames=window._jetpackEl3D.querySelectorAll('a-sphere[material*="ffff00"]');
+          flames.forEach(function(f){f.setAttribute('scale',(0.8+Math.random()*0.6)+' '+(0.8+Math.random()*0.6)+' 1');});
+        }
+      }
+    }
+
+    // ATTERRISSAGE SUR LE VAISSEAU (unique — décollage final)
+    if(window._jetpackEquipped&&window._liloFollowing&&!window._inShip){
+      var sdx=P.x-0,sdz=P.z-(-20),sdy=P.y-28;
+      if(sdx*sdx+sdy*sdy+sdz*sdz<20){
+        window._inShip=true;
+        window._liloFollowing=false;
+        window.FLIGHT_MISSION.done=true;
+        window.FLIGHT_MISSION.active=false;
+        document.getElementById('jetpack-hud').style.display='none';
+        playSound('sndHiii');
+        setTimeout(function(){playSound('sndLaugh');},800);
+        toast('🚀 Stitch ET Lilo dans le vaisseau !',3000);
+        // Lilo monte aussi
+        if(window._liloEl3D)window._liloEl3D.setAttribute('position','1.5 28 -21');
+        // Décollage du vaisseau
+        var shipGlb=W.querySelector('a-gltf-model[src="#spaceshipGLB"]');
+        if(shipGlb){
+          shipGlb.setAttribute('animation','property:position;from:0 28 -20;to:0 150 -20;dur:5000;easing:easeInQuad');
+          shipGlb.setAttribute('animation__rs','property:rotation;from:0 30 0;to:0 1080 20;dur:5000;easing:easeInQuad');
+        }
+        // Stitch monte avec le vaisseau
+        var _liftT=0;
+        var _liftI=setInterval(function(){
+          _liftT+=0.08;
+          P.y=28+_liftT*12;
+          P.state='air';
+          if(window._liloEl3D)window._liloEl3D.setAttribute('position','1.5 '+(28+_liftT*12)+' -21');
+          if(_liftT>5){
+            clearInterval(_liftI);
+            playSound('sndWin');
+            setTimeout(function(){playSound('sndOhana');},1200);
+            toast('🌟 ALOHA ! Stitch et Lilo décollent vers l\'aventure !',6000);
+          }
+        },80);
+      }
+    }
+    if(window._gunPickable&&!window._gunCollected&&window._gunWorldEl){
+      var gdx=P.x-28,gdz=P.z-52;
+      var gunDist=Math.sqrt(gdx*gdx+gdz*gdz);
+      var hint=document.getElementById('gun-pickup-hint');
+      var btnPickup=document.getElementById('btn-pickup');
+      if(gunDist<4){
+        hint.style.display='block';
+        btnPickup.style.display='flex';
+      } else {
+        hint.style.display='none';
+        btnPickup.style.display='none';
+      }
+    } else {
+      document.getElementById('gun-pickup-hint').style.display='none';
+      document.getElementById('btn-pickup').style.display='none';
+    }
+
+    updateAudioZone(P.state);
+    if(!window._voiceT)window._voiceT=0;
+    if(!window._lastVoice)window._lastVoice=-1;
+    window._voiceT+=dt;
+    if(window._voiceT>7){
+      window._voiceT=0;
+      var autoVoices=['sndHiii','sndOhana','sndGobble','sndLaugh','sndAaaah','sndEek','sndNah'];
+      var nextVoice;do{nextVoice=Math.floor(Math.random()*autoVoices.length);}while(nextVoice===window._lastVoice&&autoVoices.length>1);
+      window._lastVoice=nextVoice;playSound(autoVoices[nextVoice]);
+    }
+    var zone='🌊 OCEAN';
+    if(P.state==='diving')zone='🤿 SOUS L EAU';
+    else if(P.state!=='surface'){zone='🏖 PLAGE';for(var ii=0;ii<islandDefs.length;ii++){var id2=islandDefs[ii];if(Math.sqrt((P.x-id2.cx)*(P.x-id2.cx)+(P.z-id2.cz)*(P.z-id2.cz))<62){zone='🏝 '+id2.label;break;}}}
+    document.getElementById('zL').textContent=zone;
+    }catch(e){console.warn('Loop err:',e);}
+  }
+  loop();
+
+  // ── RAMASSER LE PISTOLET (bouton + touche) ──
+  window.pickupNearby=function(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    if(window._gunPickable&&!window._gunCollected){
+      var gdx=P.x-28,gdz=P.z-52;
+      if(Math.sqrt(gdx*gdx+gdz*gdz)<4){
+        window._gunCollected=true;
+        window._gunPickable=false;
+        // Supprimer l'objet 3D du sol
+        if(window._gunWorldEl){window._gunWorldEl.setAttribute('visible','false');}
+        document.getElementById('gun-pickup-hint').style.display='none';
+        document.getElementById('btn-pickup').style.display='none';
+        // Ajouter à l'inventaire avec bouton équiper
+        window.INVENTAIRE.push({icon:'🔫',name:'Pistolet à eau',desc:'Cadeau de Nani — arrose tes amis !',action:'equip'});
+        playSound('sndGobble');
+        toast('🔫 Pistolet à eau ramassé ! Ouvre ton sac pour l équiper.',3500);
+      }
+    }
+  };
+
+  window.doJump=function(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    if(Math.random()<0.33){var voices=['sndHiii','sndEek','sndAaaah'];playSound(voices[Math.floor(Math.random()*voices.length)]);}
+    if(P.state==='diving'){P.vy=7;}
+    else if(P.state==='ground'&&P.onGround){P.vy=8.5;P.onGround=false;P.state='air';}
+    else if(P.state==='surface'){P.vy=6;P.state='air';}
+    else if(P.state==='air'&&window._jetpackEquipped){
+      // Double-saut jetpack = propulsion
+      P.vy=Math.max(P.vy,10);
+      toast('🚀 Propulsion !',500);
+    }
+  };
+  window.startDive=function(e){if(e&&e.preventDefault)e.preventDefault();_pressingDown=true;if(P.state==='surface'){P.state='diving';P.vy=-7;P.y=WATER_SURFACE-1.2;P.onGround=false;}};
+  window.stopDive=function(e){if(e&&e.preventDefault)e.preventDefault();_pressingDown=false;};
+  window.setSprint=function(v,e){if(e&&e.preventDefault)e.preventDefault();sprint=!!v;};
+
+  var jB=document.getElementById('joy'),jN=document.getElementById('jnub'),JMAX=38;
+  function jUp(cx,cy){var r=jB.getBoundingClientRect(),dx=cx-(r.left+r.width/2),dy=cy-(r.top+r.height/2),d=Math.sqrt(dx*dx+dy*dy);if(d>JMAX){dx=dx/d*JMAX;dy=dy/d*JMAX;}jN.style.transform='translate(calc(-50% + '+dx+'px),calc(-50% + '+dy+'px))';jLX=d>4?dx/JMAX:0;jLY=d>4?dy/JMAX:0;}
+  function jRst(){jN.style.transform='translate(-50%,-50%)';jLX=0;jLY=0;}
+  jB.addEventListener('touchstart',function(e){e.preventDefault();jid=e.changedTouches[0].identifier;jUp(e.changedTouches[0].clientX,e.changedTouches[0].clientY);},{passive:false});
+  jB.addEventListener('touchmove',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===jid)jUp(e.changedTouches[i].clientX,e.changedTouches[i].clientY);},{passive:false});
+  jB.addEventListener('touchend',jRst,{passive:true});
+  jB.addEventListener('mousedown',function(e){jUp(e.clientX,e.clientY);});
+  window.addEventListener('mouseup',jRst);
+
+  var rjB=document.getElementById('rjoy'),rjN=document.getElementById('rjnub'),RJMAX=32;
+  function rjUp(cx,cy){var r=rjB.getBoundingClientRect(),dx=cx-(r.left+r.width/2),dy=cy-(r.top+r.height/2),d=Math.sqrt(dx*dx+dy*dy);if(d>RJMAX){dx=dx/d*RJMAX;dy=dy/d*RJMAX;}rjN.style.transform='translate(calc(-50% + '+dx+'px),calc(-50% + '+dy+'px))';rjLX=d>4?dx/RJMAX:0;rjLY=d>4?dy/RJMAX:0;}
+  function rjRst(){rjN.style.transform='translate(-50%,-50%)';rjLX=0;rjLY=0;}
+  rjB.addEventListener('touchstart',function(e){e.preventDefault();rjid=e.changedTouches[0].identifier;rjUp(e.changedTouches[0].clientX,e.changedTouches[0].clientY);},{passive:false});
+  rjB.addEventListener('touchmove',function(e){e.preventDefault();for(var i=0;i<e.changedTouches.length;i++)if(e.changedTouches[i].identifier===rjid)rjUp(e.changedTouches[i].clientX,e.changedTouches[i].clientY);},{passive:false});
+  rjB.addEventListener('touchend',rjRst,{passive:true});
+
+  function drawMap(){var canvas=document.getElementById('mapCanvas');if(!canvas)return;var ctx=canvas.getContext('2d');var W=248,H=248,scale=0.28,cx=W/2,cy=H/2;ctx.fillStyle='#1a5a7a';ctx.fillRect(0,0,W,H);[{x:0,z:0,r:80,col:'#4a8a1a',label:'PRINCIPALE'},{x:-165,z:-140,r:48,col:'#3a7a14',label:'VOLCANIQUE'},{x:165,z:-125,r:48,col:'#5aaa28',label:'TROPICALE'},{x:0,z:-220,r:48,col:'#3a9a18',label:'NORD'},{x:-220,z:50,r:48,col:'#6aaa30',label:'OUEST'},{x:220,z:80,r:48,col:'#4a8a22',label:'EST'},{x:100,z:-300,r:48,col:'#3a7a18',label:'LOINTAINE'},{x:-300,z:-200,r:48,col:'#5a9a25',label:'CACHEE'}].forEach(function(il){var ix=cx+il.x*scale,iy=cy+il.z*scale,ir=Math.max(3,il.r*scale);ctx.beginPath();ctx.arc(ix,iy,ir,0,Math.PI*2);ctx.fillStyle=il.col;ctx.fill();ctx.fillStyle='#fff';ctx.font='7px Georgia';ctx.textAlign='center';ctx.fillText(il.label,ix,iy-ir-2);});var px=cx+P.x*scale,py=cy+P.z*scale;ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fillStyle='#ff4466';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+Math.sin(P.yaw)*10,py+Math.cos(P.yaw)*10);ctx.strokeStyle='#ffcc00';ctx.lineWidth=2;ctx.stroke();document.getElementById('mapLabel').textContent='📍 '+(P.state==='diving'?'SOUS L\'EAU':'SUR L\'ILE')+' — X:'+P.x.toFixed(0)+' Z:'+P.z.toFixed(0);}
+
+  document.querySelector('a-scene').addEventListener('click',function(e){var el=e.target;if(el&&el.id==='totem-plaque'){var mo=document.getElementById('map-overlay');mo.style.display='flex';drawMap();}});
+
+  window.INVENTAIRE=[];
+  window._gunEquipped=false;
+  window._gunEl3D=null;
+
+  window.equipGun=function(){
+    try{
+      window._gunEquipped=true;
+      if(!window._gunEl3D){
+        var g=document.createElement('a-entity');
+        g.id='gun-on-stitch';
+        g.setAttribute('position','0.45 0.5 0.2');
+        g.setAttribute('rotation','0 180 -15');
+        var gm=document.createElement('a-gltf-model');
+        gm.setAttribute('src','#watergunGLB');
+        gm.setAttribute('scale','1.5 1.5 1.5');
+        g.appendChild(gm);
+        // Attacher au stitch-ROOT (plus stable que stitch-model)
+        var sr=document.getElementById('stitch-root');
+        if(!sr){toast('Erreur pistolet',1000);return;}
+        sr.appendChild(g);
+        window._gunEl3D=g;
+      } else {
+        window._gunEl3D.setAttribute('visible','true');
+      }
+      var gb=document.getElementById('gun-btns');
+      if(gb)gb.style.display='flex';
+      toast('🔫 Pistolet en main !',1500);
+    }catch(err){console.warn('equipGun err',err);}
+  };
+
+  // ── POOL JET D'EAU puissant ──
+  window._waterPool=[];
+  (function(){
+    var W2=document.getElementById('world');
+    for(var pi=0;pi<30;pi++){
+      var drop=document.createElement('a-cylinder');
+      drop.setAttribute('radius','0.12');
+      drop.setAttribute('height','1.2');
+      drop.setAttribute('position','0 -999 0');
+      drop.setAttribute('material','color:#00ccff;transparent:true;opacity:0.95;emissive:#0066ff;emissiveIntensity:1.2;roughness:0;metalness:0.1');
+      drop.setAttribute('visible','false');
+      W2.appendChild(drop);
+      window._waterPool.push(drop);
+    }
+  })();
+
+  window.fireGun=function(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    if(!window._gunEquipped)return;
+    playSound('sndSplash');
+
+    var fwdX=Math.sin(P.yaw);
+    var fwdZ=Math.cos(P.yaw);
+    var speed=45; // jet très puissant
+
+    var startX=P.x+fwdX*0.8+fwdZ*0.3;
+    var startY=P.y+0.55;
+    var startZ=P.z+fwdZ*0.8-fwdX*0.3;
+
+    // 20 segments très rapprochés = jet continu puissant
+    for(var ji=0;ji<20;ji++){
+      (function(idx,delay){
+        setTimeout(function(){
+          var drop=null;
+          for(var pi2=0;pi2<window._waterPool.length;pi2++){
+            if(!window._waterPool[pi2]._active){drop=window._waterPool[pi2];break;}
+          }
+          if(!drop)return;
+          drop._active=true;
+          drop.setAttribute('visible','true');
+
+          var sx=startX,sy=startY,sz=startZ;
+          var dvx=fwdX*speed;
+          var dvz=fwdZ*speed;
+          var dvy=1.0;
+          var life=0,_t=performance.now(),splashMade=false;
+
+          function animJet(){
+            if(!drop._active)return;
+            var n=performance.now();
+            var ddt=Math.min((n-_t)/1000,0.04);_t=n;
+            life+=ddt;
+            dvy-=11*ddt;
+            sx+=dvx*ddt;sy+=dvy*ddt;sz+=dvz*ddt;
+
+            var ry=Math.atan2(dvx,dvz)*180/Math.PI;
+            var rx=-Math.atan2(dvy,Math.sqrt(dvx*dvx+dvz*dvz))*180/Math.PI;
+            drop.setAttribute('rotation',rx.toFixed(1)+' '+ry.toFixed(1)+' 0');
+            drop.setAttribute('position',sx.toFixed(2)+' '+sy.toFixed(2)+' '+sz.toFixed(2));
+
+            if(!splashMade&&sy<=0.08){
+              splashMade=true;
+              var W3=document.getElementById('world');
+              var sp=document.createElement('a-circle');
+              sp.setAttribute('radius','0.08');
+              sp.setAttribute('rotation','-90 0 0');
+              sp.setAttribute('position',sx.toFixed(2)+' 0.03 '+sz.toFixed(2));
+              sp.setAttribute('material','color:#00ccff;transparent:true;opacity:0.9;emissive:#0088ff;emissiveIntensity:0.6');
+              W3.appendChild(sp);
+              sp.setAttribute('animation','property:scale;from:1 1 1;to:7 7 7;dur:450;easing:easeOutQuad');
+              sp.setAttribute('animation__op','property:material.opacity;from:0.9;to:0;dur:550;easing:easeOutQuad');
+              setTimeout(function(){try{W3.removeChild(sp);}catch(ex){}},600);
+            }
+
+            if(life<1.1&&sy>-0.5){
+              requestAnimationFrame(animJet);
+            }else{
+              drop._active=false;
+              drop.setAttribute('visible','false');
+              drop.setAttribute('position','0 -999 0');
+              drop.setAttribute('rotation','0 0 0');
+            }
+          }
+          requestAnimationFrame(animJet);
+        },delay);
+      })(ji,ji*15); // 15ms = quasi-continu
+    }
+  }; // fin fireGun
+
+  window.holsterGun=function(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    window._gunEquipped=false;
+    if(window._gunEl3D)window._gunEl3D.setAttribute('visible','false');
+    document.getElementById('gun-btns').style.display='none';
+    toast('🎒 Pistolet rangé dans le sac !',1500);
+  };
+
+  window.openBackpack=function(){
+    var ov=document.getElementById('backpack-overlay');
+    var items=document.getElementById('backpack-items');
+    ov.style.display='flex';
+    if(window.INVENTAIRE.length===0){
+      items.innerHTML='<div class="bp-item"><span>📭</span><div>Sac vide — accomplis la mission de Nani !</div></div>';
+    } else {
+      items.innerHTML=window.INVENTAIRE.map(function(it){
+        var extra='';
+        if(it.action==='equip'){
+          var btnTxt=window._gunEquipped?'✅ Déjà équipé':'🔫 Équiper';
+          extra='<br><button onclick="window.equipGun();window.closeBackpack();" style="margin-top:5px;background:#ff6600;border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:10px;cursor:pointer">'+btnTxt+'</button>';
+        }
+        return '<div class="bp-item"><span>'+it.icon+'</span><div><b>'+it.name+'</b><br><small style="color:#aaa">'+it.desc+'</small>'+extra+'</div></div>';
+      }).join('');
+    }
+  };
+  window.closeBackpack=function(){document.getElementById('backpack-overlay').style.display='none';};
+
+  window.addEventListener('keydown',function(e){KY[e.code]=1;if(e.code==='Space'){e.preventDefault();window.doJump();}if(e.code==='KeyE'){window.pickupNearby();}if(e.code==='ShiftLeft')sprint=true;});
+  window.addEventListener('keyup',function(e){KY[e.code]=0;if(e.code==='ShiftLeft')sprint=false;});
+}
+</script>
+
+</body>
+</html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Stitch Island</title>
