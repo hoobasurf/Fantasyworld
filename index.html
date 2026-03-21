@@ -403,31 +403,34 @@ function initGame(){
     [[18,48],[30,35],[45,15],[-18,50],[-32,33],[-46,12],[22,-22],[38,-10],[-24,-20],[-40,-8],[12,20],[-14,18],[28,5],[-30,5]].forEach(function(p,i){mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],rotation:'0 '+(i*26)+' 0',scale:'5 5 5',shadow:'cast:true'});});
     for(var vi=0;vi<40;vi++){var va=vi/40*Math.PI*2,vr=4+Math.random()*35;var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;makeGiantHibiscus(vx,GY+0.01,vz2);if(vi%2===0)makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);if(vi%3===0)makeFern(vx-1,GY+0.01,vz2-1);if(vi%4===0)makeMonstera(vx+1,GY+0.01,vz2-2);}
     for(var vi=0;vi<50;vi++){var va=Math.random()*Math.PI*2,vr=3+Math.random()*40;makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);}
-    // ── MAISON DE LILO à la place de la cabane ──
+    // ── MAISON DE LILO ──
     var houseEl=document.createElement('a-gltf-model');
     houseEl.setAttribute('src','#houseGLB');
     houseEl.setAttribute('position','-8 0 -6');
     houseEl.setAttribute('rotation','0 140 0');
-    houseEl.setAttribute('scale','1 1 1');
+    houseEl.setAttribute('scale','12 12 12'); // scale initial visible
     houseEl.setAttribute('shadow','cast:true');
     houseEl.addEventListener('model-loaded',function(){
-      var mesh=houseEl.getObject3D('mesh');
-      if(!mesh)return;
-      var box=new AFRAME.THREE.Box3().setFromObject(mesh);
-      var h=box.max.y-box.min.y;
-      var sc=1;
-      if(h>0.01){sc=8/h;houseEl.setAttribute('scale',sc+' '+sc+' '+sc);}
-      // Corriger la position Y pour que la base du modèle touche le sol (Y=0)
-      // On recalcule après scale
-      var mesh2=houseEl.getObject3D('mesh');
-      var box2=new AFRAME.THREE.Box3().setFromObject(mesh2);
-      var yOffset=-box2.min.y; // décaler vers le haut pour poser au sol
-      houseEl.setAttribute('position','-8 '+yOffset.toFixed(3)+' -6');
+      try{
+        var mesh=houseEl.getObject3D('mesh');
+        if(!mesh){return;}
+        var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+        var h=box.max.y-box.min.y;
+        var w=Math.max(box.max.x-box.min.x,box.max.z-box.min.z);
+        var biggest=Math.max(h,w,0.01);
+        var sc=12/biggest; // viser ~12 unités de large
+        houseEl.setAttribute('scale',sc+' '+sc+' '+sc);
+        // Corriger Y pour poser au sol : min.y après scale
+        var yOff=sc*Math.max(0,-box.min.y);
+        houseEl.setAttribute('position','-8 '+yOff.toFixed(2)+' -6');
+        toast('🏠 Maison de Lilo !',2000);
+      }catch(err){console.warn('house err',err);}
     });
     houseEl.addEventListener('model-error',function(){
-      // Fallback géométrique maison hawaïenne
-      mk('box',{width:'8',height:'5',depth:'6',position:'-8 2.5 -6',material:'color:#d4a060;roughness:.85',shadow:'cast:true'});
-      mk('cone',{'radius-bottom':'5.5','radius-top':'.2',height:'4',position:'-8 7 -6',material:'color:#8b3a0a;roughness:.9',shadow:'cast:true'});
+      // Fallback visible si GLB échoue
+      mk('box',{width:'9',height:'5',depth:'7',position:'-8 2.5 -6',material:'color:#d4a060;roughness:.85',shadow:'cast:true'});
+      mk('cone',{'radius-bottom':'6','radius-top':'.3',height:'4',position:'-8 7.5 -6',material:'color:#8b3a0a;roughness:.9',shadow:'cast:true'});
+      mk('box',{width:'2',height:'3',depth:'.5',position:'-8 1.5 -2.8',material:'color:#6a3a10;roughness:.9'});
     });
     W.appendChild(houseEl);
     setTimeout(function(){
@@ -957,12 +960,26 @@ function initGame(){
   window.equipGun=function(){
     window._gunEquipped=true;
     if(!window._gunEl3D){
-      var g=document.createElement('a-gltf-model');
-      g.setAttribute('src','#watergunGLB');
-      g.setAttribute('scale','1.0 1.0 1.0');
-      g.setAttribute('position','0.45 0.55 0.2');
-      g.setAttribute('rotation','0 -45 -15');
+      var g=document.createElement('a-entity');
       g.id='gun-on-stitch';
+      // Position dans l'espace local du stitch-model : bras droit tendu vers l'avant
+      g.setAttribute('position','0.38 0.42 -0.25');
+      g.setAttribute('rotation','-15 -80 10');
+      var gm=document.createElement('a-gltf-model');
+      gm.setAttribute('src','#watergunGLB');
+      gm.setAttribute('scale','2 2 2');
+      // Auto-scale après chargement
+      gm.addEventListener('model-loaded',function(){
+        try{
+          var mesh=gm.getObject3D('mesh');if(!mesh)return;
+          var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+          var biggest=Math.max(box.max.x-box.min.x,box.max.y-box.min.y,box.max.z-box.min.z,0.01);
+          var sc=0.9/biggest; // pistolet ~0.9 unité
+          gm.setAttribute('scale',sc+' '+sc+' '+sc);
+        }catch(e){}
+      });
+      g.appendChild(gm);
+      // Attacher au stitch-model (suit les animations des os)
       var stitchModelEl=document.getElementById('stitch-model');
       stitchModelEl.appendChild(g);
       window._gunEl3D=g;
@@ -970,17 +987,81 @@ function initGame(){
       window._gunEl3D.setAttribute('visible','true');
     }
     document.getElementById('gun-btns').style.display='flex';
-    toast('🔫 Pistolet équipé ! Appuie TIR pour arroser !',2000);
+    toast('🔫 Pistolet en main ! TIR pour arroser !',2000);
   };
+
+  // ── POOL DE GOUTTELETTES EAU pré-crées dans la scène ──
+  window._waterPool=[];
+  window._waterActive=[];
+  (function(){
+    var W2=document.getElementById('world');
+    for(var pi=0;pi<20;pi++){
+      var drop=document.createElement('a-sphere');
+      drop.setAttribute('radius','0.22');
+      drop.setAttribute('position','0 -999 0');
+      drop.setAttribute('material','color:#44aaff;transparent:true;opacity:0.88;emissive:#1166ff;emissiveIntensity:0.6');
+      drop.setAttribute('visible','false');
+      W2.appendChild(drop);
+      window._waterPool.push(drop);
+    }
+  })();
 
   window.fireGun=function(e){
     if(e&&e.preventDefault)e.preventDefault();
     if(!window._gunEquipped)return;
     playSound('sndSplash');
-    var ov=document.getElementById('water-overlay');
-    ov.style.background='rgba(0,150,255,0.4)';
-    setTimeout(function(){ov.style.background='';},200);
-    toast('💦 Splaaash !',600);
+    toast('💦 Splash !',400);
+
+    var angle=P.yaw;
+    var speed=22;
+    var vxBase=-Math.sin(angle)*speed;
+    var vzBase=-Math.cos(angle)*speed;
+
+    // Lancer 8 gouttelettes en éventail
+    for(var ji=0;ji<8;ji++){
+      (function(idx,delay){
+        setTimeout(function(){
+          // Trouver une sphère libre dans le pool
+          var drop=null;
+          for(var pi=0;pi<window._waterPool.length;pi++){
+            if(!window._waterPool[pi]._active){drop=window._waterPool[pi];break;}
+          }
+          if(!drop)return;
+          drop._active=true;
+          drop.setAttribute('visible','true');
+
+          // Position de départ : bout du pistolet
+          var sx=P.x - Math.sin(P.yaw)*0.8 + Math.cos(P.yaw)*0.4;
+          var sy=P.y + 0.5;
+          var sz=P.z - Math.cos(P.yaw)*0.8 - Math.sin(P.yaw)*0.4;
+
+          var spread=0.18;
+          var dvx=vxBase+(Math.random()-0.5)*speed*spread;
+          var dvz=vzBase+(Math.random()-0.5)*speed*spread;
+          var dvy=2.5+(Math.random()-0.5)*1.5;
+          var life=0;
+          var _t=performance.now();
+
+          function animDrop(){
+            if(!drop._active)return;
+            var now2=performance.now();
+            var ddt=Math.min((now2-_t)/1000,0.05);_t=now2;
+            life+=ddt;
+            dvy-=16*ddt;
+            sx+=dvx*ddt; sy+=dvy*ddt; sz+=dvz*ddt;
+            drop.setAttribute('position',sx.toFixed(2)+' '+sy.toFixed(2)+' '+sz.toFixed(2));
+            if(life<1.5&&sy>-0.5){
+              requestAnimationFrame(animDrop);
+            } else {
+              drop._active=false;
+              drop.setAttribute('visible','false');
+              drop.setAttribute('position','0 -999 0');
+            }
+          }
+          requestAnimationFrame(animDrop);
+        },delay);
+      })(ji, ji*40);
+    }
   };
 
   window.holsterGun=function(e){
