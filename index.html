@@ -400,34 +400,45 @@ function initGame(){
     var plaque=mk('box',{id:'totem-plaque',width:'2.4',height:'1.2',depth:'.14',position:'0 1.5 -11.2',material:'color:#f5dfa0;roughness:.5',shadow:'cast:true'});
     plaque.setAttribute('class','clickable');
     mk('cone',{'radius-bottom':'.18','radius-top':'.01',height:'.4',position:'0 2.1 -12',material:'color:#cc2200'});
-    [[18,48],[30,35],[45,15],[-18,50],[-32,33],[-46,12],[22,-22],[38,-10],[-24,-20],[-40,-8],[12,20],[-14,18],[28,5],[-30,5]].forEach(function(p,i){mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],rotation:'0 '+(i*26)+' 0',scale:'5 5 5',shadow:'cast:true'});});
+    // Collision totem
+    addWall(0,-12,1.2,3,0);
+    // Collisions palmiers
+    [[18,48],[30,35],[45,15],[-18,50],[-32,33],[-46,12],[22,-22],[38,-10],[-24,-20],[-40,-8],[12,20],[-14,18],[28,5],[-30,5]].forEach(function(p,i){
+      mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],rotation:'0 '+(i*26)+' 0',scale:'5 5 5',shadow:'cast:true'});
+      addWall(p[0],p[1],0.6,8,0);
+    });
+    // Collision montagne
+    addWall(0,-20,10,25,0);
+    // Collision maison de Lilo
+    addWall(-8,-6,5,10,0);
+    // Collision rochers déco
+    [[-35,50],[-42,28],[38,45],[44,24],[-18,65],[20,68]].forEach(function(p){addWall(p[0],p[1],2.5,3,0);});
     for(var vi=0;vi<40;vi++){var va=vi/40*Math.PI*2,vr=4+Math.random()*35;var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;makeGiantHibiscus(vx,GY+0.01,vz2);if(vi%2===0)makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);if(vi%3===0)makeFern(vx-1,GY+0.01,vz2-1);if(vi%4===0)makeMonstera(vx+1,GY+0.01,vz2-2);}
     for(var vi=0;vi<50;vi++){var va=Math.random()*Math.PI*2,vr=3+Math.random()*40;makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);}
-    // ── MAISON DE LILO ──
     var houseEl=document.createElement('a-gltf-model');
     houseEl.setAttribute('src','#houseGLB');
     houseEl.setAttribute('position','-8 0 -6');
     houseEl.setAttribute('rotation','0 140 0');
-    houseEl.setAttribute('scale','12 12 12'); // scale initial visible
+    houseEl.setAttribute('scale','1 1 1');
     houseEl.setAttribute('shadow','cast:true');
     houseEl.addEventListener('model-loaded',function(){
       try{
-        var mesh=houseEl.getObject3D('mesh');
-        if(!mesh){return;}
+        var mesh=houseEl.getObject3D('mesh');if(!mesh)return;
+        // Mesurer à scale 1 pour avoir les dimensions natives
         var box=new AFRAME.THREE.Box3().setFromObject(mesh);
         var h=box.max.y-box.min.y;
-        var w=Math.max(box.max.x-box.min.x,box.max.z-box.min.z);
+        var w=Math.max(box.max.x-box.min.x,box.max.z-box.min.z,0.01);
         var biggest=Math.max(h,w,0.01);
-        var sc=12/biggest; // viser ~12 unités de large
+        var sc=12/biggest;
+        // Le min.y natif : une fois scalé, le bas sera à sc*box.min.y
+        // Pour poser au sol : Y = -sc*box.min.y
+        var groundY=(-box.min.y*sc);
         houseEl.setAttribute('scale',sc+' '+sc+' '+sc);
-        // Corriger Y pour poser au sol : min.y après scale
-        var yOff=sc*Math.max(0,-box.min.y);
-        houseEl.setAttribute('position','-8 '+yOff.toFixed(2)+' -6');
+        houseEl.setAttribute('position','-8 '+groundY.toFixed(3)+' -6');
         toast('🏠 Maison de Lilo !',2000);
       }catch(err){console.warn('house err',err);}
     });
     houseEl.addEventListener('model-error',function(){
-      // Fallback visible si GLB échoue
       mk('box',{width:'9',height:'5',depth:'7',position:'-8 2.5 -6',material:'color:#d4a060;roughness:.85',shadow:'cast:true'});
       mk('cone',{'radius-bottom':'6','radius-top':'.3',height:'4',position:'-8 7.5 -6',material:'color:#8b3a0a;roughness:.9',shadow:'cast:true'});
       mk('box',{width:'2',height:'3',depth:'.5',position:'-8 1.5 -2.8',material:'color:#6a3a10;roughness:.9'});
@@ -962,9 +973,9 @@ function initGame(){
     if(!window._gunEl3D){
       var g=document.createElement('a-entity');
       g.id='gun-on-stitch';
-      // Position dans l'espace local du stitch-model : bras droit tendu vers l'avant
-      g.setAttribute('position','0.38 0.42 -0.25');
-      g.setAttribute('rotation','-15 -80 10');
+      // Position bras droit DEVANT Stitch — Z négatif = devant dans l'espace local A-Frame
+      g.setAttribute('position','0.4 0.45 0.3');
+      g.setAttribute('rotation','0 90 -15');
       var gm=document.createElement('a-gltf-model');
       gm.setAttribute('src','#watergunGLB');
       gm.setAttribute('scale','2 2 2');
@@ -1010,18 +1021,22 @@ function initGame(){
     if(e&&e.preventDefault)e.preventDefault();
     if(!window._gunEquipped)return;
     playSound('sndSplash');
-    toast('💦 Splash !',400);
 
-    var angle=P.yaw;
-    var speed=22;
-    var vxBase=-Math.sin(angle)*speed;
-    var vzBase=-Math.cos(angle)*speed;
+    // Direction DEVANT Stitch — yaw=Math.PI signifie face à -Z dans A-Frame
+    // Stitch regarde dans la direction (-sin(yaw), 0, -cos(yaw))
+    var fwdX = Math.sin(P.yaw);   // direction avant X
+    var fwdZ = Math.cos(P.yaw);   // direction avant Z
+    var speed=24;
 
-    // Lancer 8 gouttelettes en éventail
-    for(var ji=0;ji<8;ji++){
+    // Départ du bout du pistolet : DEVANT et à droite de Stitch
+    var startX = P.x + fwdX*0.6 + fwdZ*0.35;
+    var startY = P.y + 0.5;
+    var startZ = P.z + fwdZ*0.6 - fwdX*0.35;
+
+    // Lancer 10 gouttelettes en jet
+    for(var ji=0;ji<10;ji++){
       (function(idx,delay){
         setTimeout(function(){
-          // Trouver une sphère libre dans le pool
           var drop=null;
           for(var pi=0;pi<window._waterPool.length;pi++){
             if(!window._waterPool[pi]._active){drop=window._waterPool[pi];break;}
@@ -1030,27 +1045,40 @@ function initGame(){
           drop._active=true;
           drop.setAttribute('visible','true');
 
-          // Position de départ : bout du pistolet
-          var sx=P.x - Math.sin(P.yaw)*0.8 + Math.cos(P.yaw)*0.4;
-          var sy=P.y + 0.5;
-          var sz=P.z - Math.cos(P.yaw)*0.8 - Math.sin(P.yaw)*0.4;
-
-          var spread=0.18;
-          var dvx=vxBase+(Math.random()-0.5)*speed*spread;
-          var dvz=vzBase+(Math.random()-0.5)*speed*spread;
-          var dvy=2.5+(Math.random()-0.5)*1.5;
+          var spread=0.12;
+          var sx=startX, sy=startY, sz=startZ;
+          var dvx=fwdX*speed + (Math.random()-0.5)*speed*spread;
+          var dvz=fwdZ*speed + (Math.random()-0.5)*speed*spread;
+          var dvy=1.5+(Math.random()-0.5)*1.0;
           var life=0;
           var _t=performance.now();
+          // Traces d'éclaboussures au sol
+          var splashMade=false;
 
           function animDrop(){
             if(!drop._active)return;
             var now2=performance.now();
             var ddt=Math.min((now2-_t)/1000,0.05);_t=now2;
             life+=ddt;
-            dvy-=16*ddt;
+            dvy-=14*ddt;
             sx+=dvx*ddt; sy+=dvy*ddt; sz+=dvz*ddt;
             drop.setAttribute('position',sx.toFixed(2)+' '+sy.toFixed(2)+' '+sz.toFixed(2));
-            if(life<1.5&&sy>-0.5){
+            // Trace d'eau au sol quand la goutte touche
+            if(!splashMade && sy<=0.05){
+              splashMade=true;
+              var splash=document.createElement('a-circle');
+              splash.setAttribute('radius',(0.3+Math.random()*0.4).toFixed(2));
+              splash.setAttribute('rotation','-90 0 0');
+              splash.setAttribute('position',sx.toFixed(2)+' 0.02 '+sz.toFixed(2));
+              splash.setAttribute('material','color:#66ccff;transparent:true;opacity:0.7');
+              document.getElementById('world').appendChild(splash);
+              // Disparaître en 2s
+              setTimeout(function(){
+                splash.setAttribute('animation','property:material.opacity;from:0.7;to:0;dur:1500;easing:easeOutQuad');
+                setTimeout(function(){try{document.getElementById('world').removeChild(splash);}catch(ex){}},1600);
+              },200);
+            }
+            if(life<1.8&&sy>-0.5){
               requestAnimationFrame(animDrop);
             } else {
               drop._active=false;
@@ -1060,7 +1088,7 @@ function initGame(){
           }
           requestAnimationFrame(animDrop);
         },delay);
-      })(ji, ji*40);
+      })(ji, ji*35);
     }
   };
 
