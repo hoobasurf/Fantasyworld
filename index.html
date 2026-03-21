@@ -76,8 +76,8 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <!-- Ambiance plage -->
   <audio id="sndBeach"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Beach.wav" loop preload="auto"></audio>
   <!-- Bandes son (2 musiques ukulele en rotation) -->
-  <audio id="bgMusic1" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="auto"></audio>
-  <audio id="bgMusic2" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="auto"></audio>
+  <audio id="bgMusic1" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="none"></audio>
+  <audio id="bgMusic2" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="none"></audio>
   <audio id="bgMusic3" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/peterkolaiko-tropical-happy-ukulele-231561.mp3" preload="none"></audio>
 </a-assets>
 
@@ -170,7 +170,17 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 
 <script>
 // ── AUDIO ──
-function playSound(id){try{var s=document.getElementById(id);if(s){s.currentTime=0;s.volume=0.7;s.play().catch(function(){});}}catch(e){}}
+function playSound(id){
+  try{
+    var s=document.getElementById(id);
+    if(!s)return;
+    s.currentTime=0;
+    // Voix Stitch à fond, sons de jeu normaux
+    var voixStitch=['sndHiii','sndOhana','sndGobble','sndLaugh','sndAaaah','sndEek','sndNah','sndWin'];
+    s.volume=voixStitch.indexOf(id)>=0?1.0:0.75;
+    s.play().catch(function(){});
+  }catch(e){}
+}
 // ── SYSTÈME AUDIO ZONES ──
 var _audioState='none'; // 'island' | 'water'
 
@@ -197,16 +207,18 @@ function updateAudioZone(state){
     try{if(beach&&!beach.paused)beach.pause();}catch(e){}
     if(water){
       water.loop=true;
-      water.volume=0.35;
-      water.currentTime=0;
-      var p=water.play();
-      if(p&&p.catch)p.catch(function(e){console.log('water music err:',e);});
+      water.volume=0.20;
+      // Charger si pas encore fait (preload=none)
+      if(water.readyState===0){water.load();}
+      var tryPlay=function(){water.currentTime=0;var p=water.play();if(p&&p.catch)p.catch(function(){});};
+      if(water.readyState>=2){tryPlay();}
+      else{water.addEventListener('canplay',tryPlay,{once:true});}
     }
   } else if(!isUnderwater && _audioState!=='island'){
     _audioState='island';
     try{if(water&&!water.paused)water.pause();}catch(e){}
-    if(beach){beach.loop=true;beach.volume=0.18;var p1=beach.play();if(p1&&p1.catch)p1.catch(function(){});}
-    if(isle){isle.loop=true;isle.volume=0.32;var p2=isle.play();if(p2&&p2.catch)p2.catch(function(){});}
+    if(beach){beach.loop=true;beach.volume=0.10;var p1=beach.play();if(p1&&p1.catch)p1.catch(function(){});}
+    if(isle){isle.loop=true;isle.volume=0.18;if(isle.readyState===0){isle.load();}var tryIsle=function(){var p2=isle.play();if(p2&&p2.catch)p2.catch(function(){});};if(isle.readyState>=2){tryIsle();}else{isle.addEventListener('canplay',tryIsle,{once:true});}}
   }
 }
 
@@ -304,18 +316,30 @@ function initGame(){
           if(!mesh)return;
           var box=new AFRAME.THREE.Box3().setFromObject(mesh);
           var h=box.max.y-box.min.y;
+          var finalSc=1;
           if(h>0.05){
             var ratios={
-              'nani':2.2,'jumba':3.0,
+              'nani':2.8,'jumba':3.0,
               'lilo':1.9,
               'pleakley':2.3,
               'angel':1.4,'lilo2':1.9,'hamster':0.9,
               'cobra':2.6,'councilwoman':2.1,'wendy':2.2
             };
             var ratio=ratios[c.id]||1.2;
-            var sc=(1.4*ratio)/h;
-            el.setAttribute('scale',sc+' '+sc+' '+sc);
+            finalSc=(1.4*ratio)/h;
+            el.setAttribute('scale',finalSc+' '+finalSc+' '+finalSc);
           }
+          // ── OMBRE collée sous les pieds du NPC ──
+          var shadow=document.createElement('a-circle');
+          shadow.setAttribute('radius',(0.35*Math.min(finalSc*h/1.4,1.2)).toFixed(2));
+          shadow.setAttribute('rotation','-90 0 0');
+          shadow.setAttribute('segments','8');
+          shadow.setAttribute('material','color:#000000;transparent:true;opacity:0.35');
+          // Position Y légèrement au-dessus du sol (0.02) relative au parent world
+          var pos=c.pos.split(' ');
+          var px=parseFloat(pos[0]),pz=parseFloat(pos[2]);
+          shadow.setAttribute('position',px.toFixed(2)+' 0.02 '+pz.toFixed(2));
+          document.getElementById('world').appendChild(shadow);
           // Lancer l'animation intégrée du GLB (idle/walk)
           var obj=el.getObject3D('mesh');
           var clips=[],cur=obj;
@@ -456,6 +480,7 @@ function initGame(){
 
   function loop(){
     requestAnimationFrame(loop);
+    try{
     var now=performance.now(),dt=Math.min((now-lastT)/1000,.05);lastT=now;waveT+=dt;
     // Update animations NPC
     if(window._npcMixers){for(var mi=0;mi<window._npcMixers.length;mi++){window._npcMixers[mi].update(dt);}}
@@ -482,7 +507,8 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
       else{P.onGround=false;if(P.state==='ground')P.state='air';}
     }else if(P.state==='surface'){
       P.swimBob+=dt;P.breath=Math.min(MAX_BREATH,P.breath+BREATH_GAIN*dt);P.y=WATER_SURFACE+Math.sin(P.swimBob*2.2)*.06;P.vy=0;P.onGround=true;
-      if(gy!==null&&gy>WATER_SURFACE+0.2&&gy<WATER_SURFACE+0.8){P.state='ground';P.y=gy+P.yOff;P.vy=0;}
+      // Remonter sur l'île : sol doit être franchement au-dessus de l'eau
+      if(gy!==null&&gy>WATER_SURFACE+0.4){P.state='ground';P.y=gy+P.yOff;P.vy=0;}
       if(_pressingDown||jLY>0.4){P.state='diving';P.vy=-7;P.y=WATER_SURFACE-1.2;P.onGround=false;}
     }else if(P.state==='diving'){
       var swimSpd=sprint?18:11;if(moveMag>.05){var mx2=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);var mz2=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));var mn2=Math.sqrt(mx2*mx2+mz2*mz2);P.vx=mx2/mn2*swimSpd;P.vz=mz2/mn2*swimSpd;}
@@ -491,17 +517,15 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
       if(P.y>=WATER_SURFACE-.05){P.y=WATER_SURFACE;P.state='surface';P.vy=0;toast('Stitch reprend son souffle ! 💨',2000);}
       if(P.y<-11.5){P.y=-11.5;P.vy=0;}
       if(P.breath<=0){P.vy=7;P.state='surface';P.breath=25;toast('Plus d air ! 😮‍💨',2000);}
-      // Remonter sur l'île seulement si on est vraiment à la surface ET proche du bord
-      if(gy!==null&&gy>WATER_SURFACE+0.3&&P.y>=WATER_SURFACE-0.2&&P.vy>=0){
-        P.y=gy+P.yOff;P.vy=0;P.state='ground';
-      }
+      // Depuis diving → passer par surface d'abord, jamais directement ground
+      // (la transition ground se fait dans le bloc surface ci-dessus)
     }
     var PRAD=1.0,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
     for(var wi=0;wi<walls.length;wi++){var w=walls[wi];if(P.y-P.yOff>w.y0+w.h)continue;var inX=nx+PRAD>w.x1&&nx-PRAD<w.x2,inZ=nz+PRAD>w.z1&&nz-PRAD<w.z2;var curX=P.x+PRAD>w.x1&&P.x-PRAD<w.x2,curZ=P.z+PRAD>w.z1&&P.z-PRAD<w.z2;if(inX&&inZ){if(!curX){P.vx=0;nx=P.x;}if(!curZ){P.vz=0;nz=P.z;}}}
     P.x=nx;P.z=nz;
     var stEl=document.getElementById('stitch-root');
     var shadowEl=document.getElementById('stitch-shadow');
-    if(shadowEl){if(P.state==='ground'||P.state==='air'){var feetY=P.y-P.yOff;var gy2=getGroundY(P.x,P.z);var shadowY=gy2!==null?(gy2+0.02):(feetY+0.02);var ha=Math.max(0,feetY-(shadowY-0.02));var sc=Math.max(0.2,0.85-ha*0.04);var op=Math.max(0,0.46-ha*0.04);shadowEl.setAttribute('position',P.x.toFixed(2)+' '+shadowY.toFixed(3)+' '+P.z.toFixed(2));shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.62).toFixed(3));shadowEl.setAttribute('material','color:#000000;transparent:true;opacity:'+op.toFixed(3));shadowEl.setAttribute('visible','true');}else{shadowEl.setAttribute('visible','false');}}
+    if(shadowEl){if(P.state==='ground'||P.state==='air'){var feetY=P.y-P.yOff;var gy2=getGroundY(P.x,P.z);var shadowY=gy2!==null?(gy2+0.01):(feetY+0.01);var ha=Math.max(0,feetY-(shadowY-0.02));var sc=Math.max(0.2,0.85-ha*0.04);var op=Math.max(0,0.46-ha*0.04);shadowEl.setAttribute('position',P.x.toFixed(2)+' '+shadowY.toFixed(3)+' '+P.z.toFixed(2));shadowEl.setAttribute('scale',sc.toFixed(3)+' 1 '+(sc*0.62).toFixed(3));shadowEl.setAttribute('material','color:#000000;transparent:true;opacity:'+op.toFixed(3));shadowEl.setAttribute('visible','true');}else{shadowEl.setAttribute('visible','false');}}
     var tiltX=0;if(P.state==='diving'){tiltX=Math.max(-20,Math.min(15,P.vy*4));}else if(P.state==='surface'){tiltX=5;}
     stEl.setAttribute('position',P.x.toFixed(2)+' '+P.y.toFixed(2)+' '+P.z.toFixed(2));
     stEl.setAttribute('rotation',tiltX.toFixed(1)+' '+(P.yaw*180/Math.PI).toFixed(1)+' 0');
@@ -563,7 +587,15 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
       }
       document.getElementById('mission-timer').textContent=Math.ceil(window.MISSION.timer);
       document.getElementById('mission-count').textContent=window.MISSION.count;
-      if(window.pineappleEls){window.pineappleEls.forEach(function(pa){if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;var pp=pa.getAttribute('position');if(!pp)return;var dx=P.x-parseFloat(pp.x||pp.split(' ')[0]);var dz=P.z-parseFloat(pp.z||pp.split(' ')[2]);if(dx*dx+dz*dz<3.5&&window.MISSION.count<20){pa.setAttribute('visible','false');window.MISSION.count++;playSound('sndCollect');if(window.MISSION.count===10){setTimeout(function(){playSound('sndLaugh');},300);}toast('🍦 +1 glace !',600);if(window.MISSION.count>=20){window.MISSION.timer=0.01;}}});}
+      if(window.pineappleEls){window.pineappleEls.forEach(function(pa){if(!pa.getAttribute('visible')||pa.getAttribute('visible')==='false')return;var pp=pa.getAttribute('position');if(!pp)return;var dx=P.x-parseFloat(pp.x||pp.split(' ')[0]);var dz=P.z-parseFloat(pp.z||pp.split(' ')[2]);var dist2d=dx*dx+dz*dz;
+          if(dist2d<9&&window.MISSION.count<20){  // rayon 3 unités (9=3²)
+            pa.setAttribute('visible','false');
+            window.MISSION.count++;
+            playSound('sndCollect');
+            if(window.MISSION.count===10){setTimeout(function(){playSound('sndLaugh');},300);}
+            toast('🍦 +1 glace ! ('+window.MISSION.count+'/20)',800);
+            if(window.MISSION.count>=20){window.MISSION.timer=0.01;}
+          }});}
     }
     // Mettre à jour la musique selon la zone
     updateAudioZone(P.state);
@@ -584,6 +616,7 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     if(P.state==='diving')zone='🤿 SOUS L EAU';
     else if(P.state!=='surface'){zone='🏖 PLAGE';for(var ii=0;ii<islandDefs.length;ii++){var id2=islandDefs[ii];if(Math.sqrt((P.x-id2.cx)*(P.x-id2.cx)+(P.z-id2.cz)*(P.z-id2.cz))<62){zone='🏝 '+id2.label;break;}}}
     document.getElementById('zL').textContent=zone;
+    }catch(e){console.warn('Loop err:',e);}
   }
   loop();
 
