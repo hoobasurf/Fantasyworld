@@ -79,12 +79,12 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 
 <a-entity id="world"></a-entity>
 
-<a-entity id="stitch-root" position="0 2 50">
+<a-entity id="stitch-root" position="0 2 5">
   <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false"></a-gltf-model>
 </a-entity>
-<a-circle id="stitch-shadow" radius="0.6" rotation="-90 0 0" position="0 0.03 50" segments="8" material="color:#000000;transparent:true;opacity:0.0"></a-circle>
+<a-circle id="stitch-shadow" radius="0.6" rotation="-90 0 0" position="0 0.03 5" segments="8" material="color:#000000;transparent:true;opacity:0.0"></a-circle>
 
-<a-entity id="cam-rig" position="0 5 57">
+<a-entity id="cam-rig" position="0 5 12">
   <a-camera id="mainCam" look-controls="enabled:false" wasd-controls="enabled:false" fov="62" near=".01" far="700"></a-camera>
 </a-entity>
 </a-scene>
@@ -198,7 +198,9 @@ function initGame(){
         {id:'jumba',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/jumba.glb',pos:'-12 0 10',rot:'0 45 0',sc:'1.6'},
         {id:'lilo',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb',pos:'8 0 20',rot:'0 200 0',sc:'1.5'},
         {id:'pleakley',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb',pos:'-5 0 15',rot:'0 90 0',sc:'1.6'},
-        {id:'angel',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_an...glb',pos:'15 0 -5',rot:'0 270 0',sc:'1.5'}
+        {id:'angel',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_and_stitch__oc_.glb',pos:'15 0 -5',rot:'0 270 0',sc:'1.5'},
+        {id:'lilo2',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lilo_et_scrump.glb',pos:'-8 0 25',rot:'0 150 0',sc:'1.5'},
+        {id:'hamster',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hamsterwiel_from_lilo_and_stitch.glb',pos:'20 0 30',rot:'0 220 0',sc:'1.4'}
       ];
       chars.forEach(function(c){
         var el=document.createElement('a-gltf-model');
@@ -207,6 +209,16 @@ function initGame(){
         el.setAttribute('rotation',c.rot);
         el.setAttribute('scale',c.sc+' '+c.sc+' '+c.sc);
         el.setAttribute('shadow','cast:true');
+        document.getElementById('world').appendChild(el);
+      });
+      // Rochers GLB sur la plage
+      var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
+      [['Rock.glb','38 0 30',3],['Rock.glb','-35 0 25',3.5],['Rocks.glb','42 0 -10',4],
+       ['Rock%202.glb','-40 0 -5',3.5],['Rock%20Large.glb','50 0 20',5],
+       ['Rock%20Large%202.glb','-48 0 15',4.5]].forEach(function(r){
+        var el=document.createElement('a-gltf-model');
+        el.setAttribute('src',BASE+r[0]);el.setAttribute('position',r[1]);
+        el.setAttribute('scale',r[2]+' '+r[2]+' '+r[2]);
         document.getElementById('world').appendChild(el);
       });
     },3000);
@@ -309,7 +321,7 @@ function initGame(){
   }
 
   var WATER_SURFACE=-0.3,WATER_ENTER_THRESHOLD=0.25,MAX_BREATH=100,BREATH_LOSE=4,BREATH_GAIN=30;
-  var P={x:0,y:2.5,z:50,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,state:'ground',breath:MAX_BREATH,swimBob:0};
+  var P={x:0,y:2.5,z:5,vx:0,vy:0,vz:0,yaw:Math.PI,onGround:false,yOff:.7,state:'ground',breath:MAX_BREATH,swimBob:0};
   var CAM={yaw:Math.PI,pitch:.22,dist:6.5};
   var jLX=0,jLY=0,jid=-1,rjLX=0,rjLY=0,rjid=-1,KY={},sprint=false;
   var waveT=0,lastT=performance.now(),windLeaves=null,fishEls=null,_pressingDown=false;
