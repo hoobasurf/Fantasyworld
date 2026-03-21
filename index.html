@@ -36,6 +36,9 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 #mission-hud{position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(0,0,0,.8);border:1.5px solid #ffcc00;border-radius:12px;padding:6px 14px;font-family:Georgia,serif;font-size:11px;color:#ffcc00;text-align:center;pointer-events:none}
 #dive-hint{position:fixed;bottom:148px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(0,10,30,.88);border:1.5px solid rgba(0,220,200,.5);border-radius:12px;padding:5px 14px;color:#88ffee;font-size:10px;font-family:Georgia,serif;display:none;white-space:nowrap;pointer-events:none}
 #backpack-btn{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:30;background:rgba(0,8,22,.82);border:2px solid #ffaa00;border-radius:20px;padding:5px 14px;font-family:Georgia,serif;font-size:10px;color:#ffaa00;cursor:pointer;touch-action:manipulation}
+#gun-btns{position:fixed;bottom:110px;right:14px;z-index:30;display:none;flex-direction:column;gap:8px;align-items:flex-end}
+#btn-fire{background:rgba(255,50,50,.92);border:2px solid #ff6666;border-radius:50%;width:58px;height:58px;color:#fff;font-size:9px;font-family:Georgia,serif;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#btn-holster{background:rgba(0,8,22,.82);border:2px solid #aaa;border-radius:50%;width:48px;height:48px;color:#aaa;font-size:8px;font-family:Georgia,serif;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center}
 #backpack-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.8);align-items:center;justify-content:center;}
 #backpack-box{background:linear-gradient(135deg,#2a1a0a,#3a2a10);border:3px solid #ffaa00;border-radius:20px;padding:20px;width:280px;max-height:70vh;overflow-y:auto;position:relative;}
 #backpack-box h2{color:#ffaa00;font-family:Georgia,serif;font-size:15px;text-align:center;margin-bottom:14px}
@@ -59,22 +62,22 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <!-- Sons du jeu - fichiers réels GitHub -->
   <audio id="sndCollect" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Ice%20cream.wav" preload="auto"></audio>
   <audio id="sndSplash"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Splash.wav" preload="auto"></audio>
-  <audio id="sndWin"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Aloha!.mp3" preload="auto"></audio>
+  <audio id="sndWin"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Aloha!.mp3" preload="none"></audio>
   <audio id="sndStepSand" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20sand.wav" preload="auto"></audio>
   <audio id="sndStepWater" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Footstep%20water.wav" preload="auto"></audio>
   <!-- Voix de Stitch -->
-  <audio id="sndEek"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GROWLING)%20Eek!.mp3" preload="auto"></audio>
-  <audio id="sndLaugh"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20LAUGHING%20-%20Sound%20Effect).mp3" preload="auto"></audio>
-  <audio id="sndOhana"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Ohana.mp3" preload="auto"></audio>
-  <audio id="sndHiii"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Stitch%20hiiii.mp3" preload="auto"></audio>
-  <audio id="sndAaaah"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Aaaah.mp3" preload="auto"></audio>
-  <audio id="sndNah"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Nah!.mp3" preload="auto"></audio>
-  <audio id="sndGobble"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GOBBLING%20-%20Sound%20Effect).mp3" preload="auto"></audio>
+  <audio id="sndEek"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GROWLING)%20Eek!.mp3" preload="none"></audio>
+  <audio id="sndLaugh"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20LAUGHING%20-%20Sound%20Effect).mp3" preload="none"></audio>
+  <audio id="sndOhana"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Ohana.mp3" preload="none"></audio>
+  <audio id="sndHiii"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Stitch%20hiiii.mp3" preload="none"></audio>
+  <audio id="sndAaaah"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Aaaah.mp3" preload="none"></audio>
+  <audio id="sndNah"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Nah!.mp3" preload="none"></audio>
+  <audio id="sndGobble"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_(STITCH%20GOBBLING%20-%20Sound%20Effect).mp3" preload="none"></audio>
   <!-- Ambiance plage -->
-  <audio id="sndBeach"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Beach.wav" loop preload="auto"></audio>
+  <audio id="sndBeach"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Beach.wav" loop preload="none"></audio>
   <!-- Bandes son (2 musiques ukulele en rotation) -->
-  <audio id="bgMusic1" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="auto"></audio>
-  <audio id="bgMusic2" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="auto"></audio>
+  <audio id="bgMusic1" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sonican-uplifting-ukulele-happy-loop-336369.mp3" preload="none"></audio>
+  <audio id="bgMusic2" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/the_mountain-positive-acoustic-ukulele-153642.mp3" preload="none"></audio>
 </a-assets>
 
 <a-sky id="skyEl" color="#4ab8f0"></a-sky>
@@ -134,6 +137,10 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
   <div class="btn" style="border-color:#ffd700;color:#ffd700" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">⚡<br>RUN</div>
 </div>
 <div id="toast"></div>
+<div id="gun-btns">
+  <div id="btn-fire" ontouchstart="fireGun(event)" onclick="fireGun()">💦<br>TIR</div>
+  <div id="btn-holster" ontouchstart="holsterGun(event)" onclick="holsterGun()">🎒<br>RANGER</div>
+</div>
 <button id="backpack-btn" onclick="openBackpack()">🎒 Sac à dos</button>
 <div id="backpack-overlay" onclick="if(event.target===this)closeBackpack()">
   <div id="backpack-box">
@@ -296,8 +303,10 @@ function initGame(){
           var h=box.max.y-box.min.y;
           if(h>0.05){
             var ratios={
-              'nani':1.8,'jumba':2.5,'lilo':0.75,'pleakley':1.9,
-              'angel':1.0,'lilo2':0.75,'hamster':0.65,
+              'nani':1.8,'jumba':2.5,
+              'lilo':1.25,    // un peu plus grand que Stitch, moitié moins que Nani
+              'pleakley':1.9,
+              'angel':1.0,'lilo2':1.25,'hamster':0.65,
               'cobra':2.2,'councilwoman':1.7,'wendy':1.8
             };
             var ratio=ratios[c.id]||1.2;
@@ -492,15 +501,13 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     stEl.setAttribute('rotation',tiltX.toFixed(1)+' '+(P.yaw*180/Math.PI).toFixed(1)+' 0');
     animateStitch(dt,moveMag,P.state,sprint);
     // Son de pas
+    if(!window._stepT)window._stepT=0;
+    window._stepT+=dt;
     if(P.state==='ground'&&moveMag>.05){
-      if(!window._stepT)window._stepT=0;
-      window._stepT+=dt;
       if(window._stepT>0.38){window._stepT=0;playSound('sndStepSand');}
-    } else if(P.state==='surface'&&moveMag>.05){
-      if(!window._stepT)window._stepT=0;
-      window._stepT+=dt;
-      if(window._stepT>0.4){window._stepT=0;playSound('sndStepWater');}
-    }
+    } else if((P.state==='surface'||P.state==='diving')&&moveMag>.05){
+      if(window._stepT>0.45){window._stepT=0;playSound('sndStepWater');}
+    } else {window._stepT=0;}
     if(Math.abs(rjLX)>.04)CAM.yaw+=rjLX*dt*2.5;else if(moveMag>.1){var tc=P.yaw+Math.PI,cd=tc-CAM.yaw;while(cd>Math.PI)cd-=Math.PI*2;while(cd<-Math.PI)cd+=Math.PI*2;CAM.yaw+=cd*dt*2.2;}
     if(Math.abs(rjLY)>.04)CAM.pitch=Math.max(.06,Math.min(.75,CAM.pitch+rjLY*dt*1.5));
     var camDist=CAM.dist,camPitch=CAM.pitch;
@@ -552,6 +559,15 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     }
     // Mettre à jour la musique selon la zone
     updateAudioZone(P.state);
+    // Voix Stitch aléatoires automatiques
+    if(!window._voiceT)window._voiceT=0;
+    window._voiceT+=dt;
+    var voiceInterval=P.state==='ground'&&moveMag>.05?18:25;
+    if(window._voiceT>voiceInterval){
+      window._voiceT=0;
+      var autoVoices=['sndHiii','sndOhana','sndGobble','sndLaugh','sndAaaah','sndEek'];
+      playSound(autoVoices[Math.floor(Math.random()*autoVoices.length)]);
+    }
     var zone='🌊 OCEAN';
     if(P.state==='diving')zone='🤿 SOUS L EAU';
     else if(P.state!=='surface'){zone='🏖 PLAGE';for(var ii=0;ii<islandDefs.length;ii++){var id2=islandDefs[ii];if(Math.sqrt((P.x-id2.cx)*(P.x-id2.cx)+(P.z-id2.cz)*(P.z-id2.cz))<62){zone='🏝 '+id2.label;break;}}}
@@ -595,6 +611,51 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
   document.querySelector('a-scene').addEventListener('click',function(e){var el=e.target;if(el&&el.id==='totem-plaque'){var mo=document.getElementById('map-overlay');mo.style.display='flex';drawMap();}});
   // ── SAC À DOS ──
   window.INVENTAIRE=[];
+  window._gunEquipped=false;
+  window._gunEl3D=null;  // l'entité 3D du pistolet dans la scène
+
+  // Équiper le pistolet : Stitch le tient à la main
+  window.equipGun=function(){
+    if(window._gunEquipped)return;
+    window._gunEquipped=true;
+    // Créer/montrer le pistolet attaché à Stitch
+    if(!window._gunEl3D){
+      var g=document.createElement('a-gltf-model');
+      g.setAttribute('src','#watergunGLB');
+      g.setAttribute('scale','1.2 1.2 1.2');
+      g.setAttribute('position','0.5 0.8 0.3');  // à la main droite
+      g.setAttribute('rotation','0 -30 -20');
+      g.id='gun-on-stitch';
+      document.getElementById('stitch-root').appendChild(g);
+      window._gunEl3D=g;
+    } else {
+      window._gunEl3D.setAttribute('visible','true');
+    }
+    // Afficher boutons TIR + RANGER
+    document.getElementById('gun-btns').style.display='flex';
+    toast('🔫 Pistolet équipé ! Appuie TIR pour arroser !',2000);
+  };
+
+  // Tir avec le pistolet
+  window.fireGun=function(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    if(!window._gunEquipped)return;
+    playSound('sndSplash');
+    // Effet visuel : flash bleu
+    var ov=document.getElementById('water-overlay');
+    ov.style.background='rgba(0,150,255,0.4)';
+    setTimeout(function(){ov.style.background='';},200);
+    toast('💦 Splaaash !',600);
+  };
+
+  // Ranger le pistolet dans le sac
+  window.holsterGun=function(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    window._gunEquipped=false;
+    if(window._gunEl3D)window._gunEl3D.setAttribute('visible','false');
+    document.getElementById('gun-btns').style.display='none';
+    toast('🎒 Pistolet rangé dans le sac !',1500);
+  };
   window.openBackpack=function(){
     var ov=document.getElementById('backpack-overlay');
     var items=document.getElementById('backpack-items');
@@ -602,7 +663,14 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     if(window.INVENTAIRE.length===0){
       items.innerHTML='<div class="bp-item"><span>📭</span><div>Sac vide - rien encore !</div></div>';
     } else {
-      items.innerHTML=window.INVENTAIRE.map(function(it){return '<div class="bp-item"><span>'+it.icon+'</span><div><b>'+it.name+'</b><br><small style="color:#aaa">'+it.desc+'</small></div></div>';}).join('');
+      items.innerHTML=window.INVENTAIRE.map(function(it,idx){
+        var extra='';
+        if(it.action==='equip'){
+          var btnTxt=window._gunEquipped?'✅ Équipé':'🔫 Équiper';
+          extra='<br><button onclick="window.equipGun();window.closeBackpack();" style="margin-top:5px;background:#ff6600;border:none;color:#fff;padding:4px 10px;border-radius:8px;font-size:10px;cursor:pointer">'+btnTxt+'</button>';
+        }
+        return '<div class="bp-item"><span>'+it.icon+'</span><div><b>'+it.name+'</b><br><small style="color:#aaa">'+it.desc+'</small>'+extra+'</div></div>';
+      }).join('');
     }
   };
   window.closeBackpack=function(){document.getElementById('backpack-overlay').style.display='none';};
