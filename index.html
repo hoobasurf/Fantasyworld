@@ -93,13 +93,14 @@ device-orientation-permission-ui="enabled:false">
 <a-assets timeout="8000">
 <a-asset-item id="stitchGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/stitch2.glb"              crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="palmGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Palm%20Tree.glb"           crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
-<a-asset-item id="hutGLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Hut.glb"                   crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="houseGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/House.glb"                   crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="coralGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Coral%20Reef%20Set.glb"    crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="turtleGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Turtle.glb"               crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="mountainGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Mountain.glb"             crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="cartGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Street%20Vendor%20Cart.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="sundaeGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb"               crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb"           crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="spaceshipGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hover_ship.vehicle_from_lilo_and_stitch.%202.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <audio id="sndCollect"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Ice%20cream.wav"          preload="none"></audio>
 <audio id="sndSplash"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Splash.wav"               preload="none"></audio>
 <audio id="sndWin"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Aloha!.mp3"         preload="none"></audio>
@@ -203,12 +204,12 @@ device-orientation-permission-ui="enabled:false">
 </div>
 <div id="mission-truck">
   <h3>🍦 Chariot de Glaces</h3>
-  <p id="mission-text">Aloha ! Je suis Nani, la vendeuse de glaces.<br>Mes <b>20 glaces</b> se sont éparpillées partout !<br>Aide-moi à les récupérer en <b>90 secondes</b><br>et je te donne un <b>🔫 pistolet à eau</b> !</p>
+  <p id="mission-text">Aloha ! Je suis Nani, la vendeuse de glaces.<br>Mes <b>30 glaces</b> se sont éparpillées partout !<br>Aide-moi à les récupérer en <b>90 secondes</b><br>et je te donne un <b>🔫 pistolet à eau</b> !</p>
   <button onclick="startMission()">✅ Oui, j'aide !</button>
   <button class="decline" onclick="closeMissionDialog()">❌ Non merci</button>
 </div>
 <div id="mission-hud">
-  🍦 <span id="mission-count">0</span>/20 glaces &nbsp;|&nbsp; ⏱ <span id="mission-timer">90</span>s
+  🍦 <span id="mission-count">0</span>/30 glaces &nbsp;|&nbsp; ⏱ <span id="mission-timer">90</span>s
 </div>
 <div id="map-overlay" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);align-items:center;justify-content:center;">
   <div style="background:#1a2a1a;border:2px solid #7de8ff;border-radius:16px;padding:16px;width:280px;position:relative;">
@@ -349,6 +350,46 @@ function initGame(){
     mtnEl.setAttribute('src','#mountainGLB');mtnEl.setAttribute('position','0 0 -20');mtnEl.setAttribute('scale','5 5 5');mtnEl.setAttribute('shadow','cast:true');
     mtnEl.addEventListener('model-error',function(){mk('cone',{'radius-bottom':'18','radius-top':'1',height:'20',position:'0 10 -20',material:'color:#7a6a50;roughness:.92',shadow:'cast:true'});mk('cone',{'radius-bottom':'12','radius-top':'1',height:'14',position:'-8 7 -25',material:'color:#6a5a40;roughness:.93',shadow:'cast:true'});mk('sphere',{radius:'10',position:'0 14 -20',scale:'1.2 .5 1',material:'color:#3a7a14;roughness:.85',shadow:'cast:true'});});
     W.appendChild(mtnEl);
+
+    // ── VAISSEAU DE STITCH sur le sommet de la montagne ──
+    setTimeout(function(){
+      var shipEl=document.createElement('a-gltf-model');
+      shipEl.setAttribute('src','#spaceshipGLB');
+      shipEl.setAttribute('position','0 28 -20');
+      shipEl.setAttribute('rotation','0 30 0');
+      shipEl.setAttribute('scale','1 1 1');
+      shipEl.setAttribute('shadow','cast:true');
+      shipEl.setAttribute('animation','property:position;from:0 28 -20;to:0 31 -20;loop:true;dur:2800;dir:alternate;easing:easeInOutSine');
+      shipEl.setAttribute('animation__rot2','property:rotation;from:0 25 -3;to:0 35 3;loop:true;dur:3500;dir:alternate;easing:easeInOutSine');
+      shipEl.addEventListener('model-loaded',function(){
+        var mesh=shipEl.getObject3D('mesh');
+        if(!mesh)return;
+        var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+        var h=box.max.y-box.min.y;
+        var w=box.max.x-box.min.x;
+        var biggest=Math.max(h,w);
+        if(biggest>0.01){var sc=10/biggest;shipEl.setAttribute('scale',sc+' '+sc+' '+sc);}
+        // Lumière rouge sous le vaisseau
+        var l=document.createElement('a-light');
+        l.setAttribute('type','point');l.setAttribute('color','#ff2200');
+        l.setAttribute('intensity','2.0');l.setAttribute('distance','30');
+        l.setAttribute('position','0 0 0');
+        shipEl.appendChild(l);
+        toast('🚀 Vaisseau de Stitch sur la montagne !',3000);
+      });
+      shipEl.addEventListener('model-error',function(){
+        // Fallback géométrique rouge si le GLB échoue
+        var ship=document.createElement('a-entity');
+        ship.setAttribute('position','0 28 -20');
+        ship.setAttribute('animation','property:position;from:0 28 -20;to:0 30.5 -20;loop:true;dur:2800;dir:alternate;easing:easeInOutSine');
+        var body=document.createElement('a-sphere');body.setAttribute('radius','3.8');body.setAttribute('scale','1 0.36 1');body.setAttribute('material','color:#cc1111;roughness:.25;metalness:.55;emissive:#550000;emissiveIntensity:.3');ship.appendChild(body);
+        var dome=document.createElement('a-sphere');dome.setAttribute('radius','1.7');dome.setAttribute('position','0 1.1 0');dome.setAttribute('scale','1 0.85 1');dome.setAttribute('material','color:#88ddff;transparent:true;opacity:.6;roughness:.05;metalness:.7');ship.appendChild(dome);
+        var ring=document.createElement('a-torus');ring.setAttribute('radius','4.1');ring.setAttribute('radius-tubular','.14');ring.setAttribute('rotation','90 0 0');ring.setAttribute('material','color:#ffcc00;emissive:#ffaa00;emissiveIntensity:1.0');ship.appendChild(ring);
+        var sl=document.createElement('a-light');sl.setAttribute('type','point');sl.setAttribute('color','#ff2200');sl.setAttribute('intensity','1.5');sl.setAttribute('distance','25');ship.appendChild(sl);
+        W.appendChild(ship);
+      });
+      W.appendChild(shipEl);
+    },1500);
     mk('cylinder',{radius:'.15',height:'1.4',position:'0 1.2 -12',material:'color:#8a5010;roughness:.9',shadow:'cast:true'});
     mk('cylinder',{radius:'1.0',height:'.12',position:'0 2.0 -12',material:'color:#c8a060;roughness:.7',shadow:'cast:true'});
     var plaque=mk('box',{id:'totem-plaque',width:'2.4',height:'1.2',depth:'.14',position:'0 1.5 -11.2',material:'color:#f5dfa0;roughness:.5',shadow:'cast:true'});
@@ -357,7 +398,26 @@ function initGame(){
     [[18,48],[30,35],[45,15],[-18,50],[-32,33],[-46,12],[22,-22],[38,-10],[-24,-20],[-40,-8],[12,20],[-14,18],[28,5],[-30,5]].forEach(function(p,i){mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],rotation:'0 '+(i*26)+' 0',scale:'5 5 5',shadow:'cast:true'});});
     for(var vi=0;vi<40;vi++){var va=vi/40*Math.PI*2,vr=4+Math.random()*35;var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;makeGiantHibiscus(vx,GY+0.01,vz2);if(vi%2===0)makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);if(vi%3===0)makeFern(vx-1,GY+0.01,vz2-1);if(vi%4===0)makeMonstera(vx+1,GY+0.01,vz2-2);}
     for(var vi=0;vi<50;vi++){var va=Math.random()*Math.PI*2,vr=3+Math.random()*40;makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);}
-    mk('gltf-model',{src:'#hutGLB',position:'-8 0 -6',rotation:'0 140 0',scale:'12 12 12',shadow:'cast:true'});
+    // ── MAISON DE LILO à la place de la cabane ──
+    var houseEl=document.createElement('a-gltf-model');
+    houseEl.setAttribute('src','#houseGLB');
+    houseEl.setAttribute('position','-8 0 -6');
+    houseEl.setAttribute('rotation','0 140 0');
+    houseEl.setAttribute('scale','1 1 1');
+    houseEl.setAttribute('shadow','cast:true');
+    houseEl.addEventListener('model-loaded',function(){
+      var mesh=houseEl.getObject3D('mesh');
+      if(!mesh)return;
+      var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+      var h=box.max.y-box.min.y;
+      if(h>0.01){var sc=8/h;houseEl.setAttribute('scale',sc+' '+sc+' '+sc);}
+    });
+    houseEl.addEventListener('model-error',function(){
+      // Fallback géométrique maison hawaïenne
+      mk('box',{width:'8',height:'5',depth:'6',position:'-8 2.5 -6',material:'color:#d4a060;roughness:.85',shadow:'cast:true'});
+      mk('cone',{'radius-bottom':'5.5','radius-top':'.2',height:'4',position:'-8 7 -6',material:'color:#8b3a0a;roughness:.9',shadow:'cast:true'});
+    });
+    W.appendChild(houseEl);
     setTimeout(function(){
       var chars=[
         {id:'nani',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb',pos:'26 0 52',rot:'0 180 0',sc:'0.35'},
@@ -429,22 +489,28 @@ function initGame(){
     mk('sphere',{radius:'.16',position:'0 1.08 0',material:'color:#f4a060;roughness:.8'},nani);
     mk('sphere',{radius:'.16',scale:'1 .55 1',position:'0 1.15 0',material:'color:#3a1a00;roughness:.9'},nani);
 
-    // Créer exactement 20 glaces — positions fixes garanties dans un rayon de 60
+    // Créer exactement 30 glaces — 3 anneaux de 10 positions garanties dans l'île
     window.pineappleEls=[];
-    for(var i=0;i<20;i++){
-      // Grille en spirale pour garantir 20 positions sans filtrage
-      var a=(i/20)*Math.PI*2+(i*0.37);
-      var r=6+(i%4)*12; // rayons 6, 18, 30, 42 — tous dans l'île (rayon 80)
-      var px=Math.sin(a)*r,pz=Math.cos(a)*r;
-      var pa=document.createElement('a-gltf-model');
-      pa.setAttribute('src','#sundaeGLB');
-      pa.setAttribute('position',px.toFixed(1)+' 0.8 '+pz.toFixed(1));
-      pa.setAttribute('scale','3.5 3.5 3.5');
-      pa.setAttribute('visible','false');
-      pa.classList.add('pineapple');
-      W.appendChild(pa);
-      window.pineappleEls.push(pa);
-    }
+    var RINGS=[
+      {count:8, r:10},   // anneau intérieur
+      {count:12, r:28},  // anneau moyen
+      {count:10, r:48},  // anneau extérieur
+    ];
+    var idx=0;
+    RINGS.forEach(function(ring){
+      for(var i=0;i<ring.count;i++,idx++){
+        var a=(i/ring.count)*Math.PI*2+(idx*0.22);
+        var px=Math.sin(a)*ring.r, pz=Math.cos(a)*ring.r;
+        var pa=document.createElement('a-gltf-model');
+        pa.setAttribute('src','#sundaeGLB');
+        pa.setAttribute('position',px.toFixed(1)+' 0.8 '+pz.toFixed(1));
+        pa.setAttribute('scale','3.5 3.5 3.5');
+        pa.setAttribute('visible','false');
+        pa.classList.add('pineapple');
+        W.appendChild(pa);
+        window.pineappleEls.push(pa);
+      }
+    });
 
     // ── PISTOLET COLLECTIBLE dans le monde ──
     // Posé près du chariot, collectible en s'approchant
@@ -452,7 +518,7 @@ function initGame(){
     window._gunPickable=false;  // devient true après mission gagnée
     window._gunCollected=false; // devient true une fois ramassé
 
-    window.MISSION={active:false,count:0,timer:90,done:false,total:20};
+    window.MISSION={active:false,count:0,timer:90,done:false,total:30};
     window._pauloDialogShown=false;
   }
 
@@ -691,7 +757,7 @@ function initGame(){
             if(window.MISSION.count===10)setTimeout(function(){playSound('sndLaugh');},300);
             toast('🍦 +1 glace ! ('+window.MISSION.count+'/20)',800);
             // ── BUG 2 : dès 20 glaces → cacher toutes les restantes immédiatement ──
-            if(window.MISSION.count>=20){
+            if(window.MISSION.count>=30){
               window.pineappleEls.forEach(function(p2){
                 if(!p2._collected){p2._collected=true;p2.setAttribute('visible','false');}
               });
@@ -704,8 +770,8 @@ function initGame(){
       if(window.MISSION.timer<=0){
         window.MISSION.active=false;
         document.getElementById('mission-hud').style.display='none';
-        var won=window.MISSION.count>=20;
-        var txt=won?'🎉 Bravo ! Tu as ramassé toutes les glaces !<br><b>Nani te remercie ! Va chercher ton cadeau !</b>':'😢 Temps écoulé ! '+window.MISSION.count+'/20 glaces récupérées.';
+        var won=window.MISSION.count>=30;
+        var txt=won?'🎉 Bravo ! Tu as ramassé toutes les glaces !<br><b>Nani te remercie ! Va chercher ton cadeau !</b>':'😢 Temps écoulé ! '+window.MISSION.count+'/30 glaces récupérées.';
         document.getElementById('mission-text').innerHTML=txt;
         var md=document.getElementById('mission-truck');
         if(won){
