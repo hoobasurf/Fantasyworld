@@ -323,7 +323,7 @@ function initGame(){
   }
 
   function makePalm(x,gy,z,h,lx,lz,par){par=par||W;addWall(x,z,0.35,h*0.5,gy);var NS=14,pts=[];for(var i=0;i<=NS;i++){var t=i/NS;pts.push({x:x+lx*h*t*t*.7,y:gy+h*t,z:z+lz*h*t*t*.7});}for(var i=0;i<NS;i++){var p0=pts[i],p1=pts[i+1];var dx=p1.x-p0.x,dy=p1.y-p0.y,dz=p1.z-p0.z,len=Math.sqrt(dx*dx+dy*dy+dz*dz);var tr=i/NS;var rB=Math.max(.022,.055-tr*.032),rT=Math.max(.018,.042-tr*.022);mk('cylinder',{'radius-bottom':rB.toFixed(4),'radius-top':rT.toFixed(4),height:len.toFixed(3),'segments-radial':'6',position:((p0.x+p1.x)/2).toFixed(2)+' '+((p0.y+p1.y)/2).toFixed(2)+' '+((p0.z+p1.z)/2).toFixed(2),rotation:segRot(dx,dy,dz),material:'roughness:.93;color:'+(i%2===0?'#c8a86a':'#b09050'),shadow:'cast:true'},par);}var top=pts[NS];var nL=11+Math.floor(Math.random()*4);for(var i=0;i<nL;i++){var ang=i/nL*Math.PI*2+(Math.random()-.5)*.2;var ll=5+Math.random()*4;var lw=.5+Math.random()*.35;var droop=.5+Math.random()*.48;var fx=top.x+Math.sin(ang)*.28,fy=top.y+.06,fz=top.z+Math.cos(ang)*.28;var brx=(-droop*64).toFixed(1),bry=((ang+Math.PI/2)*180/Math.PI).toFixed(1);var gv=.62+Math.random()*.3;var lf=mk('plane',{width:ll.toFixed(2),height:lw.toFixed(2),position:fx.toFixed(2)+' '+fy.toFixed(2)+' '+fz.toFixed(2),rotation:brx+' '+bry+' 0',material:'roughness:.65;side:double;color:#'+Math.floor(gv*.38*255).toString(16).padStart(2,'0')+Math.floor(gv*255).toString(16).padStart(2,'0')+Math.floor(gv*.2*255).toString(16).padStart(2,'0'),shadow:'cast:true'},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx=brx;lf.dataset.bry=bry;lf.classList.add('wind-leaf');}}
-  function makeTallGrass(x,gy,z,par){par=par||W;var nc=6+Math.floor(Math.random()*5);for(var i=0;i<nc;i++){var ang=i/nc*Math.PI*2+Math.random()*.5,r=.05+Math.random()*.3,sh=0.8+Math.random()*1.4;var gcol=['#4a9a20','#3a8a18','#5aaa28','#2a7a10','#6aba30'][Math.floor(Math.random()*5)];var lf=mk('plane',{width:(.06+Math.random()*.05).toFixed(3),height:sh.toFixed(2),position:(x+Math.sin(ang)*r).toFixed(2)+' '+(gy+sh*.5).toFixed(2)+' '+(z+Math.cos(ang)*r).toFixed(2),rotation:'0 '+(ang*180/Math.PI).toFixed(1)+' '+(Math.random()*15-7).toFixed(1),material:'roughness:.8;side:double;color:'+gcol},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='0';lf.dataset.bry=(ang*180/Math.PI).toFixed(1);lf.classList.add('wind-leaf');}}
+  function makeTallGrass(x,gy,z,par){par=par||W;var nc=3+Math.floor(Math.random()*3);for(var i=0;i<nc;i++){var ang=i/nc*Math.PI*2+Math.random()*.5,r=.05+Math.random()*.2,sh=0.4+Math.random()*0.7;var gcol=['#4a9a20','#3a8a18','#5aaa28','#2a7a10','#6aba30'][Math.floor(Math.random()*5)];var lf=mk('plane',{width:(.05+Math.random()*.04).toFixed(3),height:sh.toFixed(2),position:(x+Math.sin(ang)*r).toFixed(2)+' '+(gy+sh*.5).toFixed(2)+' '+(z+Math.cos(ang)*r).toFixed(2),rotation:'0 '+(ang*180/Math.PI).toFixed(1)+' '+(Math.random()*10-5).toFixed(1),material:'roughness:.8;side:double;color:'+gcol},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='0';lf.dataset.bry=(ang*180/Math.PI).toFixed(1);lf.classList.add('wind-leaf');}}
   function makeBirdOfParadise(x,gy,z,par){par=par||W;var sh=2.2+Math.random()*1.2;for(var i=0;i<4;i++){var ang=i/4*Math.PI*2+.2,r=.15+Math.random()*.2,stemH=sh+Math.random()*.5;mk('cylinder',{radius:'.012',height:stemH.toFixed(2),position:(x+Math.sin(ang)*r).toFixed(2)+' '+(gy+stemH*.5).toFixed(2)+' '+(z+Math.cos(ang)*r).toFixed(2),material:'color:#1a6010;roughness:.88'},par);var lf=mk('plane',{width:(.38+Math.random()*.18).toFixed(2),height:(1.4+Math.random()*.6).toFixed(2),position:(x+Math.sin(ang)*r).toFixed(2)+' '+(gy+stemH+.5).toFixed(2)+' '+(z+Math.cos(ang)*r).toFixed(2),rotation:(-20-Math.random()*15).toFixed(1)+' '+(ang*180/Math.PI).toFixed(1)+' 0',material:'roughness:.7;side:double;color:#1a7a22'},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='-22';lf.dataset.bry=(ang*180/Math.PI).toFixed(1);lf.classList.add('wind-leaf');}mk('plane',{width:'.22',height:'.6',position:x+' '+(gy+sh+.6)+' '+z,rotation:'-15 0 0',material:'side:double;color:#1a5a08'},par);for(var pi=0;pi<3;pi++){mk('plane',{width:'.18',height:'.38',position:(x+.06+pi*.04)+' '+(gy+sh+.75+pi*.06)+' '+z,rotation:(-30-pi*12)+' '+(pi*25)+' '+(pi*15),material:'side:double;color:#ff6600;roughness:.5'},par);}for(var pi=0;pi<2;pi++){mk('plane',{width:'.14',height:'.32',position:(x-.04)+' '+(gy+sh+.82+pi*.08)+' '+z,rotation:(-20+pi*10)+' '+(pi*30+15)+' -12',material:'side:double;color:#4422cc;roughness:.5'},par);}}
   function makeGiantHibiscus(x,gy,z,par){par=par||W;var cols=['#ff1155','#ff3300','#ff0088','#ff6600','#cc0044','#ff4422'];var c=cols[Math.floor(Math.random()*cols.length)],sh=1.2+Math.random()*.8;mk('cylinder',{radius:'.025',height:sh.toFixed(2),position:x+' '+(gy+sh/2)+' '+z,material:'color:#1a7010'},par);for(var i=0;i<5;i++){var ang=i/5*Math.PI*2,pr=.32+Math.random()*.08;mk('plane',{width:(pr*1.1).toFixed(3),height:(pr*1.9).toFixed(3),position:(x+Math.sin(ang)*pr*.55).toFixed(2)+' '+(gy+sh+pr*.4).toFixed(2)+' '+(z+Math.cos(ang)*pr*.55).toFixed(2),rotation:'-58 '+(ang*180/Math.PI).toFixed(1)+' 0',material:'roughness:.5;side:double;color:'+c},par);}mk('sphere',{radius:'.07',position:x+' '+(gy+sh+.06)+' '+z,material:'color:#ffee00;emissive:#ffcc00;emissiveIntensity:.6'},par);}
   function makeFern(x,gy,z,par){par=par||W;for(var i=0;i<5+Math.floor(Math.random()*4);i++){var ang=i/(5+4)*Math.PI*2,r=.15+Math.random()*.25,sh=.5+Math.random()*.7;var lf=mk('plane',{width:(.12+Math.random()*.1).toFixed(3),height:sh.toFixed(2),position:(x+Math.sin(ang)*r).toFixed(2)+' '+(gy+sh*.55).toFixed(2)+' '+(z+Math.cos(ang)*r).toFixed(2),rotation:(-25-Math.random()*20).toFixed(1)+' '+(ang*180/Math.PI+90).toFixed(1)+' 0',material:'roughness:.8;side:double;color:#2a7a14'},par);lf.dataset.windPhase=(Math.random()*Math.PI*2).toFixed(4);lf.dataset.brx='-30';lf.dataset.bry=(ang*180/Math.PI+90).toFixed(1);lf.classList.add('wind-leaf');}}
@@ -346,9 +346,10 @@ function initGame(){
   // ÎLE PRINCIPALE
   (function(){
     var GY=0.0,R=80;
-    mk('cylinder',{radius:R,height:'.15',position:'0 0.01 0',material:'color:#f5e8b0;roughness:.9',shadow:'receive:true'});
-    mk('cylinder',{radius:'30',height:'.16',position:'0 0.02 0',material:'color:#5a9a25;roughness:.85',shadow:'receive:true'});
-    mk('cylinder',{radius:R,height:'.3',position:'0 -.15 0',material:'color:#ddd090;roughness:.95'});
+    // Sol sable — base
+    mk('cylinder',{radius:R,height:'.4',position:'0 -0.2 0',material:'color:#f5e8b0;roughness:.9',shadow:'receive:true'});
+    // Herbe verte centrale — bien au-dessus du sable pour éviter z-fighting
+    mk('cylinder',{radius:'38',height:'.15',position:'0 0.02 0',material:'color:#5a9a25;roughness:.85',shadow:'receive:true'});
     addPlatform(0,0,GY,R-1,R-1);
     islandDefs.push({cx:0,cz:0,y:GY,label:'ILE PRINCIPALE'});
     var mtnEl=document.createElement('a-gltf-model');
@@ -401,47 +402,49 @@ function initGame(){
     plaque.setAttribute('class','clickable');
     mk('cone',{'radius-bottom':'.18','radius-top':'.01',height:'.4',position:'0 2.1 -12',material:'color:#cc2200'});
     // Collision totem
-    addWall(0,-12,1.2,3,0);
-    // Collisions palmiers
+    addWall(0,-12,0.8,3,0);
+    // Collisions palmiers — rayon fin pour juste le tronc
     [[18,48],[30,35],[45,15],[-18,50],[-32,33],[-46,12],[22,-22],[38,-10],[-24,-20],[-40,-8],[12,20],[-14,18],[28,5],[-30,5]].forEach(function(p,i){
       mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],rotation:'0 '+(i*26)+' 0',scale:'5 5 5',shadow:'cast:true'});
-      addWall(p[0],p[1],0.6,8,0);
+      addWall(p[0],p[1],0.4,10,0); // tronc seulement
     });
-    // Collision montagne
-    addWall(0,-20,10,25,0);
+    // Collision montagne — juste la base
+    addWall(0,-20,8,30,0);
     // Collision maison de Lilo
-    addWall(-8,-6,5,10,0);
-    // Collision rochers déco
-    [[-35,50],[-42,28],[38,45],[44,24],[-18,65],[20,68]].forEach(function(p){addWall(p[0],p[1],2.5,3,0);});
-    for(var vi=0;vi<40;vi++){var va=vi/40*Math.PI*2,vr=4+Math.random()*35;var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;makeGiantHibiscus(vx,GY+0.01,vz2);if(vi%2===0)makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);if(vi%3===0)makeFern(vx-1,GY+0.01,vz2-1);if(vi%4===0)makeMonstera(vx+1,GY+0.01,vz2-2);}
-    for(var vi=0;vi<50;vi++){var va=Math.random()*Math.PI*2,vr=3+Math.random()*40;makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);}
+    addWall(-8,-6,4,8,0);
+    // Collision chariot Nani
+    addWall(30,55,2.5,3,0);
+    for(var vi=0;vi<20;vi++){var va=vi/20*Math.PI*2,vr=4+Math.random()*30;var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;makeGiantHibiscus(vx,GY+0.01,vz2);if(vi%2===0)makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);if(vi%3===0)makeFern(vx-1,GY+0.01,vz2-1);if(vi%4===0)makeMonstera(vx+1,GY+0.01,vz2-2);}
+    for(var vi=0;vi<20;vi++){var va=Math.random()*Math.PI*2,vr=3+Math.random()*35;makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);}
     var houseEl=document.createElement('a-gltf-model');
     houseEl.setAttribute('src','#houseGLB');
     houseEl.setAttribute('position','-8 0 -6');
     houseEl.setAttribute('rotation','0 140 0');
-    houseEl.setAttribute('scale','1 1 1');
+    houseEl.setAttribute('scale','100 100 100');
     houseEl.setAttribute('shadow','cast:true');
     houseEl.addEventListener('model-loaded',function(){
       try{
+        // On mesure AVEC scale=100 déjà appliqué
         var mesh=houseEl.getObject3D('mesh');if(!mesh)return;
-        // Mesurer à scale 1 pour avoir les dimensions natives
         var box=new AFRAME.THREE.Box3().setFromObject(mesh);
         var h=box.max.y-box.min.y;
-        var w=Math.max(box.max.x-box.min.x,box.max.z-box.min.z,0.01);
-        var biggest=Math.max(h,w,0.01);
-        var sc=12/biggest;
-        // Le min.y natif : une fois scalé, le bas sera à sc*box.min.y
-        // Pour poser au sol : Y = -sc*box.min.y
-        var groundY=(-box.min.y*sc);
-        houseEl.setAttribute('scale',sc+' '+sc+' '+sc);
-        houseEl.setAttribute('position','-8 '+groundY.toFixed(3)+' -6');
+        var curScale=100;
+        // Recalibrer pour avoir h=10 unités (belle maison)
+        if(h>0.01){
+          curScale=100*(10/h);
+          curScale=Math.min(Math.max(curScale,1),5000); // clamp sécurité
+          houseEl.setAttribute('scale',curScale+' '+curScale+' '+curScale);
+          // Remettre le mesh à jour
+          var box2=new AFRAME.THREE.Box3().setFromObject(mesh);
+          var groundY=Math.max(0,-box2.min.y);
+          houseEl.setAttribute('position','-8 '+groundY.toFixed(2)+' -6');
+        }
         toast('🏠 Maison de Lilo !',2000);
-      }catch(err){console.warn('house err',err);}
+      }catch(err){/* scale 100 reste en place */}
     });
     houseEl.addEventListener('model-error',function(){
-      mk('box',{width:'9',height:'5',depth:'7',position:'-8 2.5 -6',material:'color:#d4a060;roughness:.85',shadow:'cast:true'});
-      mk('cone',{'radius-bottom':'6','radius-top':'.3',height:'4',position:'-8 7.5 -6',material:'color:#8b3a0a;roughness:.9',shadow:'cast:true'});
-      mk('box',{width:'2',height:'3',depth:'.5',position:'-8 1.5 -2.8',material:'color:#6a3a10;roughness:.9'});
+      mk('box',{width:'10',height:'6',depth:'8',position:'-8 3 -6',material:'color:#d4a060;roughness:.85',shadow:'cast:true'});
+      mk('cone',{'radius-bottom':'7','radius-top':'.3',height:'5',position:'-8 8.5 -6',material:'color:#8b3a0a;roughness:.9',shadow:'cast:true'});
     });
     W.appendChild(houseEl);
     setTimeout(function(){
@@ -969,36 +972,29 @@ function initGame(){
   window._gunEl3D=null;
 
   window.equipGun=function(){
-    window._gunEquipped=true;
-    if(!window._gunEl3D){
-      var g=document.createElement('a-entity');
-      g.id='gun-on-stitch';
-      // Position bras droit DEVANT Stitch — Z négatif = devant dans l'espace local A-Frame
-      g.setAttribute('position','0.4 0.45 0.3');
-      g.setAttribute('rotation','0 90 -15');
-      var gm=document.createElement('a-gltf-model');
-      gm.setAttribute('src','#watergunGLB');
-      gm.setAttribute('scale','2 2 2');
-      // Auto-scale après chargement
-      gm.addEventListener('model-loaded',function(){
-        try{
-          var mesh=gm.getObject3D('mesh');if(!mesh)return;
-          var box=new AFRAME.THREE.Box3().setFromObject(mesh);
-          var biggest=Math.max(box.max.x-box.min.x,box.max.y-box.min.y,box.max.z-box.min.z,0.01);
-          var sc=0.9/biggest; // pistolet ~0.9 unité
-          gm.setAttribute('scale',sc+' '+sc+' '+sc);
-        }catch(e){}
-      });
-      g.appendChild(gm);
-      // Attacher au stitch-model (suit les animations des os)
-      var stitchModelEl=document.getElementById('stitch-model');
-      stitchModelEl.appendChild(g);
-      window._gunEl3D=g;
-    } else {
-      window._gunEl3D.setAttribute('visible','true');
-    }
-    document.getElementById('gun-btns').style.display='flex';
-    toast('🔫 Pistolet en main ! TIR pour arroser !',2000);
+    try{
+      window._gunEquipped=true;
+      if(!window._gunEl3D){
+        var g=document.createElement('a-entity');
+        g.id='gun-on-stitch';
+        g.setAttribute('position','0.45 0.5 0.2');
+        g.setAttribute('rotation','0 180 -15');
+        var gm=document.createElement('a-gltf-model');
+        gm.setAttribute('src','#watergunGLB');
+        gm.setAttribute('scale','1.5 1.5 1.5');
+        g.appendChild(gm);
+        // Attacher au stitch-ROOT (plus stable que stitch-model)
+        var sr=document.getElementById('stitch-root');
+        if(!sr){toast('Erreur pistolet',1000);return;}
+        sr.appendChild(g);
+        window._gunEl3D=g;
+      } else {
+        window._gunEl3D.setAttribute('visible','true');
+      }
+      var gb=document.getElementById('gun-btns');
+      if(gb)gb.style.display='flex';
+      toast('🔫 Pistolet en main !',1500);
+    }catch(err){console.warn('equipGun err',err);}
   };
 
   // ── POOL DE GOUTTELETTES EAU pré-crées dans la scène ──
