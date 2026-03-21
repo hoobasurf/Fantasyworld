@@ -491,7 +491,7 @@ function initGame(){
       var chars=[
         {id:'nani',    src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/nani_from_lilo_and_stitch.glb',   pos:'26 0 52',  rot:'0 180 0', ratio:2.8},
         {id:'jumba',   src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/jumba.glb',                       pos:'-12 0 10', rot:'0 45 0',  ratio:3.0},
-        {id:'lilo',    src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb',                   pos:'8 0 20',   rot:'0 200 0', ratio:1.9},
+        {id:'lilo',    src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb',                   pos:'8 0 20',   rot:'0 200 0', ratio:1.9, saveRef:'_liloSceneEl'},
         {id:'pleakley',src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/pleakley__lilo__stitch.glb',      pos:'-5 0 15',  rot:'0 90 0',  ratio:2.3},
         {id:'lilo2',   src:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lilo_et_scrump.glb',              pos:'-8 0 25',  rot:'0 150 0', ratio:1.9}
       ];
@@ -504,6 +504,8 @@ function initGame(){
         el.setAttribute('shadow','cast:true');
         el.addEventListener('model-loaded',function(){
           try{
+            // Sauvegarder référence si demandé
+            if(c.saveRef)window[c.saveRef]=el;
             var mesh=el.getObject3D('mesh');if(!mesh)return;
             var box=new AFRAME.THREE.Box3().setFromObject(mesh);
             var h=box.max.y-box.min.y;
@@ -880,9 +882,23 @@ function initGame(){
     var moveMag=Math.sqrt(fwd*fwd+lat*lat),gy=getGroundY(P.x,P.z),spd=sprint?9.5:5.2;
     if(moveMag>.05){var mx=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);var mz=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));var mn=Math.sqrt(mx*mx+mz*mz);var spdM=(P.state==='surface')?.7:(P.state==='diving')?.65:1.0;P.vx=mx/mn*spd*spdM;P.vz=mz/mn*spd*spdM;var ty=Math.atan2(mx/mn,mz/mn),dyw=ty-P.yaw;while(dyw>Math.PI)dyw-=Math.PI*2;while(dyw<-Math.PI)dyw+=Math.PI*2;var turnFactor=Math.min(1,1-Math.abs(dyw)/Math.PI*0.75);P.vx*=turnFactor;P.vz*=turnFactor;P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     if(P.state==='ground'||P.state==='air'){
-      P.vy-=22*dt;if(P.vy<-25)P.vy=-25;P.y+=P.vy*dt;
-      if(gy!==null&&P.y<=gy+P.yOff){if(gy<WATER_SURFACE-0.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;playSound('sndSplash');toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}else if(P.y<=WATER_SURFACE+WATER_ENTER_THRESHOLD&&gy<=WATER_SURFACE){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;}else{P.y=gy+P.yOff;P.vy=0;P.onGround=true;P.state='ground';}}
-      else if(gy===null&&P.y<=WATER_SURFACE+0.05){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;playSound('sndSplash');toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}
+      // Pas de gravité si jetpack actif et on vole
+      if(window._jetpackEquipped&&P.y>2){
+        P.vy-=8*dt; // gravité réduite avec jetpack
+      } else {
+        P.vy-=22*dt;
+      }
+      if(P.vy<-25)P.vy=-25;
+      P.y+=P.vy*dt;
+      // Limite Y max pour éviter crash renderer
+      if(P.y>80)P.y=80;
+      if(gy!==null&&P.y<=gy+P.yOff){
+        // Ne pas tomber dans l'eau si jetpack actif
+        if(!window._jetpackEquipped&&gy<WATER_SURFACE-0.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;playSound('sndSplash');toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}
+        else if(!window._jetpackEquipped&&P.y<=WATER_SURFACE+WATER_ENTER_THRESHOLD&&gy<=WATER_SURFACE){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;}
+        else{P.y=gy+P.yOff;P.vy=0;P.onGround=true;P.state='ground';}
+      }
+      else if(!window._jetpackEquipped&&gy===null&&P.y<=WATER_SURFACE+0.05){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;playSound('sndSplash');toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}
       else{P.onGround=false;if(P.state==='ground')P.state='air';}
     }else if(P.state==='surface'){
       P.swimBob+=dt;P.breath=Math.min(MAX_BREATH,P.breath+BREATH_GAIN*dt);P.y=WATER_SURFACE+Math.sin(P.swimBob*2.2)*.06;P.vy=0;P.onGround=true;
@@ -922,10 +938,12 @@ function initGame(){
     if(Math.abs(rjLY)>.04)CAM.pitch=Math.max(.06,Math.min(.75,CAM.pitch+rjLY*dt*1.5));
     var camDist=CAM.dist,camPitch=CAM.pitch;
     if(P.state==='diving'){camDist=5.0;camPitch=0.10;}
+    if(window._jetpackEquipped&&P.y>5){camDist=8.0;} // caméra plus loin en vol
     var cr=camDist*Math.cos(camPitch),cX=P.x+Math.sin(CAM.yaw)*cr,cZ=P.z+Math.cos(CAM.yaw)*cr,cY=P.y+camDist*Math.sin(camPitch)+(P.state==='diving'?0.5:1.8);
-    // Empêcher la caméra de descendre sous le sol ou sous l'eau (cause écran gris)
     var camMinY=(P.state==='diving')?-10.0:1.2;
+    var camMaxY=85; // jamais au-dessus pour éviter crash
     cY=Math.max(cY,camMinY);
+    cY=Math.min(cY,camMaxY);
     var camRig=document.getElementById('cam-rig');
     if(camRig){
       var cp=camRig.getAttribute('position');
@@ -1136,52 +1154,37 @@ function initGame(){
         var ldx=P.x-8,ldz=P.z-20;
         if(ldx*ldx+ldz*ldz<9){
           fm.step='fly';
-          // Cacher halo
           if(window._liloHalo){window._liloHalo.setAttribute('visible','false');}
-          // Créer Lilo volante qui suit Stitch
-          // ── LILO GLB qui suit Stitch ──
-          var liloF=document.createElement('a-entity');
-          liloF.id='lilo-fly';
 
-          var liloModel=document.createElement('a-gltf-model');
-          liloModel.setAttribute('src','#liloGLB');
-          liloModel.setAttribute('scale','1 1 1');
-          liloModel.addEventListener('model-loaded',function(){
-            try{
-              var mesh=liloModel.getObject3D('mesh');if(!mesh)return;
-              var box=new AFRAME.THREE.Box3().setFromObject(mesh);
-              var h=box.max.y-box.min.y;var w=Math.max(box.max.x-box.min.x,box.max.z-box.min.z,0.001);
-              var sc=(1.2/Math.max(h,w,0.001));
-              sc=Math.min(Math.max(sc,0.01),5000);
-              var groundOff=-box.min.y*sc;
-              liloModel.setAttribute('scale',sc+' '+sc+' '+sc);
-              liloModel.setAttribute('position','0 '+groundOff.toFixed(2)+' 0');
-            }catch(e){}
-          });
-          liloF.appendChild(liloModel);
-
-          // Aura magique dorée autour de Lilo
-          var aura=document.createElement('a-torus');
-          aura.setAttribute('radius','0.55');aura.setAttribute('radius-tubular','0.04');
-          aura.setAttribute('rotation','90 0 0');
-          aura.setAttribute('material','color:#ffdd00;emissive:#ffaa00;emissiveIntensity:2.0;transparent:true;opacity:0.7');
-          aura.setAttribute('animation','property:rotation;from:90 0 0;to:90 360 0;loop:true;dur:1500;easing:linear');
-          liloF.appendChild(aura);
-
-          // Lumière rose
-          var ll=document.createElement('a-light');
-          ll.setAttribute('type','point');ll.setAttribute('color','#ffaacc');
-          ll.setAttribute('intensity','1.2');ll.setAttribute('distance','6');
-          liloF.appendChild(ll);
-          liloF.setAttribute('position',P.x+' '+(P.y+0.8)+' '+P.z);
-          W.appendChild(liloF);
-          window._liloEl3D=liloF;
-          window._liloFollowing=true;
-          window._liloOffset={x:-1.2,y:0.8,z:0};
+          // ── Utiliser le GLB Lilo DÉJÀ dans la scène ──
+          var liloF=window._liloSceneEl; // référence au GLB existant
+          if(!liloF){
+            // Fallback : chercher dans le DOM
+            liloF=document.querySelector('a-gltf-model[src*="smug_lilo"]');
+          }
+          if(liloF){
+            // Ajouter aura autour du Lilo existant
+            if(!liloF._auraAdded){
+              liloF._auraAdded=true;
+              var aura=document.createElement('a-torus');
+              aura.setAttribute('radius','0.6');aura.setAttribute('radius-tubular','0.05');
+              aura.setAttribute('rotation','90 0 0');
+              aura.setAttribute('material','color:#ffdd00;emissive:#ffaa00;emissiveIntensity:2.5;transparent:true;opacity:0.8');
+              aura.setAttribute('animation','property:rotation;from:90 0 0;to:90 360 0;loop:true;dur:1200;easing:linear');
+              liloF.appendChild(aura);
+              var ll=document.createElement('a-light');
+              ll.setAttribute('type','point');ll.setAttribute('color','#ffaacc');
+              ll.setAttribute('intensity','1.5');ll.setAttribute('distance','8');
+              liloF.appendChild(ll);
+            }
+            window._liloEl3D=liloF;
+            window._liloFollowing=true;
+            window._liloOffset={x:-1.2,y:0.8,z:0};
+          }
 
           document.getElementById('jetpack-hud').textContent='🚀 JUMP pour voler ! Monte au vaisseau !';
           playSound('sndOhana');
-          toast('🌺 Lilo te rejoint ! JUMP pour voler ! Montez au vaisseau !',4500);
+          toast('🌺 Lilo te suit ! JUMP pour voler ! Montez au vaisseau !',4500);
         }
       }
     }
