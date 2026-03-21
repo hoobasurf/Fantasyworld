@@ -109,6 +109,7 @@ device-orientation-permission-ui="enabled:false">
 <a-asset-item id="sundaeGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb"               crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb"           crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="spaceshipGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hover_ship.vehicle_from_lilo_and_stitch.%202.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="liloGLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <audio id="sndCollect"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Ice%20cream.wav"          preload="none"></audio>
 <audio id="sndSplash"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Splash.wav"               preload="none"></audio>
 <audio id="sndWin"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Aloha!.mp3"         preload="none"></audio>
@@ -1109,14 +1110,40 @@ function initGame(){
           // Cacher halo
           if(window._liloHalo){window._liloHalo.setAttribute('visible','false');}
           // Créer Lilo volante qui suit Stitch
+          // ── LILO GLB qui suit Stitch ──
           var liloF=document.createElement('a-entity');
           liloF.id='lilo-fly';
-          var lb=document.createElement('a-sphere');lb.setAttribute('radius','0.26');lb.setAttribute('material','color:#ff6688;roughness:.6;emissive:#ff2255;emissiveIntensity:.3');liloF.appendChild(lb);
-          var lh=document.createElement('a-sphere');lh.setAttribute('radius','0.20');lh.setAttribute('position','0 0.38 0');lh.setAttribute('material','color:#f4a060;roughness:.7');liloF.appendChild(lh);
-          var lhair=document.createElement('a-sphere');lhair.setAttribute('radius','0.22');lhair.setAttribute('scale','1 .5 1');lhair.setAttribute('position','0 0.44 0');lhair.setAttribute('material','color:#1a0a00;roughness:.9');liloF.appendChild(lhair);
-          // Ailes magiques (petites sphères jaunes)
-          [-0.28,0.28].forEach(function(ox){var w=document.createElement('a-sphere');w.setAttribute('radius','0.10');w.setAttribute('position',ox+' 0.08 0');w.setAttribute('material','color:#ffdd00;emissive:#ffaa00;emissiveIntensity:1.5;transparent:true;opacity:.85');liloF.appendChild(w);});
-          var ll=document.createElement('a-light');ll.setAttribute('type','point');ll.setAttribute('color','#ffaacc');ll.setAttribute('intensity','0.8');ll.setAttribute('distance','5');liloF.appendChild(ll);
+
+          var liloModel=document.createElement('a-gltf-model');
+          liloModel.setAttribute('src','#liloGLB');
+          liloModel.setAttribute('scale','1 1 1');
+          liloModel.addEventListener('model-loaded',function(){
+            try{
+              var mesh=liloModel.getObject3D('mesh');if(!mesh)return;
+              var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+              var h=box.max.y-box.min.y;var w=Math.max(box.max.x-box.min.x,box.max.z-box.min.z,0.001);
+              var sc=(1.2/Math.max(h,w,0.001));
+              sc=Math.min(Math.max(sc,0.01),5000);
+              var groundOff=-box.min.y*sc;
+              liloModel.setAttribute('scale',sc+' '+sc+' '+sc);
+              liloModel.setAttribute('position','0 '+groundOff.toFixed(2)+' 0');
+            }catch(e){}
+          });
+          liloF.appendChild(liloModel);
+
+          // Aura magique dorée autour de Lilo
+          var aura=document.createElement('a-torus');
+          aura.setAttribute('radius','0.55');aura.setAttribute('radius-tubular','0.04');
+          aura.setAttribute('rotation','90 0 0');
+          aura.setAttribute('material','color:#ffdd00;emissive:#ffaa00;emissiveIntensity:2.0;transparent:true;opacity:0.7');
+          aura.setAttribute('animation','property:rotation;from:90 0 0;to:90 360 0;loop:true;dur:1500;easing:linear');
+          liloF.appendChild(aura);
+
+          // Lumière rose
+          var ll=document.createElement('a-light');
+          ll.setAttribute('type','point');ll.setAttribute('color','#ffaacc');
+          ll.setAttribute('intensity','1.2');ll.setAttribute('distance','6');
+          liloF.appendChild(ll);
           liloF.setAttribute('position',P.x+' '+(P.y+0.8)+' '+P.z);
           W.appendChild(liloF);
           window._liloEl3D=liloF;
@@ -1161,37 +1188,67 @@ function initGame(){
       }
     }
 
-    // ATTERRISSAGE SUR LE VAISSEAU (unique — décollage final)
+    // ── COLLISION VAISSEAU : Stitch ne passe plus à travers ──
+    if(window._jetpackEquipped&&!window._inShip){
+      // Le vaisseau est à (0, 28, -20) — bloquer si on le touche sans entrer
+      var svx=P.x-0,svz=P.z-(-20),svy=P.y-28;
+      var shipDist=Math.sqrt(svx*svx+svy*svy+svz*svz);
+      // Afficher hint quand proche
+      var jhud=document.getElementById('jetpack-hud');
+      if(shipDist<8&&window._liloFollowing){
+        if(jhud)jhud.textContent='🚀 Tu es proche ! Entre dans le vaisseau !';
+      }
+      // Bloquer collision (rayon 3.5 autour du vaisseau)
+      if(shipDist<3.5&&!window._inShip){
+        // Repousser Stitch — ne pas laisser traverser
+        var snx=svx/shipDist,sny=svy/shipDist,snz=svz/shipDist;
+        P.x=0+snx*3.6; P.y=28+sny*3.6; P.z=-20+snz*3.6;
+        P.vx=0;P.vy=0;P.vz=0;
+      }
+    }
+
+    // ENTRER DANS LE VAISSEAU (Lilo doit être là)
     if(window._jetpackEquipped&&window._liloFollowing&&!window._inShip){
       var sdx=P.x-0,sdz=P.z-(-20),sdy=P.y-28;
-      if(sdx*sdx+sdy*sdy+sdz*sdz<20){
+      var distShip=sdx*sdx+sdy*sdy+sdz*sdz;
+      if(distShip<18){ // rayon ~4.2 unités = zone d'entrée
         window._inShip=true;
         window._liloFollowing=false;
         window.FLIGHT_MISSION.done=true;
         window.FLIGHT_MISSION.active=false;
-        document.getElementById('jetpack-hud').style.display='none';
+        var jhud2=document.getElementById('jetpack-hud');
+        if(jhud2)jhud2.style.display='none';
         playSound('sndHiii');
         setTimeout(function(){playSound('sndLaugh');},800);
         toast('🚀 Stitch ET Lilo dans le vaisseau !',3000);
-        // Lilo monte aussi
-        if(window._liloEl3D)window._liloEl3D.setAttribute('position','1.5 28 -21');
-        // Décollage du vaisseau
+
+        // Cacher la collision vaisseau
+        window._inShip=true;
+
+        // Placer Stitch ET Lilo à bord du vaisseau
+        P.x=0; P.y=28.5; P.z=-20;
+        P.vx=0;P.vy=0;P.vz=0;
+        if(window._liloEl3D)window._liloEl3D.setAttribute('position','1.2 28.5 -21');
+
+        // Décollage vaisseau
         var shipGlb=W.querySelector('a-gltf-model[src="#spaceshipGLB"]');
         if(shipGlb){
-          shipGlb.setAttribute('animation','property:position;from:0 28 -20;to:0 150 -20;dur:5000;easing:easeInQuad');
-          shipGlb.setAttribute('animation__rs','property:rotation;from:0 30 0;to:0 1080 20;dur:5000;easing:easeInQuad');
+          shipGlb.setAttribute('animation','property:position;from:0 28 -20;to:0 200 -20;dur:6000;easing:easeInQuad');
+          shipGlb.setAttribute('animation__rs','property:rotation;from:0 30 0;to:0 1440 25;dur:6000;easing:easeInQuad');
         }
-        // Stitch monte avec le vaisseau
+
+        // Stitch et Lilo montent ensemble
         var _liftT=0;
         var _liftI=setInterval(function(){
           _liftT+=0.08;
-          P.y=28+_liftT*12;
+          P.y=28.5+_liftT*14;
           P.state='air';
-          if(window._liloEl3D)window._liloEl3D.setAttribute('position','1.5 '+(28+_liftT*12)+' -21');
+          P.x=0+Math.sin(_liftT)*0.5;
+          if(window._liloEl3D)window._liloEl3D.setAttribute('position',(1.2+Math.sin(_liftT)*0.3).toFixed(2)+' '+(28.5+_liftT*14).toFixed(2)+' -21');
           if(_liftT>5){
             clearInterval(_liftI);
             playSound('sndWin');
-            setTimeout(function(){playSound('sndOhana');},1200);
+            setTimeout(function(){playSound('sndOhana');},1000);
             toast('🌟 ALOHA ! Stitch et Lilo décollent vers l\'aventure !',6000);
           }
         },80);
