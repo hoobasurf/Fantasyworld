@@ -6,15 +6,24 @@
 <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-#joy{position:fixed;left:14px;bottom:14px;z-index:30;width:110px;height:110px;border-radius:50%;background:rgba(0,0,0,.22);border:2.5px solid rgba(255,220,80,.4);touch-action:none;pointer-events:all}
-#jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,rgba(255,220,80,.8),rgba(160,70,0,.9));border:2.5px solid rgba(255,220,80,.7)}
-#rjoy{position:fixed;right:14px;bottom:14px;z-index:30;width:90px;height:90px;border-radius:50%;background:rgba(0,10,30,.22);border:2px solid rgba(100,200,255,.35);touch-action:none;pointer-events:all}
-#rjnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:radial-gradient(circle,rgba(100,200,255,.7),rgba(0,40,90,.9));border:2px solid rgba(100,200,255,.55)}
-#btns{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:12px;pointer-events:none}
-.btn{width:54px;height:54px;border-radius:50%;background:rgba(0,8,22,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:8px;font-family:Georgia,serif;cursor:pointer;touch-action:manipulation;border:2px solid rgba(255,255,255,.18);color:#fff;pointer-events:all}
+#joy{position:fixed;left:14px;bottom:14px;z-index:30;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(255,80,120,.25),rgba(180,20,60,.18));border:2.5px solid rgba(255,160,190,.5);touch-action:none;pointer-events:all;box-shadow:0 0 18px rgba(255,60,100,.2);}
+#jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,#ff88bb,#e8174a 60%,#8a0020);border:2.5px solid rgba(255,180,200,.8);box-shadow:0 3px 10px rgba(200,20,60,.5);}
+#rjoy{position:fixed;right:14px;bottom:14px;z-index:30;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(0,220,180,.22),rgba(0,120,100,.16));border:2px solid rgba(100,255,220,.45);touch-action:none;pointer-events:all;box-shadow:0 0 14px rgba(0,200,160,.2);}
+#rjnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:radial-gradient(circle,#5fffdc,#00c8a8 60%,#005a50);border:2px solid rgba(100,255,220,.7);box-shadow:0 3px 8px rgba(0,150,120,.5);}
+/* ── BOUTONS HAWAÏENS ── */
+#btns{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:10px;pointer-events:none;align-items:flex-end;}
+.btn{width:62px;height:62px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;touch-action:manipulation;pointer-events:all;position:relative;overflow:hidden;transition:transform .1s,box-shadow .1s;box-shadow:0 4px 14px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.25);}
+.btn:active{transform:scale(.91);}
+.btn .btn-icon{font-size:22px;line-height:1;margin-bottom:2px;}
+.btn .btn-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.5px;opacity:.92;}
+#btn-jump{background:radial-gradient(circle at 40% 35%,#ff6fa0 0%,#e8174a 55%,#9e0030 100%);border:2.5px solid #ffaacc;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+#btn-dive{background:radial-gradient(circle at 40% 35%,#5fffdc 0%,#00c8a8 50%,#006e70 100%);border:2.5px solid #88ffee;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+#btn-run{background:radial-gradient(circle at 40% 35%,#ffe566 0%,#ff9900 55%,#c85000 100%);border:2.5px solid #ffd966;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+#btn-pickup{background:radial-gradient(circle at 40% 35%,#88ff66 0%,#22cc44 50%,#0a6622 100%);border:2.5px solid #aaffbb;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+.btn::before{content:'';position:absolute;inset:-4px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(0 30 30)'/%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(60 30 30)'/%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(120 30 30)'/%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(180 30 30)'/%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(240 30 30)'/%3E%3Cellipse cx='30' cy='12' rx='7' ry='13' fill='rgba(255,255,255,0.10)' transform='rotate(300 30 30)'/%3E%3C/svg%3E");background-size:cover;pointer-events:none;border-radius:50%;}
 #hud{position:fixed;top:10px;left:0;right:0;display:flex;justify-content:space-between;padding:0 12px;pointer-events:none;z-index:30}
-.pill{background:rgba(0,10,25,.78);border-radius:18px;padding:5px 12px;font-family:Georgia,serif;font-size:9px;color:#7de8ff;border:1px solid rgba(125,232,255,.25)}
-#toast{position:fixed;top:52px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;z-index:80;background:rgba(0,8,22,.94);border:1.5px solid #7de8ff;border-radius:18px;padding:7px 16px;color:#7de8ff;font-size:10px;font-family:Georgia,serif;white-space:nowrap;pointer-events:none;transition:all .18s}
+.pill{background:linear-gradient(135deg,rgba(255,100,150,.85),rgba(255,60,80,.75));border-radius:18px;padding:5px 14px;font-family:Georgia,serif;font-size:9px;color:#fff;border:1.5px solid rgba(255,180,200,.5);text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(0,0,0,.3);font-weight:bold;letter-spacing:.3px;}
+#toast{position:fixed;top:52px;left:50%;transform:translateX(-50%) scale(.9);opacity:0;z-index:80;background:linear-gradient(135deg,rgba(255,80,130,.95),rgba(220,20,60,.92));border:1.5px solid rgba(255,180,200,.6);border-radius:18px;padding:7px 16px;color:#fff;font-size:10px;font-family:Georgia,serif;white-space:nowrap;pointer-events:none;transition:all .18s;text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 4px 16px rgba(220,20,60,.4);}
 #toast.show{transform:translateX(-50%) scale(1);opacity:1}
 #bubbles-container{position:fixed;inset:0;pointer-events:none;z-index:21;overflow:hidden;display:none}
 .bubble{position:absolute;border-radius:50%;background:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.6);animation:rise linear forwards}
@@ -35,17 +44,17 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 #mission-truck button.decline{background:#555}
 #mission-hud{position:fixed;top:90px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(0,0,0,.8);border:1.5px solid #ffcc00;border-radius:12px;padding:6px 14px;font-family:Georgia,serif;font-size:11px;color:#ffcc00;text-align:center;pointer-events:none}
 #dive-hint{position:fixed;bottom:148px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(0,10,30,.88);border:1.5px solid rgba(0,220,200,.5);border-radius:12px;padding:5px 14px;color:#88ffee;font-size:10px;font-family:Georgia,serif;display:none;white-space:nowrap;pointer-events:none}
-#backpack-btn{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:30;background:rgba(0,8,22,.82);border:2px solid #ffaa00;border-radius:20px;padding:5px 14px;font-family:Georgia,serif;font-size:10px;color:#ffaa00;cursor:pointer;touch-action:manipulation}
+#backpack-btn{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:30;background:linear-gradient(135deg,#ff9900,#e85000);border:2px solid #ffd966;border-radius:20px;padding:6px 16px;font-family:Georgia,serif;font-size:10px;color:#fff;cursor:pointer;touch-action:manipulation;font-weight:bold;text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 3px 10px rgba(200,80,0,.5);}
 #gun-btns{position:fixed;bottom:110px;right:14px;z-index:30;display:none;flex-direction:column;gap:8px;align-items:flex-end}
-#btn-fire{background:rgba(255,50,50,.92);border:2px solid #ff6666;border-radius:50%;width:58px;height:58px;color:#fff;font-size:9px;font-family:Georgia,serif;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center}
-#btn-holster{background:rgba(0,8,22,.82);border:2px solid #aaa;border-radius:50%;width:48px;height:48px;color:#aaa;font-size:8px;font-family:Georgia,serif;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#btn-fire{background:radial-gradient(circle at 40% 35%,#ff88aa,#e8174a 60%,#8a0020 100%);border:2.5px solid #ffaacc;border-radius:50%;width:62px;height:62px;color:#fff;font-size:9px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(220,20,60,.5);text-shadow:0 1px 3px rgba(0,0,0,.5);}
+#btn-holster{background:radial-gradient(circle at 40% 35%,#ffe566,#ff9900 60%,#7a3000 100%);border:2.5px solid #ffd966;border-radius:50%;width:52px;height:52px;color:#fff;font-size:8px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(200,100,0,.5);text-shadow:0 1px 3px rgba(0,0,0,.5);}
 /* Pistolet collectible flottant */
-#gun-pickup-hint{position:fixed;bottom:160px;left:50%;transform:translateX(-50%);z-index:40;background:rgba(0,30,60,.9);border:2px solid #00ffcc;border-radius:12px;padding:6px 16px;color:#00ffcc;font-size:11px;font-family:Georgia,serif;display:none;white-space:nowrap;pointer-events:none;animation:pulse 1s infinite alternate}
-@keyframes pulse{from{border-color:#00ffcc;color:#00ffcc}to{border-color:#ffffff;color:#ffffff}}
-#backpack-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.8);align-items:center;justify-content:center;}
-#backpack-box{background:linear-gradient(135deg,#2a1a0a,#3a2a10);border:3px solid #ffaa00;border-radius:20px;padding:20px;width:280px;max-height:70vh;overflow-y:auto;position:relative;}
-#backpack-box h2{color:#ffaa00;font-family:Georgia,serif;font-size:15px;text-align:center;margin-bottom:14px}
-.bp-item{display:flex;align-items:center;gap:10px;background:rgba(255,170,0,.12);border-radius:10px;padding:8px 12px;margin-bottom:8px;font-family:Georgia,serif;font-size:12px;color:#fff}
+#gun-pickup-hint{position:fixed;bottom:160px;left:50%;transform:translateX(-50%);z-index:40;background:linear-gradient(135deg,rgba(0,180,120,.92),rgba(0,100,80,.9));border:2px solid #88ffcc;border-radius:12px;padding:6px 16px;color:#fff;font-size:11px;font-family:Georgia,serif;display:none;white-space:nowrap;pointer-events:none;animation:pulse 1s infinite alternate;text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 3px 12px rgba(0,150,100,.5);}
+@keyframes pulse{from{border-color:#88ffcc;box-shadow:0 3px 12px rgba(0,150,100,.5)}to{border-color:#ffffff;box-shadow:0 3px 18px rgba(0,200,150,.8)}}
+#backpack-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);align-items:center;justify-content:center;}
+#backpack-box{background:linear-gradient(135deg,#3a1a10,#5a2a10,#3a1a10);border:3px solid #ff9900;border-radius:20px;padding:20px;width:290px;max-height:70vh;overflow-y:auto;position:relative;box-shadow:0 8px 30px rgba(200,80,0,.5);}
+#backpack-box h2{color:#ffd966;font-family:Georgia,serif;font-size:15px;text-align:center;margin-bottom:14px;text-shadow:0 1px 6px rgba(255,150,0,.5);}
+.bp-item{display:flex;align-items:center;gap:10px;background:rgba(255,150,50,.15);border:1px solid rgba(255,180,80,.25);border-radius:10px;padding:8px 12px;margin-bottom:8px;font-family:Georgia,serif;font-size:12px;color:#fff;}
 .bp-item span{font-size:22px}
 </style>
 </head>
@@ -133,17 +142,29 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 <div id="joy"><div id="jnub"></div></div>
 <div id="rjoy"><div id="rjnub"></div></div>
 <div id="btns">
-  <div class="btn" style="border-color:#7de8ff;color:#7de8ff" ontouchstart="doJump(event)" onclick="doJump()">⬆<br>JUMP</div>
-  <div class="btn" style="border-color:#00ffcc;color:#00ffcc" ontouchstart="startDive(event)" ontouchend="stopDive(event)" onmousedown="startDive()" onmouseup="stopDive()">⬇<br>PLONGE</div>
-  <div class="btn" style="border-color:#ffd700;color:#ffd700" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">⚡<br>RUN</div>
-  <div class="btn" id="btn-pickup" style="border-color:#00ffcc;color:#00ffcc;display:none" ontouchstart="pickupNearby(event)" onclick="pickupNearby()">🤲<br>RAMASSER</div>
+  <div class="btn" id="btn-jump" ontouchstart="doJump(event)" onclick="doJump()">
+    <span class="btn-icon">🌺</span><span class="btn-lbl">JUMP</span>
+  </div>
+  <div class="btn" id="btn-dive" ontouchstart="startDive(event)" ontouchend="stopDive(event)" onmousedown="startDive()" onmouseup="stopDive()">
+    <span class="btn-icon">🐚</span><span class="btn-lbl">PLONGE</span>
+  </div>
+  <div class="btn" id="btn-run" ontouchstart="setSprint(1,event)" ontouchend="setSprint(0)" onmousedown="setSprint(1)" onmouseup="setSprint(0)">
+    <span class="btn-icon">🌴</span><span class="btn-lbl">RUN</span>
+  </div>
+  <div class="btn" id="btn-pickup" style="display:none" ontouchstart="pickupNearby(event)" onclick="pickupNearby()">
+    <span class="btn-icon">🤲</span><span class="btn-lbl">RAMASSER</span>
+  </div>
 </div>
 <div id="toast"></div>
 <div id="gun-btns">
-  <div id="btn-fire" ontouchstart="fireGun(event)" onclick="fireGun()">💦<br>TIR</div>
-  <div id="btn-holster" ontouchstart="holsterGun(event)" onclick="holsterGun()">🎒<br>RANGER</div>
+  <div id="btn-fire" ontouchstart="fireGun(event)" onclick="fireGun()">
+    <span style="font-size:22px;line-height:1">💦</span><span style="font-size:7px;font-weight:bold;text-transform:uppercase;letter-spacing:.5px">TIR</span>
+  </div>
+  <div id="btn-holster" ontouchstart="holsterGun(event)" onclick="holsterGun()">
+    <span style="font-size:18px;line-height:1">🌺</span><span style="font-size:6.5px;font-weight:bold;text-transform:uppercase;letter-spacing:.4px">RANGER</span>
+  </div>
 </div>
-<button id="backpack-btn" onclick="openBackpack()">🎒 Sac à dos</button>
+<button id="backpack-btn" onclick="openBackpack()">🌺 Sac à dos</button>
 <div id="backpack-overlay" onclick="if(event.target===this)closeBackpack()">
   <div id="backpack-box">
     <h2>🎒 Sac à dos de Stitch</h2>
@@ -349,14 +370,13 @@ function initGame(){
     mk('sphere',{radius:'.16',position:'0 1.08 0',material:'color:#f4a060;roughness:.8'},nani);
     mk('sphere',{radius:'.16',scale:'1 .55 1',position:'0 1.15 0',material:'color:#3a1a00;roughness:.9'},nani);
 
-    // Créer 20 glaces seulement (pas 50) — on n'en collecte que 20
+    // Créer exactement 20 glaces — positions fixes garanties dans un rayon de 60
     window.pineappleEls=[];
-    var placed=0,attempts=0;
-    while(placed<20&&attempts<200){
-      attempts++;
-      var a=Math.random()*Math.PI*2,r=8+Math.random()*50;
+    for(var i=0;i<20;i++){
+      // Grille en spirale pour garantir 20 positions sans filtrage
+      var a=(i/20)*Math.PI*2+(i*0.37);
+      var r=6+(i%4)*12; // rayons 6, 18, 30, 42 — tous dans l'île (rayon 80)
       var px=Math.sin(a)*r,pz=Math.cos(a)*r;
-      if(Math.sqrt(px*px+pz*pz)>72)continue;
       var pa=document.createElement('a-gltf-model');
       pa.setAttribute('src','#sundaeGLB');
       pa.setAttribute('position',px.toFixed(1)+' 0.8 '+pz.toFixed(1));
@@ -365,7 +385,6 @@ function initGame(){
       pa.classList.add('pineapple');
       W.appendChild(pa);
       window.pineappleEls.push(pa);
-      placed++;
     }
 
     // ── PISTOLET COLLECTIBLE dans le monde ──
@@ -378,7 +397,11 @@ function initGame(){
     window._pauloDialogShown=false;
   }
 
-  window.closeMissionDialog=function(){document.getElementById('mission-truck').style.display='none';};
+  window.closeMissionDialog=function(){
+    document.getElementById('mission-truck').style.display='none';
+    // Permettre à Nani de reproposer si on revient la voir
+    window._pauloDialogShown=false;
+  };
 
   // ── BUG 1 CORRIGÉ : timer toujours réinitialisé à 90 ──
   window.startMission=function(){
@@ -532,6 +555,7 @@ function initGame(){
     if(P.state==='diving'){bubCont.style.display='block';if(moveMag>.05&&Math.floor(waveT*8)%2===0){var b=document.createElement('div');b.className='bubble';var sz=4+Math.random()*8;b.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(38+Math.random()*24)+'%;bottom:'+(35+Math.random()*15)+'%;animation-duration:'+(1.2+Math.random()*.8)+'s';bubCont.appendChild(b);setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b);},2000);}}else{bubCont.style.display='none';if(bubCont.children.length>0)bubCont.innerHTML='';}
 
     // ── DIALOGUE NANI ──
+    // Nani repropose toujours si la mission n'est pas active et pas encore gagnée
     if(window.MISSION&&!window.MISSION.active&&!window.MISSION.done){
       var pdx=P.x-26,pdz=P.z-55;var pDist=Math.sqrt(pdx*pdx+pdz*pdz);
       if(pDist<4&&!window._pauloDialogShown){window._pauloDialogShown=true;document.getElementById('mission-truck').style.display='block';}
@@ -597,7 +621,14 @@ function initGame(){
             window.startMission();
           };
           md.querySelector('.decline').textContent='❌ Non merci';
-          md.querySelector('.decline').onclick=function(){playSound('sndNah');window.MISSION.done=true;window.closeMissionDialog();toast('À bientôt Nani ! 👋',2500);};
+          md.querySelector('.decline').onclick=function(){
+            playSound('sndNah');
+            // Ne pas mettre done=true → Nani reproposera quand on revient
+            window.MISSION.active=false;
+            window._pauloDialogShown=false;
+            window.closeMissionDialog();
+            toast('À bientôt Nani ! 👋 Reviens me voir !',2500);
+          };
           md.querySelector('.decline').style.display='';
         }
         md.style.display='block';
