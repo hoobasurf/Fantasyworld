@@ -176,34 +176,36 @@ var _audioState='none'; // 'island' | 'water'
 function startMusic(){
   if(window._musicStarted)return;
   window._musicStarted=true;
-  // Lancer l'ambiance plage en boucle (toujours active sur île)
-  var beach=document.getElementById('sndBeach');
-  if(beach){beach.volume=0.18;beach.loop=true;beach.play().catch(function(){});}
-  // Lancer la musique île
-  var isle=document.getElementById('bgMusic2'); // the_mountain ukulele
-  if(isle){isle.volume=0.32;isle.loop=true;isle.play().catch(function(){});}
   _audioState='island';
+  var beach=document.getElementById('sndBeach');
+  if(beach){beach.loop=true;beach.volume=0.18;beach.play().catch(function(){});}
+  var isle=document.getElementById('bgMusic2');
+  if(isle){isle.loop=true;isle.volume=0.32;isle.play().catch(function(){});}
 }
 
 function updateAudioZone(state){
   if(!window._musicStarted)return;
   var isUnderwater=(state==='diving'||state==='surface');
   var beach=document.getElementById('sndBeach');
-  var isle=document.getElementById('bgMusic2');
-  var water=document.getElementById('bgMusic1'); // sonican ukulele
+  var isle=document.getElementById('bgMusic2');   // the_mountain — île
+  var water=document.getElementById('bgMusic1');  // sonican — eau
 
   if(isUnderwater && _audioState!=='water'){
     _audioState='water';
-    // Couper île + plage, lancer son eau
-    if(isle){isle.pause();}
-    if(beach){beach.pause();}
-    if(water){water.volume=0.35;water.loop=true;water.play().catch(function(){});}
+    try{if(isle&&!isle.paused)isle.pause();}catch(e){}
+    try{if(beach&&!beach.paused)beach.pause();}catch(e){}
+    if(water){
+      water.loop=true;
+      water.volume=0.35;
+      // Reprendre depuis là où on était ou recommencer
+      var p=water.play();
+      if(p&&p.catch)p.catch(function(){});
+    }
   } else if(!isUnderwater && _audioState!=='island'){
     _audioState='island';
-    // Couper eau, relancer île + plage
-    if(water){water.pause();}
-    if(beach){beach.volume=0.18;beach.loop=true;beach.play().catch(function(){});}
-    if(isle){isle.volume=0.32;isle.loop=true;isle.play().catch(function(){});}
+    try{if(water&&!water.paused)water.pause();}catch(e){}
+    if(beach){beach.loop=true;beach.volume=0.18;var p1=beach.play();if(p1&&p1.catch)p1.catch(function(){});}
+    if(isle){isle.loop=true;isle.volume=0.32;var p2=isle.play();if(p2&&p2.catch)p2.catch(function(){});}
   }
 }
 
@@ -304,9 +306,9 @@ function initGame(){
           if(h>0.05){
             var ratios={
               'nani':1.8,'jumba':2.5,
-              'lilo':1.25,    // un peu plus grand que Stitch, moitié moins que Nani
+              'lilo':1.6,     // bien visible, entre Stitch et Nani
               'pleakley':1.9,
-              'angel':1.0,'lilo2':1.25,'hamster':0.65,
+              'angel':1.0,'lilo2':1.6,'hamster':0.65,
               'cobra':2.2,'councilwoman':1.7,'wendy':1.8
             };
             var ratio=ratios[c.id]||1.2;
@@ -488,7 +490,10 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
       if(P.y>=WATER_SURFACE-.05){P.y=WATER_SURFACE;P.state='surface';P.vy=0;toast('Stitch reprend son souffle ! 💨',2000);}
       if(P.y<-11.5){P.y=-11.5;P.vy=0;}
       if(P.breath<=0){P.vy=7;P.state='surface';P.breath=25;toast('Plus d air ! 😮‍💨',2000);}
-      if(gy!==null&&gy>WATER_SURFACE+0.3&&P.y>=gy+P.yOff-0.05&&P.vy>=0){P.y=gy+P.yOff;P.vy=0;P.state='ground';}
+      // Remonter sur l'île seulement si on est vraiment à la surface ET proche du bord
+      if(gy!==null&&gy>WATER_SURFACE+0.3&&P.y>=WATER_SURFACE-0.2&&P.vy>=0){
+        P.y=gy+P.yOff;P.vy=0;P.state='ground';
+      }
     }
     var PRAD=1.0,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
     for(var wi=0;wi<walls.length;wi++){var w=walls[wi];if(P.y-P.yOff>w.y0+w.h)continue;var inX=nx+PRAD>w.x1&&nx-PRAD<w.x2,inZ=nz+PRAD>w.z1&&nz-PRAD<w.z2;var curX=P.x+PRAD>w.x1&&P.x-PRAD<w.x2,curZ=P.z+PRAD>w.z1&&P.z-PRAD<w.z2;if(inX&&inZ){if(!curX){P.vx=0;nx=P.x;}if(!curZ){P.vz=0;nz=P.z;}}}
@@ -616,14 +621,13 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
 
   // Équiper le pistolet : Stitch le tient à la main
   window.equipGun=function(){
-    if(window._gunEquipped)return;
     window._gunEquipped=true;
-    // Créer/montrer le pistolet attaché à Stitch
+    // Créer le pistolet si pas encore fait
     if(!window._gunEl3D){
       var g=document.createElement('a-gltf-model');
       g.setAttribute('src','#watergunGLB');
       g.setAttribute('scale','1.2 1.2 1.2');
-      g.setAttribute('position','0.5 0.8 0.3');  // à la main droite
+      g.setAttribute('position','0.5 0.8 0.3');
       g.setAttribute('rotation','0 -30 -20');
       g.id='gun-on-stitch';
       document.getElementById('stitch-root').appendChild(g);
@@ -631,7 +635,6 @@ P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     } else {
       window._gunEl3D.setAttribute('visible','true');
     }
-    // Afficher boutons TIR + RANGER
     document.getElementById('gun-btns').style.display='flex';
     toast('🔫 Pistolet équipé ! Appuie TIR pour arroser !',2000);
   };
