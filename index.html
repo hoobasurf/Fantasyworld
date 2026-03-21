@@ -628,38 +628,51 @@ function initGame(){
     window._liloEl3D=null;
     window._crystalShards=[];
 
-    // Créer les 5 morceaux de cristal cassé sur l'île (positions variées)
+    // 5 cristaux — positions proches et bien espacées autour de Stitch (spawn à 0,0,5)
     var shardPositions=[
-      {x:20,  z:35,  ry:0},
-      {x:-25, z:15,  ry:45},
-      {x:10,  z:-15, ry:90},
-      {x:-15, z:-30, ry:120},
-      {x:40,  z:10,  ry:200}
+      {x:15,  z:8},
+      {x:-14, z:12},
+      {x:5,   z:-12},
+      {x:-10, z:-8},
+      {x:22,  z:-5}
     ];
     shardPositions.forEach(function(sp,i){
       var shard=document.createElement('a-entity');
       shard.id='shard-'+i;
-      // Morceau de cristal cassé : petit prisme irrégulier cyan
+
+      // Gros cristal très visible — 3 couches
       var s1=document.createElement('a-sphere');
-      s1.setAttribute('radius','0.28');
-      s1.setAttribute('scale',(0.5+Math.random()*0.3).toFixed(2)+' '+(0.8+Math.random()*0.6).toFixed(2)+' '+(0.4+Math.random()*0.3).toFixed(2));
-      s1.setAttribute('material','color:#00ffee;emissive:#00ccff;emissiveIntensity:1.4;transparent:true;opacity:0.9;roughness:0;metalness:0.9');
+      s1.setAttribute('radius','0.7'); // 2.5x plus grand
+      s1.setAttribute('scale','0.6 1.4 0.6');
+      s1.setAttribute('material','color:#00ffee;emissive:#00eeff;emissiveIntensity:2.5;transparent:true;opacity:0.95;roughness:0;metalness:0.8');
       shard.appendChild(s1);
+
       var s2=document.createElement('a-sphere');
-      s2.setAttribute('radius','0.16');
-      s2.setAttribute('position','0.1 0.3 0.05');
-      s2.setAttribute('material','color:#ffffff;emissive:#aaffff;emissiveIntensity:2.0;transparent:true;opacity:0.7');
+      s2.setAttribute('radius','0.45');
+      s2.setAttribute('scale','1 0.5 1');
+      s2.setAttribute('position','0 0.6 0');
+      s2.setAttribute('material','color:#ffffff;emissive:#aaffff;emissiveIntensity:3.0;transparent:true;opacity:0.8');
       shard.appendChild(s2);
+
+      // Anneau lumineux autour
+      var ring=document.createElement('a-torus');
+      ring.setAttribute('radius','0.8');ring.setAttribute('radius-tubular','0.06');
+      ring.setAttribute('rotation','90 0 0');
+      ring.setAttribute('material','color:#00ffee;emissive:#00ffee;emissiveIntensity:3.0;transparent:true;opacity:0.7');
+      ring.setAttribute('animation','property:rotation;from:90 0 0;to:90 360 0;loop:true;dur:1200;easing:linear');
+      shard.appendChild(ring);
+
+      // Lumière puissante visible de loin
       var sl=document.createElement('a-light');
       sl.setAttribute('type','point');sl.setAttribute('color','#00ffee');
-      sl.setAttribute('intensity','1.4');sl.setAttribute('distance','8');
+      sl.setAttribute('intensity','3.0');sl.setAttribute('distance','20'); // visible à 20 unités
       shard.appendChild(sl);
-      shard.setAttribute('position',sp.x+' 0.8 '+sp.z);
-      shard.setAttribute('rotation','0 '+sp.ry+' 15');
-      shard.setAttribute('animation','property:position;from:'+sp.x+' 0.8 '+sp.z+';to:'+sp.x+' 1.5 '+sp.z+';loop:true;dur:'+(1400+i*200)+';dir:alternate;easing:easeInOutSine');
-      shard.setAttribute('animation__r','property:rotation;from:0 '+sp.ry+' 15;to:0 '+(sp.ry+360)+' 15;loop:true;dur:'+(2000+i*300)+';easing:linear');
+
+      shard.setAttribute('position',sp.x+' 1.2 '+sp.z);
+      shard.setAttribute('animation__bob','property:position;from:'+sp.x+' 1.2 '+sp.z+';to:'+sp.x+' 2.2 '+sp.z+';loop:true;dur:'+(1200+i*150)+';dir:alternate;easing:easeInOutSine');
+      shard.setAttribute('animation__rot','property:rotation;from:0 0 0;to:0 360 0;loop:true;dur:'+(1800+i*200)+';easing:linear');
       shard._shardPos={x:sp.x,z:sp.z};
-      shard.setAttribute('visible','false'); // invisible jusqu'au début de la mission
+      shard.setAttribute('visible','false');
       shard._collected=false;
       W.appendChild(shard);
       window._crystalShards.push(shard);
@@ -1066,17 +1079,20 @@ function initGame(){
 
       // ÉTAPE 1 : Ramasser les 5 morceaux de cristal
       if(fm.step==='collect'&&window._crystalShards){
+        // Flèche vers le cristal le plus proche non collecté
+        var nearest=null,nearestDist=9999;
         window._crystalShards.forEach(function(shard){
           if(shard._collected)return;
           var sp=shard._shardPos;
           var cdx=P.x-sp.x,cdz=P.z-sp.z;
-          if(cdx*cdx+cdz*cdz<6.25){ // rayon 2.5
+          var d=Math.sqrt(cdx*cdx+cdz*cdz);
+          if(d<nearestDist){nearestDist=d;nearest=shard;}
+          if(cdx*cdx+cdz*cdz<16){ // rayon 4 unités (plus facile)
             shard._collected=true;
             shard.setAttribute('visible','false');
             fm.crystals++;
             playSound('sndCollect');
             toast('💎 Morceau '+fm.crystals+'/5 ! '+(fm.crystals<5?'Continue !':'Retourne voir Jumba !'),1800);
-            document.getElementById('jetpack-hud').textContent='💎 Cristaux : '+fm.crystals+'/5'+(fm.crystals>=5?' — Retourne voir Jumba !':'');
             if(fm.crystals>=5){
               fm.step='return_jumba';
               playSound('sndLaugh');
@@ -1084,6 +1100,19 @@ function initGame(){
             }
           }
         });
+        // Afficher direction vers le plus proche
+        if(nearest&&fm.step==='collect'){
+          var sp2=nearest._shardPos;
+          var angle=Math.atan2(sp2.x-P.x,sp2.z-P.z);
+          var camAngle=angle-P.yaw;
+          // Convertir en flèche simple
+          var arrows=['↑','↗','→','↘','↓','↙','←','↖'];
+          var arrowIdx=Math.round(((camAngle*180/Math.PI+360)%360)/45)%8;
+          var arrow=arrows[arrowIdx];
+          var dist=Math.round(nearestDist);
+          var jhud3=document.getElementById('jetpack-hud');
+          if(jhud3)jhud3.textContent='💎 '+fm.crystals+'/5  '+arrow+'  '+dist+'m — '+(dist<8?'Tout près !':'Cherche !');
+        }
       }
 
       // ÉTAPE 2 : Retourner chez Jumba (pos -12, 10)
