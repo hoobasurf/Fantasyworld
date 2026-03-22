@@ -117,31 +117,19 @@ FIX 1 — LOGIN SCREEN avec vraies photos
     <div class="login-chars">
 
 ```
-  <!-- STITCH — photo IMG_3054.jpeg -->
+  <!-- STITCH -->
   <div class="char-btn selected" id="char-stitch" onclick="selectChar('stitch')">
-    <div class="char-preview">
-      <img
-        class="char-photo"
-        src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/IMG_3054.jpeg"
-        alt="Stitch"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-      />
-      <div class="char-photo-fallback">👽</div>
+    <div class="char-preview" id="preview-stitch">
+      <div class="char-photo-fallback" id="fb-stitch" style="display:flex;font-size:62px;align-items:center;justify-content:center;width:110px;height:110px;border-radius:12px;background:linear-gradient(160deg,#0a1a3a,#1a3a8a)">👽</div>
     </div>
     <div id="stitch-taken-overlay" class="taken-overlay" style="display:none">🔒 Pris</div>
     <small>Stitch</small>
   </div>
 
-  <!-- ANGEL — photo IMG_3055.jpeg -->
+  <!-- ANGEL -->
   <div class="char-btn" id="char-angel" onclick="selectChar('angel')">
-    <div class="char-preview">
-      <img
-        class="char-photo"
-        src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/IMG_3055.jpeg"
-        alt="Angel"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-      />
-      <div class="char-photo-fallback">💜</div>
+    <div class="char-preview" id="preview-angel">
+      <div class="char-photo-fallback" id="fb-angel" style="display:flex;font-size:62px;align-items:center;justify-content:center;width:110px;height:110px;border-radius:12px;background:linear-gradient(160deg,#2a0a3a,#6a1a8a)">💜</div>
     </div>
     <div id="angel-taken-overlay" class="taken-overlay" style="display:none">🔒 Pris</div>
     <small>Angel</small>
@@ -253,7 +241,8 @@ device-orientation-permission-ui="enabled:false">
 <a-entity id="world"></a-entity>
 
 <a-entity id="stitch-root" position="0 2 5">
-  <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false"></a-gltf-model>
+  <a-gltf-model id="stitch-model" src="#stitchGLB" shadow="cast:true;receive:false" visible="true"></a-gltf-model>
+  <a-gltf-model id="angel-model" src="#angelGLB"  shadow="cast:true;receive:false" visible="false"></a-gltf-model>
 </a-entity>
 <a-circle id="stitch-shadow" radius="0.6" rotation="-90 0 0" position="0 0.03 5" segments="8" material="color:#000000;transparent:true;opacity:0.0"></a-circle>
 
@@ -473,6 +462,32 @@ function doLogin(){
 
 // Verrou permanent sur le loading-screen : une fois caché, il ne réapparaît plus jamais
 window._gameStarted = false;
+
+// ── Chargement des photos de personnages ──
+// On essaie de charger les JPEG depuis GitHub.
+// Si ça échoue (CORS, 404), l'emoji par défaut reste visible.
+(function loadCharPhotos(){
+  var photos = [
+    { id:'preview-stitch', fb:'fb-stitch', url:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/IMG_3054.jpeg' },
+    { id:'preview-angel',  fb:'fb-angel',  url:'https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/IMG_3055.jpeg' }
+  ];
+  photos.forEach(function(p){
+    var img = document.createElement('img');
+    img.crossOrigin = 'anonymous';
+    img.style.cssText = 'width:110px;height:110px;border-radius:12px;object-fit:cover;object-position:center top;display:block;';
+    img.onload = function(){
+      var preview = document.getElementById(p.id);
+      var fb = document.getElementById(p.fb);
+      if(!preview) return;
+      if(fb) fb.style.display = 'none';
+      preview.appendChild(img);
+    };
+    img.onerror = function(){
+      // Fallback emoji reste, rien à faire
+    };
+    img.src = p.url;
+  });
+})();
 function lockLoadingScreen(){
   var loadEl=document.getElementById('loading-screen');
   if(!loadEl)return;
@@ -509,13 +524,18 @@ function launchGame(name,char,progress){
     }catch(e){}
   }
 
-  // 4. Changer le modèle joueur si Angel
-  //    On attend que la scène soit prête pour éviter un rechargement
-  var modelEl=document.getElementById('stitch-model');
-  if(char==='angel' && modelEl){
-    // Désactiver le composant loader temporairement pour éviter le flash
-    modelEl.setAttribute('src','#angelGLB');
+  // 4. Changer le modèle joueur : afficher Angel ou Stitch
+  //    On utilise visible=true/false — JAMAIS changer src (ça recharge la scène !)
+  var stitchEl = document.getElementById('stitch-model');
+  var angelEl  = document.getElementById('angel-model');
+  if(char === 'angel'){
+    if(stitchEl) stitchEl.setAttribute('visible','false');
+    if(angelEl)  angelEl.setAttribute('visible','true');
+  } else {
+    if(stitchEl) stitchEl.setAttribute('visible','true');
+    if(angelEl)  angelEl.setAttribute('visible','false');
   }
+  window._playerChar = char;
 
   // 5. HUD nom
   var pills=document.querySelectorAll('.pill');
@@ -709,17 +729,21 @@ var _loadInterval=null;
   if(!scn){setTimeout(waitForAframe,100);return;}
 
   function launch(){
-    if(_initDone)return;
+    if(_initDone)return;  // verrou strict — ne jamais lancer 2 fois
     _initDone=true;
     if(_loadInterval){clearInterval(_loadInterval);_loadInterval=null;}
     setLoadMsg('Prêt ! Aloha 🌺',100);
-    try{initGame();setTimeout(hideLoadingScreen,300);}
-    catch(e){console.error('initGame:',e);hideLoadingScreen();}
+    // Cacher le loading-screen AVANT initGame pour éviter tout flash
+    hideLoadingScreen();
+    try{initGame();}
+    catch(e){console.error('initGame:',e);}
   }
 
-  scn.addEventListener('loaded',launch);
-  if(scn.hasLoaded){launch();}
-  else{setTimeout(launch,6000);}
+  // {once:true} garantit que même si 'loaded' se retrigger (changement de modèle)
+  // launch() ne peut plus s'exécuter une 2e fois grâce au verrou _initDone
+  scn.addEventListener('loaded', launch, {once: true});
+  if(scn.hasLoaded){ launch(); }
+  else{ setTimeout(function(){ if(!_initDone) launch(); }, 8000); }
 
   _loadInterval=setInterval(function(){
     if(_initDone){clearInterval(_loadInterval);return;}
@@ -1006,17 +1030,21 @@ function initGame(){
             var mesh=dockEl.getObject3D('mesh');if(!mesh)return;
             var box=new AFRAME.THREE.Box3().setFromObject(mesh);
             var h=box.max.y-box.min.y;
-            var w=Math.max(box.max.x-box.min.x, box.max.z-box.min.z);
-            if(h<0.001)return;
-            // Échelle basée sur la plus grande dimension → dock ~9 unités de large
-            var sc=9/Math.max(h,w,0.001);
-            sc=Math.min(Math.max(sc,0.001),500);
-            // posY : le sommet du modèle (planches) doit être exactement à PLANK_Y
-            // posY + box.max.y*sc = PLANK_Y  =>  posY = PLANK_Y - box.max.y*sc
+            var wx=box.max.x-box.min.x;
+            var wz=box.max.z-box.min.z;
+            // Utiliser la plus grande dimension pour déterminer l'échelle
+            // Le dock doit faire ~10 unités dans sa plus grande direction
+            var biggest=Math.max(h,wx,wz,0.0001);
+            var sc=10/biggest;
+            sc=Math.min(Math.max(sc,0.001),10000);
+            // posY : sommet du modèle (planches) à PLANK_Y
             var posY = PLANK_Y - box.max.y*sc;
+            // Sécurité : si posY est absurde (GLB mal orienté), utiliser fallback
+            if(posY < -50 || posY > 10) posY = PLANK_Y - (h*sc*0.3);
             dockEl.setAttribute('scale',sc+' '+sc+' '+sc);
             dockEl.setAttribute('position',gx.toFixed(1)+' '+posY.toFixed(2)+' '+gz.toFixed(1));
-            addPlatform(gx,gz,PLANK_Y,4.5,4.5);
+            addPlatform(gx,gz,PLANK_Y,5,5);
+            console.log('Dock loaded: h='+h.toFixed(4)+' sc='+sc.toFixed(2)+' posY='+posY.toFixed(2));
           }catch(e){console.warn('dock err',e);}
         });
         dockEl.addEventListener('model-error',function(){
@@ -1398,10 +1426,18 @@ function initGame(){
   function rb(k,rx,ry,rz){var b=BONES[k];if(!b)return;var r=BONE_REST[k]||{x:0,y:0,z:0};b.rotation.x=r.x+(rx||0);b.rotation.y=r.y+(ry||0);b.rotation.z=r.z+(rz||0);}
 
   var stitchModel=document.getElementById('stitch-model');
+  var angelModelEl=document.getElementById('angel-model');
+
+  // Fonction commune d'auto-scale pour les modèles joueur
+  function scalePlayerModel(el, targetH){
+    var mesh=el.getObject3D('mesh');if(!mesh)return;
+    var box=new THREE.Box3().setFromObject(mesh);
+    var h=box.max.y-box.min.y;
+    if(h>.05){var sc=targetH/h;el.setAttribute('scale',sc+' '+sc+' '+sc);}
+  }
+
   stitchModel.addEventListener('model-loaded',function(){
-    var mesh=stitchModel.getObject3D('mesh');if(!mesh)return;
-    var box=new THREE.Box3().setFromObject(mesh);var h=box.max.y-box.min.y;
-    if(h>.05){var sc=1.4/h;stitchModel.setAttribute('scale',sc+' '+sc+' '+sc);}
+    scalePlayerModel(stitchModel, 1.4);
     setTimeout(function(){
       var mesh2=stitchModel.getObject3D('mesh');if(!mesh2)return;
       var b2=new THREE.Box3().setFromObject(mesh2);P.yOff=Math.abs(b2.min.y)+.06;
@@ -1410,8 +1446,24 @@ function initGame(){
       var clips=[],cur=mesh2;while(cur){if(cur.animations&&cur.animations.length){clips=cur.animations;break;}cur=cur.parent;}
       if(clips.length>0){stitchMixer=new THREE.AnimationMixer(cur);nativeAction=stitchMixer.clipAction(clips[0]);nativeAction.setLoop(THREE.LoopRepeat,Infinity);nativeAction.timeScale=0;nativeAction.play();}
     },300);
-    toast('Bienvenue sur Stitch Island ! 🏝',4000);
+    if(!window._gameStarted)toast('Bienvenue sur Stitch Island ! 🏝',4000);
   });
+
+  // Angel : auto-scale quand le modèle est chargé
+  if(angelModelEl){
+    angelModelEl.addEventListener('model-loaded',function(){
+      scalePlayerModel(angelModelEl, 1.4);
+      // Si on joue Angel, mettre à jour yOff aussi
+      if(window._playerChar==='angel'){
+        setTimeout(function(){
+          var mesh=angelModelEl.getObject3D('mesh');if(!mesh)return;
+          var b=new THREE.Box3().setFromObject(mesh);
+          P.yOff=Math.abs(b.min.y)+.06;
+          var gy0=getGroundY(P.x,P.z);if(gy0!==null)P.y=gy0+P.yOff;
+        },300);
+      }
+    });
+  }
 
   function animateStitch(dt,moveMag,state,sprint){
     if(!Object.keys(BONES).length)return;
