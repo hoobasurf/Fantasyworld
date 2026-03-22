@@ -10,7 +10,6 @@
 #jnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:radial-gradient(circle,#ff88bb,#e8174a 60%,#8a0020);border:2.5px solid rgba(255,180,200,.8);box-shadow:0 3px 10px rgba(200,20,60,.5);}
 #rjoy{position:fixed;right:14px;bottom:14px;z-index:30;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(0,220,180,.22),rgba(0,120,100,.16));border:2px solid rgba(100,255,220,.45);touch-action:none;pointer-events:all;box-shadow:0 0 14px rgba(0,200,160,.2);}
 #rjnub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:radial-gradient(circle,#5fffdc,#00c8a8 60%,#005a50);border:2px solid rgba(100,255,220,.7);box-shadow:0 3px 8px rgba(0,150,120,.5);}
-/* ── ÉCRAN DE CHARGEMENT ── */
 #loading-screen{
   position:fixed;inset:0;z-index:999;
   background:linear-gradient(160deg,#1a5a8a 0%,#0a2a50 40%,#1a0a30 100%);
@@ -63,18 +62,18 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 #gun-btns{position:fixed;bottom:110px;right:14px;z-index:30;display:none;flex-direction:column;gap:8px;align-items:flex-end}
 #btn-fire{background:radial-gradient(circle at 40% 35%,#ff88aa,#e8174a 60%,#8a0020 100%);border:2.5px solid #ffaacc;border-radius:50%;width:62px;height:62px;color:#fff;font-size:9px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(220,20,60,.5);text-shadow:0 1px 3px rgba(0,0,0,.5);}
 #btn-holster{background:radial-gradient(circle at 40% 35%,#ffe566,#ff9900 60%,#7a3000 100%);border:2.5px solid #ffd966;border-radius:50%;width:52px;height:52px;color:#fff;font-size:8px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(200,100,0,.5);text-shadow:0 1px 3px rgba(0,0,0,.5);}
-/* Pistolet collectible flottant */
 #gun-pickup-hint{position:fixed;bottom:160px;left:50%;transform:translateX(-50%);z-index:40;background:linear-gradient(135deg,rgba(0,180,120,.92),rgba(0,100,80,.9));border:2px solid #88ffcc;border-radius:12px;padding:6px 16px;color:#fff;font-size:11px;font-family:Georgia,serif;display:none;white-space:nowrap;pointer-events:none;animation:pulse 1s infinite alternate;text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 3px 12px rgba(0,150,100,.5);}
 @keyframes pulse{from{border-color:#88ffcc;box-shadow:0 3px 12px rgba(0,150,100,.5)}to{border-color:#ffffff;box-shadow:0 3px 18px rgba(0,200,150,.8)}}
-/* HUD Jetpack */
 #jetpack-hud{position:fixed;top:115px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(0,20,60,.88);border:2px solid #00ffee;border-radius:14px;padding:5px 14px;font-family:Georgia,serif;font-size:11px;color:#00ffee;text-align:center;pointer-events:none;text-shadow:0 0 8px #00ffee;}
-/* Dialogue Jumba */
 #jumba-dialog{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:50;display:none;background:rgba(10,0,40,.96);border:2px solid #00ffee;border-radius:16px;padding:12px 18px;font-family:Georgia,serif;color:#fff;text-align:center;max-width:300px;}
 #jumba-dialog h3{color:#00ffee;font-size:13px;margin-bottom:6px;}
 #jumba-dialog p{font-size:10px;line-height:1.5;margin-bottom:10px;color:#ddd;}
 #jumba-dialog button{background:#0066cc;border:none;color:#fff;padding:6px 16px;border-radius:8px;font-size:11px;cursor:pointer;margin:3px;}
 #jumba-dialog button.decline{background:#555;}
-/* ── ÉCRAN LOGIN ── */
+
+/* ════════════════════════════════════
+FIX 1 — LOGIN SCREEN avec vraies photos
+════════════════════════════════════ */
 #login-screen{position:fixed;inset:0;z-index:1000;background:linear-gradient(160deg,#1a5a8a,#0a2a50 50%,#1a0830);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Georgia,serif;}
 #login-box{background:rgba(0,10,30,.92);border:2px solid rgba(255,160,200,.4);border-radius:24px;padding:28px 24px;width:300px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.6);}
 #login-box h2{color:#fff;font-size:20px;margin-bottom:4px;letter-spacing:1px;}
@@ -84,6 +83,9 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 .char-btn:active,.char-btn.selected{border-color:#ffcc00;background:rgba(255,200,0,.12);box-shadow:0 0 18px rgba(255,200,0,.3);}
 .char-btn.taken{border-color:rgba(255,255,255,.1);opacity:.55;cursor:not-allowed;pointer-events:none;}
 .char-preview{width:110px;height:110px;border-radius:12px;overflow:hidden;position:relative;}
+/* Photo de personnage */
+.char-photo{width:110px;height:110px;border-radius:12px;display:block;object-fit:cover;object-position:center top;}
+.char-photo-fallback{display:none;width:110px;height:110px;border-radius:12px;background:linear-gradient(160deg,#0a1a3a,#1a2a5a);align-items:center;justify-content:center;font-size:52px;}
 .taken-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:13px;color:#ffaaaa;border-radius:12px;pointer-events:none;}
 .char-btn small{color:#fff;font-size:11px;font-family:Georgia,serif;margin-top:6px;font-weight:bold;letter-spacing:.5px;}
 .login-input{width:100%;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;font-family:Georgia,serif;margin-bottom:10px;outline:none;box-sizing:border-box;}
@@ -93,19 +95,20 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 #login-btn:active{opacity:.85;}
 #login-err{color:#ff8888;font-size:10px;margin-top:8px;min-height:16px;}
 #login-other{color:#aaddff;font-size:10px;margin-top:10px;cursor:pointer;text-decoration:underline;}
-/* Badge joueur 2 */
 #p2-badge{position:fixed;top:42px;right:12px;z-index:30;background:rgba(180,0,120,.85);border:2px solid #ff88cc;border-radius:12px;padding:3px 10px;font-family:Georgia,serif;font-size:10px;color:#fff;display:none;pointer-events:none;}
-.pill{background:linear-gradient(135deg,rgba(255,100,150,.85),rgba(255,60,80,.75));border-radius:18px;padding:5px 14px;font-family:Georgia,serif;font-size:9px;color:#fff;border:1.5px solid rgba(255,180,200,.5);text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(0,0,0,.3);font-weight:bold;letter-spacing:.3px;}
 #backpack-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);align-items:center;justify-content:center;}
 #backpack-box{background:linear-gradient(135deg,#3a1a10,#5a2a10,#3a1a10);border:3px solid #ff9900;border-radius:20px;padding:20px;width:290px;max-height:70vh;overflow-y:auto;position:relative;box-shadow:0 8px 30px rgba(200,80,0,.5);}
 #backpack-box h2{color:#ffd966;font-family:Georgia,serif;font-size:15px;text-align:center;margin-bottom:14px;text-shadow:0 1px 6px rgba(255,150,0,.5);}
 .bp-item{display:flex;align-items:center;gap:10px;background:rgba(255,150,50,.15);border:1px solid rgba(255,180,80,.25);border-radius:10px;padding:8px 12px;margin-bottom:8px;font-family:Georgia,serif;font-size:12px;color:#fff;}
 .bp-item span{font-size:22px}
 </style>
+
 </head>
 <body>
 
-<!-- ── ÉCRAN LOGIN ── -->
+<!-- ═══════════════════════════════════
+     FIX 1 — ÉCRAN LOGIN avec vraies photos GitHub
+     ═══════════════════════════════════ -->
 
 <div id="login-screen">
   <div id="login-box">
@@ -114,19 +117,31 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
     <div class="login-chars">
 
 ```
-  <!-- STITCH -->
+  <!-- STITCH — photo IMG_3054.jpeg -->
   <div class="char-btn selected" id="char-stitch" onclick="selectChar('stitch')">
     <div class="char-preview">
-      <canvas id="canvas-stitch" width="110" height="110" style="border-radius:12px;display:block;background:linear-gradient(160deg,#0a1a3a,#1a2a5a)"></canvas>
+      <img
+        class="char-photo"
+        src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/IMG_3054.jpeg"
+        alt="Stitch"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+      />
+      <div class="char-photo-fallback">👽</div>
     </div>
     <div id="stitch-taken-overlay" class="taken-overlay" style="display:none">🔒 Pris</div>
     <small>Stitch</small>
   </div>
 
-  <!-- ANGEL -->
+  <!-- ANGEL — photo IMG_3055.jpeg -->
   <div class="char-btn" id="char-angel" onclick="selectChar('angel')">
     <div class="char-preview">
-      <canvas id="canvas-angel" width="110" height="110" style="border-radius:12px;display:block;background:linear-gradient(160deg,#1a0a2a,#3a1a4a)"></canvas>
+      <img
+        class="char-photo"
+        src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/IMG_3055.jpeg"
+        alt="Angel"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+      />
+      <div class="char-photo-fallback">💜</div>
     </div>
     <div id="angel-taken-overlay" class="taken-overlay" style="display:none">🔒 Pris</div>
     <small>Angel</small>
@@ -311,6 +326,7 @@ device-orientation-permission-ui="enabled:false">
 <div id="mission-hud">
   🍦 <span id="mission-count">0</span>/20 glaces &nbsp;|&nbsp; ⏱ <span id="mission-timer">90</span>s
 </div>
+<div id="gun-pickup-hint">🔫 APPUIE sur RAMASSER pour prendre le pistolet !</div>
 <div id="map-overlay" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);align-items:center;justify-content:center;">
   <div style="background:#1a2a1a;border:2px solid #7de8ff;border-radius:16px;padding:16px;width:280px;position:relative;">
     <div style="color:#7de8ff;font-family:Georgia,serif;font-size:13px;text-align:center;margin-bottom:10px">🗺 CARTE DE STITCH ISLAND</div>
@@ -331,7 +347,6 @@ window._currentPlayer={name:'',char:'stitch',loggedIn:false};
 window._selectedChar='stitch';
 window._otherPlayerEl=null;
 
-// ── Appel Supabase REST générique ──
 function supa(method,table,body,filters){
   var url=SUPA_URL+'/rest/v1/'+table;
   if(filters)url+='?'+filters;
@@ -347,42 +362,18 @@ function supa(method,table,body,filters){
   }).then(function(r){return r.json();}).catch(function(){return null;});
 }
 
-// ── Hash simple mot de passe (côté client, suffisant pour un jeu) ──
 function hashPass(pass){
   var h=0;
   for(var i=0;i<pass.length;i++){h=((h<<5)-h)+pass.charCodeAt(i);h|=0;}
   return 'h'+Math.abs(h).toString(36);
 }
 
-// ── Previews login : emojis animés CSS, zéro script externe ──
+// ── NE PLUS dessiner les canvas — on utilise les vraies photos ──
 window.addEventListener('load',function(){
-  // Dessiner emojis sur canvas simplement
-  [['canvas-stitch','#0d1f3c','👽'],['canvas-angel','#1a0a2a','💜']].forEach(function(c){
-    var cv=document.getElementById(c[0]);
-    if(!cv)return;
-    var ctx=cv.getContext('2d');
-    // Fond dégradé
-    var grad=ctx.createRadialGradient(55,55,10,55,55,60);
-    grad.addColorStop(0,c[0]==='canvas-stitch'?'#1a3a6a':'#2a0a4a');
-    grad.addColorStop(1,c[0]==='canvas-stitch'?'#0a1a3a':'#1a0a2a');
-    ctx.fillStyle=grad;ctx.fillRect(0,0,110,110);
-    // Étoiles
-    ctx.fillStyle='rgba(255,255,255,0.6)';
-    [[15,20],[90,15],[30,85],[85,75],[50,10],[70,90],[10,50],[100,50]].forEach(function(s){
-      ctx.fillRect(s[0],s[1],1.5,1.5);
-    });
-    // Emoji grand
-    ctx.font='58px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(c[2],55,52);
-    // Nom en dessous
-    ctx.font='bold 13px Georgia,serif';ctx.fillStyle='rgba(255,255,255,0.85)';
-    ctx.fillText(c[0]==='canvas-stitch'?'STITCH':'ANGEL',55,95);
-  });
   refreshCharAvailability();
   setInterval(refreshCharAvailability,2000);
 });
 
-// ── Vérifier persos pris via Supabase ──
 function refreshCharAvailability(){
   supa('GET','si_online',null,'select=player_name,char&updated_at=gte.'+new Date(Date.now()-10000).toISOString()).then(function(rows){
     if(!rows||!Array.isArray(rows))return;
@@ -425,7 +416,6 @@ function setLoginErr(msg,ok){
   err.textContent=msg;
 }
 
-// ── MODE : inscription ──
 function showRegister(){
   document.getElementById('login-other').textContent='Déjà un compte ? Se connecter';
   document.getElementById('login-other').onclick=showLogin;
@@ -439,20 +429,16 @@ function showLogin(){
   document.getElementById('login-btn').onclick=doLogin;
 }
 
-// ── INSCRIPTION Supabase ──
 function doRegister(){
   var name=document.getElementById('login-name').value.trim();
   var pass=document.getElementById('login-pass').value;
   if(!name||name.length<2){setLoginErr('Prénom trop court (min 2 lettres)');return;}
   if(!pass||pass.length<4){setLoginErr('Mot de passe trop court (min 4 car.)');return;}
   setLoginErr('Création du compte...');
-  // Vérifier si nom existe déjà
   supa('GET','si_players',null,'select=name&name=eq.'+encodeURIComponent(name)).then(function(rows){
     if(rows&&rows.length>0){setLoginErr('Ce prénom est déjà pris !');return;}
-    // Créer le joueur
     supa('POST','si_players',{name:name,password_hash:hashPass(pass),char:window._selectedChar}).then(function(r){
       if(!r||r.length===0||r.error){setLoginErr('Erreur création : '+(r&&r.error?r.error.message:'?'));return;}
-      // Créer progression vide
       supa('POST','si_progress',{player_name:name,inventaire:[],mission_glaces_done:false,mission_vol_done:false,gun_collected:false});
       setLoginErr('Compte créé ! Bienvenue '+name+' ! 🌺',true);
       setTimeout(function(){launchGame(name,window._selectedChar,{});},900);
@@ -460,7 +446,6 @@ function doRegister(){
   });
 }
 
-// ── CONNEXION Supabase ──
 function doLogin(){
   var name=document.getElementById('login-name').value.trim();
   var pass=document.getElementById('login-pass').value;
@@ -471,10 +456,8 @@ function doLogin(){
     if(!rows||rows.length===0){setLoginErr('Compte introuvable — crée-en un !');return;}
     var user=rows[0];
     if(user.password_hash!==hashPass(pass)){setLoginErr('Mot de passe incorrect');return;}
-    // Charger progression
     supa('GET','si_progress',null,'select=*&player_name=eq.'+encodeURIComponent(name)).then(function(prog){
       var progress=(prog&&prog.length>0)?prog[0]:{};
-      // Mettre à jour le perso si changé
       supa('PATCH','si_players',{char:window._selectedChar},'name=eq.'+encodeURIComponent(name));
       setLoginErr('Aloha '+name+' ! 🌺',true);
       setTimeout(function(){launchGame(name,window._selectedChar,progress);},600);
@@ -482,27 +465,71 @@ function doLogin(){
   });
 }
 
-// ── LANCER LE JEU ──
+// ═══════════════════════════════════════════════
+// FIX 2 — LANCER LE JEU sans redémarrage
+// ═══════════════════════════════════════════════
+// FIX 2 — LANCER LE JEU sans redémarrage
+// ═══════════════════════════════════════════════
+
+// Verrou permanent sur le loading-screen : une fois caché, il ne réapparaît plus jamais
+window._gameStarted = false;
+function lockLoadingScreen(){
+  var loadEl=document.getElementById('loading-screen');
+  if(!loadEl)return;
+  loadEl.style.display='none';
+  loadEl.style.opacity='0';
+  loadEl.style.pointerEvents='none';
+  loadEl.style.zIndex='-999';
+  // Remplacer la div par un clone sans écouteurs pour bloquer tout réaffichage
+  // On override aussi les propriétés CSS via une règle inline !important
+  loadEl.setAttribute('style','display:none!important;opacity:0!important;pointer-events:none!important;z-index:-999!important;');
+}
+
 function launchGame(name,char,progress){
   window._currentPlayer={name:name,char:char,loggedIn:true,progress:progress};
+  window._gameStarted=true;
+
+  // 1. Cacher le login screen
   var ls=document.getElementById('login-screen');
-  ls.style.opacity='0';ls.style.transition='opacity .5s';
-  setTimeout(function(){ls.style.display='none';},500);
-  // Changer le modèle joueur
+  ls.style.cssText='display:none!important;opacity:0!important;pointer-events:none!important;';
+
+  // 2. Verrouiller le loading-screen immédiatement et définitivement
+  lockLoadingScreen();
+
+  // 3. Surveiller toute tentative de réaffichage (A-Frame recharge parfois la scène)
+  var loadEl=document.getElementById('loading-screen');
+  if(loadEl && !loadEl._mutationGuard){
+    loadEl._mutationGuard=true;
+    // Observer les changements de style sur le loading-screen
+    try{
+      var obs=new MutationObserver(function(){
+        if(window._gameStarted) lockLoadingScreen();
+      });
+      obs.observe(loadEl,{attributes:true,attributeFilter:['style','class']});
+    }catch(e){}
+  }
+
+  // 4. Changer le modèle joueur si Angel
+  //    On attend que la scène soit prête pour éviter un rechargement
   var modelEl=document.getElementById('stitch-model');
-  if(char==='angel')modelEl.setAttribute('src','#angelGLB');
-  // HUD nom
+  if(char==='angel' && modelEl){
+    // Désactiver le composant loader temporairement pour éviter le flash
+    modelEl.setAttribute('src','#angelGLB');
+  }
+
+  // 5. HUD nom
   var pills=document.querySelectorAll('.pill');
   if(pills.length>0)pills[pills.length-1].textContent='🌺 '+name;
-  // Restaurer progression
+
+  // 6. Restaurer progression
   if(progress.inventaire&&Array.isArray(progress.inventaire)){
     window.INVENTAIRE=progress.inventaire;
   }
-  // Démarrer multijoueur Supabase
+
+  // 7. Démarrer multijoueur Supabase
   startMultiplayer(name,char);
 }
 
-// ── SAUVEGARDE Supabase ──
 function saveProgress(){
   if(!window._currentPlayer.loggedIn)return;
   var name=window._currentPlayer.name;
@@ -515,24 +542,18 @@ function saveProgress(){
     pos_z:Math.round(window.P?window.P.z:0),
     updated_at:new Date().toISOString()
   };
-  // UPSERT progression
   supa('POST','si_progress',Object.assign({player_name:name},data));
-  // Fallback localStorage
   try{localStorage.setItem('si_save_'+name,JSON.stringify(data));}catch(e){}
 }
 setInterval(saveProgress,30000);
 window.addEventListener('beforeunload',saveProgress);
 
-// ── MULTIJOUEUR SUPABASE (polling 500ms) ──
 function startMultiplayer(myName,myChar){
-  // Écrire ma présence initiale
   supa('POST','si_online',{player_name:myName,char:myChar,pos_x:0,pos_y:0,pos_z:0,yaw:0,updated_at:new Date().toISOString()});
 
-  // Boucle multijoueur
   setInterval(function(){
     if(!window.P)return;
     var now=new Date().toISOString();
-    // Mettre à jour ma position
     supa('PATCH','si_online',{
       char:myChar,
       pos_x:parseFloat(P.x.toFixed(1)),
@@ -542,18 +563,16 @@ function startMultiplayer(myName,myChar){
       updated_at:now
     },'player_name=eq.'+encodeURIComponent(myName));
 
-    // Lire les autres joueurs actifs (dernière activité < 5s)
     var since=new Date(Date.now()-5000).toISOString();
     supa('GET','si_online',null,'select=*&player_name=neq.'+encodeURIComponent(myName)+'&updated_at=gte.'+since).then(function(rows){
       if(!rows||!Array.isArray(rows))return;
       if(rows.length===0){
-        // Plus personne en ligne → cacher badge et perso
         var badge=document.getElementById('p2-badge');
         if(badge)badge.style.display='none';
         if(window._otherPlayerEl)window._otherPlayerEl.setAttribute('visible','false');
         return;
       }
-      var other=rows[0]; // max 2 joueurs
+      var other=rows[0];
       var badge=document.getElementById('p2-badge');
       if(badge){
         badge.style.display='block';
@@ -565,12 +584,10 @@ function startMultiplayer(myName,myChar){
         window._otherPlayerEl.setAttribute('visible','true');
         updateOtherPlayer({x:other.pos_x,y:other.pos_y,z:other.pos_z,yaw:other.yaw});
       }
-      // Grisage perso pris
       refreshCharAvailability();
     });
   },500);
 
-  // Nettoyer à la fermeture
   window.addEventListener('beforeunload',function(){
     navigator.sendBeacon(SUPA_URL+'/rest/v1/si_online?player_name=eq.'+encodeURIComponent(myName),
       JSON.stringify({updated_at:new Date(0).toISOString()}));
@@ -583,7 +600,6 @@ function spawnOtherPlayer(other){
   var ent=document.createElement('a-entity');
   ent.id='other-player';
   ent.setAttribute('position',other.x+' '+other.y+' '+other.z);
-  // Modèle selon personnage
   var src=other.char==='angel'?'#angelGLB':'#stitchGLB';
   var mdl=document.createElement('a-gltf-model');
   mdl.setAttribute('src',src);
@@ -597,7 +613,6 @@ function spawnOtherPlayer(other){
     }catch(e){}
   });
   ent.appendChild(mdl);
-  // Étiquette nom
   var lbl=document.createElement('a-text');
   lbl.setAttribute('value',other.name);
   lbl.setAttribute('position','0 2.2 0');
@@ -605,7 +620,6 @@ function spawnOtherPlayer(other){
   lbl.setAttribute('color','#ffcc00');
   lbl.setAttribute('width','4');
   ent.appendChild(lbl);
-  // Ombre
   var shad=document.createElement('a-circle');
   shad.setAttribute('radius','0.5');shad.setAttribute('rotation','-90 0 0');
   shad.setAttribute('position','0 0.02 0');
@@ -621,7 +635,6 @@ function updateOtherPlayer(other){
   window._otherPlayerEl.setAttribute('rotation','0 '+(other.yaw*180/Math.PI).toFixed(1)+' 0');
 }
 
-// ── AUDIO ──
 function playSound(id){
   try{
     var s=document.getElementById(id);
@@ -670,12 +683,12 @@ document.addEventListener('click',startMusic,{once:true});
 
 function toast(m,d){var t=document.getElementById('toast');if(!t)return;t.textContent=m;t.className='show';clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='';},d||3000);}
 
-// ── CHARGEMENT : tout dans DOMContentLoaded pour garantir AFRAME chargé ──
 function setLoadMsg(msg,pct){
   var lm=document.getElementById('loading-msg');if(lm)lm.textContent=msg;
   var lf=document.getElementById('loading-bar-fill');if(lf)lf.style.width=(pct||0)+'%';
 }
 function hideLoadingScreen(){
+  if(window._gameStarted){lockLoadingScreen();return;}
   var ls=document.getElementById('loading-screen');
   if(!ls)return;
   ls.style.opacity='0';
@@ -687,20 +700,11 @@ var _initDone=false;
 var _loadPct=5;
 var _loadInterval=null;
 
-// tryInitGame remplacé par waitForAframe ci-dessous
-
-// Démarrer quand AFRAME est prêt — via callback direct ou window.load
-window._onAframeReady=null; // inutilisé mais garde la compatibilité
-
-// ── DÉMARRAGE SIMPLE ET ROBUSTE ──
-// A-Frame synchrone dans le head garantit AFRAME dispo ici.
-// On attend juste que la scène soit initialisée.
 (function waitForAframe(){
   if(typeof AFRAME==='undefined'||!AFRAME.THREE){
     setTimeout(waitForAframe,100);
     return;
   }
-  // AFRAME prêt — connecter la scène
   var scn=document.querySelector('a-scene');
   if(!scn){setTimeout(waitForAframe,100);return;}
 
@@ -714,11 +718,9 @@ window._onAframeReady=null; // inutilisé mais garde la compatibilité
   }
 
   scn.addEventListener('loaded',launch);
-  // Fallback si loaded ne se déclenche pas (déjà chargé ou timeout)
   if(scn.hasLoaded){launch();}
   else{setTimeout(launch,6000);}
 
-  // Barre de progression
   _loadInterval=setInterval(function(){
     if(_initDone){clearInterval(_loadInterval);return;}
     _loadPct=Math.min(90,_loadPct+Math.random()*8);
@@ -776,7 +778,6 @@ function initGame(){
     mtnEl.addEventListener('model-error',function(){mk('cone',{'radius-bottom':'18','radius-top':'1',height:'20',position:'0 10 -20',material:'color:#7a6a50;roughness:.92',shadow:'cast:true'});mk('cone',{'radius-bottom':'12','radius-top':'1',height:'14',position:'-8 7 -25',material:'color:#6a5a40;roughness:.93',shadow:'cast:true'});mk('sphere',{radius:'10',position:'0 14 -20',scale:'1.2 .5 1',material:'color:#3a7a14;roughness:.85',shadow:'cast:true'});});
     W.appendChild(mtnEl);
 
-    // ── VAISSEAU DE STITCH sur le sommet de la montagne ──
     setTimeout(function(){
       var shipEl=document.createElement('a-gltf-model');
       shipEl.setAttribute('src','#spaceshipGLB');
@@ -794,7 +795,6 @@ function initGame(){
         var w=box.max.x-box.min.x;
         var biggest=Math.max(h,w);
         if(biggest>0.01){var sc=10/biggest;shipEl.setAttribute('scale',sc+' '+sc+' '+sc);}
-        // Lumière rouge sous le vaisseau
         var l=document.createElement('a-light');
         l.setAttribute('type','point');l.setAttribute('color','#ff2200');
         l.setAttribute('intensity','2.0');l.setAttribute('distance','30');
@@ -803,7 +803,6 @@ function initGame(){
         toast('🚀 Vaisseau de Stitch sur la montagne !',3000);
       });
       shipEl.addEventListener('model-error',function(){
-        // Fallback géométrique rouge si le GLB échoue
         var ship=document.createElement('a-entity');
         ship.setAttribute('position','0 28 -20');
         ship.setAttribute('animation','property:position;from:0 28 -20;to:0 30.5 -20;loop:true;dur:2800;dir:alternate;easing:easeInOutSine');
@@ -820,23 +819,16 @@ function initGame(){
     var plaque=mk('box',{id:'totem-plaque',width:'2.4',height:'1.2',depth:'.14',position:'0 1.5 -11.2',material:'color:#f5dfa0;roughness:.5',shadow:'cast:true'});
     plaque.setAttribute('class','clickable');
     mk('cone',{'radius-bottom':'.18','radius-top':'.01',height:'.4',position:'0 2.1 -12',material:'color:#cc2200'});
-    // Collision totem uniquement
     addWall(0,-12,0.8,3,0);
-    // Palmiers — collision tronc fin seulement
     [[18,48],[30,35],[45,15],[-18,50],[-32,33],[-46,12],[22,-22],[38,-10],[-24,-20],[-40,-8],[12,20],[-14,18],[28,5],[-30,5]].forEach(function(p,i){
       mk('gltf-model',{src:'#palmGLB',position:p[0]+' 0 '+p[1],rotation:'0 '+(i*26)+' 0',scale:'5 5 5',shadow:'cast:true'});
       addWall(p[0],p[1],0.35,12,0);
     });
-    // Montagne base
     addWall(0,-20,7,30,0);
-    // Maison Lilo
     addWall(-8,-6,4,8,0);
-    // Chariot Nani
     addWall(30,55,2,3,0);
-    // Fleurs et herbes : AUCUNE collision — Stitch passe à travers librement
     for(var vi=0;vi<20;vi++){var va=vi/20*Math.PI*2,vr=4+Math.random()*30;var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;makeGiantHibiscus(vx,GY+0.01,vz2);if(vi%2===0)makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);if(vi%3===0)makeFern(vx-1,GY+0.01,vz2-1);if(vi%4===0)makeMonstera(vx+1,GY+0.01,vz2-2);}
     for(var vi=0;vi<20;vi++){var va=Math.random()*Math.PI*2,vr=3+Math.random()*35;makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);}
-    // ── MAISON DE LILO ── scale fixe grand + Y sol
     var houseEl=document.createElement('a-gltf-model');
     houseEl.setAttribute('src','#houseGLB');
     houseEl.setAttribute('rotation','0 140 0');
@@ -846,27 +838,22 @@ function initGame(){
     houseEl.addEventListener('model-loaded',function(){
       try{
         var mesh=houseEl.getObject3D('mesh');if(!mesh)return;
-        // Mesurer avec scale=300 déjà appliqué
         var box=new AFRAME.THREE.Box3().setFromObject(mesh);
         var h=box.max.y-box.min.y;
-        // Si la hauteur est raisonnable (5-30 unités) → juste corriger Y
         if(h>0.5&&h<200){
-          // Corriger Y pour poser au sol
           var groundY=Math.max(0,-box.min.y);
           if(groundY<200)houseEl.setAttribute('position','-8 '+groundY.toFixed(1)+' -6');
         } else if(h>=200){
-          // Trop grand → réduire
           var sc=300*(14/h);
           houseEl.setAttribute('scale',sc+' '+sc+' '+sc);
           houseEl.setAttribute('position','-8 0 -6');
         } else {
-          // Trop petit → augmenter
           var sc2=300*(14/Math.max(h,0.01));
           houseEl.setAttribute('scale',sc2+' '+sc2+' '+sc2);
           houseEl.setAttribute('position','-8 0 -6');
         }
         toast('🏠 Maison de Lilo !',2000);
-      }catch(e){/* garde scale 300 */}
+      }catch(e){}
     });
     houseEl.addEventListener('model-error',function(){
       mk('box',{width:'12',height:'7',depth:'10',position:'-8 3.5 -6',material:'color:#d4a060;roughness:.85',shadow:'cast:true'});
@@ -904,10 +891,8 @@ function initGame(){
               var pp=c.pos.split(' ');
               shadow.setAttribute('position',pp[0]+' 0.02 '+pp[2]);
               document.getElementById('world').appendChild(shadow);
-              // ── COLLISION NPC : mur invisible autour du personnage ──
               addWall(parseFloat(pp[0]),parseFloat(pp[2]),0.6,3,0);
             }
-            // Animation GLB intégrée
             var obj=el.getObject3D('mesh');var clips=[],cur=obj;
             while(cur){if(cur.animations&&cur.animations.length){clips=cur.animations;break;}cur=cur.parent;}
             if(clips.length>0){
@@ -932,12 +917,10 @@ function initGame(){
     [[-35,50],[-42,28],[38,45],[44,24],[-18,65],[20,68]].forEach(function(p,i){mk('sphere',{radius:(2+i*.35).toFixed(1),position:p[0]+' 0.6 '+p[1],scale:'1 .5 1',material:'color:#7a6040;roughness:.95',shadow:'cast:true'});});
     [[-28,2],[30,-2],[14,-4],[-18,3]].forEach(function(p,i){mk('sphere',{radius:(1.5+i*.2).toFixed(1),position:p[0]+' -.2 '+p[1],scale:'1 .4 1',material:'color:#6a5030;roughness:.95'});});
 
-    // ── MOBILIER HAWAÏEN — chargement différé pour ne pas bloquer ──
     setTimeout(function(){
       var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
       var W2=document.getElementById('world');
 
-      // Fonction utilitaire : poser un GLB avec auto-scale
       function placeGLB(src,x,z,targetH,ry,collision){
         var el=document.createElement('a-gltf-model');
         el.setAttribute('src',src);
@@ -966,35 +949,24 @@ function initGame(){
         return el;
       }
 
-      // ── TIKI BARS (3 versions différentes) ──
-      placeGLB('#tikiBARGLB',   55,  30, 7, -30, 4);   // tiki bar 3 — zone est
-      placeGLB('#tikyBAR2GLB', -55,  40, 7, 150, 4);   // tiki bar 2 — zone ouest
-      placeGLB('#tikyBAR3GLB',  0,   80, 6,  0,  4);   // tiki bar 3 — bord nord
-
-      // ── PHARE ──
+      placeGLB('#tikiBARGLB',   55,  30, 7, -30, 4);
+      placeGLB('#tikyBAR2GLB', -55,  40, 7, 150, 4);
+      placeGLB('#tikyBAR3GLB',  0,   80, 6,  0,  4);
       placeGLB('#lighthouseGLB', 110, -55, 20, 20, 4);
-
-      // ── STATUES TIKI hawaïennes ──
       placeGLB('#tikistatueGLB',  45,  65, 5,   0, 1.5);
       placeGLB('#tikistatueGLB', -45,  60, 5, 180, 1.5);
       placeGLB('#tikistatueGLB',  65, -20, 4,  90, 1.5);
       placeGLB('#tikistatueGLB', -65, -15, 4, -90, 1.5);
-
-      // ── HAMMOCKS ──
       placeGLB('#hammockGLB',  25,  42, 2.5,  45, 0);
       placeGLB('#hammockGLB', -20,  38, 2.5, -30, 0);
       placeGLB('#hammockGLB',  38, -18, 2.5,  90, 0);
       placeGLB('#hammockGLB', -35,  70, 2.5,  15, 0);
-
-      // ── PLANCHES DE SURF (3 modèles variés) ──
       placeGLB('#surfboardGLB',   72, 12, 3,  10, 0);
       placeGLB('#surfboardGLB',   74, 17, 3, -15, 0);
       placeGLB('#surfboard2GLB',  76, 10, 3,  25, 0);
       placeGLB('#surfboard3GLB',  68, 20, 3,  -5, 0);
       placeGLB('#surfboard2GLB', -72, 25, 3, 170, 0);
       placeGLB('#surfboard3GLB', -74, 30, 3, 160, 0);
-
-      // ── PARASOLS + CHAISES ──
       placeGLB('#umbrellaGLB',   85,  25, 4,   0, 0);
       placeGLB('#umbrellaGLB',  -85,  35, 4,  90, 0);
       placeGLB('#umbrellaGLB',   60, -50, 4,  45, 0);
@@ -1003,29 +975,150 @@ function initGame(){
       placeGLB('#beachchairGLB', 89,  27, 1.5,-10, 0);
       placeGLB('#beachchairGLB',-83,  33, 1.5, 70, 0);
       placeGLB('#beachchairGLB', 62, -52, 1.5,110, 0);
-
-      // ── PROPS DE PLAGE (pack 6 objets) ──
       placeGLB('#beachpropsGLB', 50, -35, 4, 30, 0);
       placeGLB('#beachpackGLB', -50, -30, 5, -20, 0);
-
-      // ── TORCHES hawaïennes autour du village ──
       [[28,48],[-28,48],[48,28],[-48,28],[48,-28],[-48,-28],[0,55],[0,-55]].forEach(function(p,i){
         placeGLB('#torchGLB', p[0], p[1], 2.5, i*45, 0);
       });
-
-      // ── PALMIERS COCOTIERS supplémentaires ──
       [[90,45],[-90,40],[80,-35],[-80,-25],[100,5],[-100,15],[70,70],[-70,65]].forEach(function(p,i){
         placeGLB('#coconutpalmGLB', p[0], p[1], 12, i*40, 0);
       });
 
-      // ── DOCKS en bois aux bords de l'île ──
-      placeGLB('#dockGLB',  120,   0, 9, -90, 3);
-      placeGLB('#dockGLB', -120,  20, 9,  90, 3);
-      placeGLB('#dockGLB',   0,  130, 9,   0, 3);
+      // ═══════════════════════════════════════════════════════════
+      // FIX 3 — PONTONS DANS LA MER
+      // Poteaux dans le sable, planches accessibles depuis la plage
+      // ═══════════════════════════════════════════════════════════
+      function buildSeaDock(gx, gz, ry, rampAngleDeg){
+        // ── PONTON DANS LA MER ──
+        // Le centre du GLB est positionné à la lisière sable/eau.
+        // Les poteaux (bas du modèle) s'enfoncent dans le sable.
+        // Les planches (haut du modèle) sont à Y=0.5 — accessibles depuis la plage.
+        var PLANK_Y = 0.5;
+
+        var dockEl=document.createElement('a-gltf-model');
+        dockEl.setAttribute('src','#dockGLB');
+        dockEl.setAttribute('position',gx+' -5 '+gz); // pré-caché sous terre
+        dockEl.setAttribute('rotation','0 '+(ry||0)+' 0');
+        dockEl.setAttribute('scale','1 1 1');
+        dockEl.setAttribute('shadow','cast:true;receive:true');
+        dockEl.addEventListener('model-loaded',function(){
+          try{
+            var mesh=dockEl.getObject3D('mesh');if(!mesh)return;
+            var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+            var h=box.max.y-box.min.y;
+            var w=Math.max(box.max.x-box.min.x, box.max.z-box.min.z);
+            if(h<0.001)return;
+            // Échelle basée sur la plus grande dimension → dock ~9 unités de large
+            var sc=9/Math.max(h,w,0.001);
+            sc=Math.min(Math.max(sc,0.001),500);
+            // posY : le sommet du modèle (planches) doit être exactement à PLANK_Y
+            // posY + box.max.y*sc = PLANK_Y  =>  posY = PLANK_Y - box.max.y*sc
+            var posY = PLANK_Y - box.max.y*sc;
+            dockEl.setAttribute('scale',sc+' '+sc+' '+sc);
+            dockEl.setAttribute('position',gx.toFixed(1)+' '+posY.toFixed(2)+' '+gz.toFixed(1));
+            addPlatform(gx,gz,PLANK_Y,4.5,4.5);
+          }catch(e){console.warn('dock err',e);}
+        });
+        dockEl.addEventListener('model-error',function(){
+          // Fallback géométrique
+          var poleH=4.5;
+          [[-1.8,-2.5],[1.8,-2.5],[-1.8,2.5],[1.8,2.5]].forEach(function(off){
+            var pole=document.createElement('a-cylinder');
+            pole.setAttribute('radius','0.14');
+            pole.setAttribute('height',poleH.toFixed(1));
+            // centre du cylindre à PLANK_Y - poleH/2 : bas dans le sable, haut aux planches
+            pole.setAttribute('position',(gx+off[0]).toFixed(1)+' '+(PLANK_Y-poleH/2).toFixed(2)+' '+(gz+off[1]).toFixed(1));
+            pole.setAttribute('material','color:#7B5010;roughness:0.95');
+            W2.appendChild(pole);
+          });
+          var plank=document.createElement('a-box');
+          plank.setAttribute('width','4.2');plank.setAttribute('height','0.18');plank.setAttribute('depth','6.5');
+          plank.setAttribute('position',gx.toFixed(1)+' '+PLANK_Y+' '+gz.toFixed(1));
+          plank.setAttribute('rotation','0 '+(ry||0)+' 0');
+          plank.setAttribute('material','color:#A07830;roughness:0.9');
+          plank.setAttribute('shadow','cast:true;receive:true');
+          W2.appendChild(plank);
+          addPlatform(gx,gz,PLANK_Y,3.5,4.5);
+        });
+        W2.appendChild(dockEl);
+
+        // ── RAMPE D'ACCÈS DEPUIS LE SABLE ──
+        // rampAngleDeg pointe vers le centre de l'île (plage)
+        // La rampe part du sable (Y=0) et monte jusqu'aux planches (Y=PLANK_Y)
+        var rampRad=rampAngleDeg*Math.PI/180;
+        var rampLen=8; // longueur de la rampe (du sable jusqu'au ponton)
+        var rampHalf=rampLen/2;
+        var rampCX=gx+Math.sin(rampRad)*rampHalf;
+        var rampCZ=gz+Math.cos(rampRad)*rampHalf;
+        var rampCY=PLANK_Y/2; // Y moyen entre 0 et PLANK_Y
+        var rampPitch=Math.atan2(PLANK_Y,rampLen)*180/Math.PI; // ~3.6°
+
+        // Surface de la rampe
+        var rampEl=document.createElement('a-box');
+        rampEl.setAttribute('width','3.2');
+        rampEl.setAttribute('height','0.14');
+        rampEl.setAttribute('depth',rampLen.toFixed(1));
+        rampEl.setAttribute('position',rampCX.toFixed(1)+' '+rampCY.toFixed(2)+' '+rampCZ.toFixed(1));
+        rampEl.setAttribute('rotation',(-rampPitch).toFixed(2)+' '+(rampAngleDeg+180).toFixed(1)+' 0');
+        rampEl.setAttribute('material','color:#9B7830;roughness:0.9');
+        rampEl.setAttribute('shadow','cast:true;receive:true');
+        W2.appendChild(rampEl);
+
+        // Lames de bois transversales sur la rampe
+        for(var ri=0;ri<6;ri++){
+          var t=(ri+0.5)/6;
+          var lame=document.createElement('a-box');
+          lame.setAttribute('width','3.4');
+          lame.setAttribute('height','0.07');
+          lame.setAttribute('depth','0.20');
+          var lx=rampCX+Math.sin(rampRad)*(t-0.5)*rampLen;
+          var lz=rampCZ+Math.cos(rampRad)*(t-0.5)*rampLen;
+          var ly=rampCY+0.12;
+          lame.setAttribute('position',lx.toFixed(1)+' '+ly.toFixed(2)+' '+lz.toFixed(1));
+          lame.setAttribute('rotation','0 '+(rampAngleDeg+180).toFixed(1)+' 0');
+          lame.setAttribute('material','color:#7A5820;roughness:0.95');
+          W2.appendChild(lame);
+        }
+
+        // Garde-fous de la rampe
+        [-1.65,1.65].forEach(function(side){
+          var perp=(rampAngleDeg+90)*Math.PI/180;
+          var rx=rampCX+Math.cos(perp)*side;
+          var rz=rampCZ+Math.sin(perp)*side;
+          var rail=document.createElement('a-box');
+          rail.setAttribute('width','0.09');rail.setAttribute('height','0.7');rail.setAttribute('depth',rampLen.toFixed(1));
+          rail.setAttribute('position',rx.toFixed(1)+' '+(rampCY+0.45).toFixed(2)+' '+rz.toFixed(1));
+          rail.setAttribute('rotation','0 '+(rampAngleDeg+180).toFixed(1)+' 0');
+          rail.setAttribute('material','color:#8B6020;roughness:0.9');
+          W2.appendChild(rail);
+        });
+
+        // Collision : segment de marche sur la rampe
+        addBridgeSeg(
+          gx+Math.sin(rampRad)*rampLen, gz+Math.cos(rampRad)*rampLen,
+          gx, gz,
+          PLANK_Y/2, 1.8
+        );
+      }
+
+      // ═══════════════════════════════════════════════════
+      // PONTONS : centre du dock à la lisière sable/mer
+      // L'île (sable) a un rayon ~100, la mer commence à ~100
+      // On place le centre du dock à R=105 pour que :
+      //   - les poteaux (moitié intérieure) soient dans le sable
+      //   - les planches s'étendent vers la mer
+      // rampAngleDeg = direction vers le centre de l'île (vers la plage)
+      // ═══════════════════════════════════════════════════
+
+      // Dock EST  — sur le flanc est de l'île, rampe vers l'intérieur (ouest)
+      buildSeaDock(105,   0,  -90, 180);
+      // Dock OUEST — sur le flanc ouest, rampe vers l'intérieur (est)
+      buildSeaDock(-105,  15,  90, 0);
+      // Dock SUD-EST — sur la côte sud-est, rampe vers l'intérieur
+      buildSeaDock(75,  75,  45, 225);
 
     },3000);
 
-    // ── ÎLES SECONDAIRES — décoration ──
     setTimeout(function(){
       var W2=document.getElementById('world');
 
@@ -1046,19 +1139,10 @@ function initGame(){
         W2.appendChild(el);
       }
 
-      // ILE VOLCANIQUE (-165,-140) : forteresse sea_keep
       placeOnIsle('#seakeepGLB', -165, -140, 18, 0);
-
-      // ILE TROPICALE (165,-125) : sea_house
       placeOnIsle('#seahouseGLB', 165, -125, 12, 30);
-
-      // ILE NORD (0,-220) : tropical island déco
       placeOnIsle('#tropicalisleGLB', 0, -220, 15, 0);
-
-      // ILE OUEST (-220,50) : tiki bar 2
       placeOnIsle('#tikyBAR2GLB', -220, 50, 7, 45);
-
-      // ILE EST (220,80) : phare
       placeOnIsle('#lighthouseGLB', 220, 80, 15, 180);
 
     },5000);
@@ -1086,9 +1170,6 @@ function initGame(){
   buildUnderwaterWorld();
   buildMission();
 
-  // ─────────────────────────────────────────────
-  // MISSION — CORRECTIONS DES 3 BUGS
-  // ─────────────────────────────────────────────
   function buildMission(){
     var GY=0.0;
     mk('gltf-model',{src:'#cartGLB',position:'30 2.5 55',scale:'2 2 2',shadow:'cast:true'});
@@ -1098,12 +1179,11 @@ function initGame(){
     mk('sphere',{radius:'.16',position:'0 1.08 0',material:'color:#f4a060;roughness:.8'},nani);
     mk('sphere',{radius:'.16',scale:'1 .55 1',position:'0 1.15 0',material:'color:#3a1a00;roughness:.9'},nani);
 
-    // Créer exactement 30 glaces — 3 anneaux de 10 positions garanties dans l'île
     window.pineappleEls=[];
     var RINGS=[
-      {count:8, r:10},   // anneau intérieur
-      {count:12, r:28},  // anneau moyen
-      {count:10, r:48},  // anneau extérieur
+      {count:8, r:10},
+      {count:12, r:28},
+      {count:10, r:48},
     ];
     var idx=0;
     RINGS.forEach(function(ring){
@@ -1121,23 +1201,20 @@ function initGame(){
       }
     });
 
-    // ── PISTOLET COLLECTIBLE dans le monde ──
-    // Posé près du chariot, collectible en s'approchant
     window._gunWorldEl=null;
-    window._gunPickable=false;  // devient true après mission gagnée
-    window._gunCollected=false; // devient true une fois ramassé
+    window._gunPickable=false;
+    window._gunCollected=false;
 
     window.MISSION={active:false,count:0,timer:90,done:false,total:20};
     window._pauloDialogShown=false;
 
-    // ── MISSION VOL : cristal de propulsion sur l'île ──
     buildFlightMission();
   }
 
   function buildFlightMission(){
     window.FLIGHT_MISSION={
       active:false, done:false, dialogShown:false,
-      step:'collect', // 'collect' → 'return_jumba' → 'find_lilo' → 'fly' → 'done'
+      step:'collect',
       crystals:0
     };
     window._jetpackEl3D=null;
@@ -1147,7 +1224,6 @@ function initGame(){
     window._liloEl3D=null;
     window._crystalShards=[];
 
-    // 5 cristaux — positions proches et bien espacées autour de Stitch (spawn à 0,0,5)
     var shardPositions=[
       {x:15,  z:8},
       {x:-14, z:12},
@@ -1159,9 +1235,8 @@ function initGame(){
       var shard=document.createElement('a-entity');
       shard.id='shard-'+i;
 
-      // Gros cristal très visible — 3 couches
       var s1=document.createElement('a-sphere');
-      s1.setAttribute('radius','0.7'); // 2.5x plus grand
+      s1.setAttribute('radius','0.7');
       s1.setAttribute('scale','0.6 1.4 0.6');
       s1.setAttribute('material','color:#00ffee;emissive:#00eeff;emissiveIntensity:2.5;transparent:true;opacity:0.95;roughness:0;metalness:0.8');
       shard.appendChild(s1);
@@ -1173,7 +1248,6 @@ function initGame(){
       s2.setAttribute('material','color:#ffffff;emissive:#aaffff;emissiveIntensity:3.0;transparent:true;opacity:0.8');
       shard.appendChild(s2);
 
-      // Anneau lumineux autour
       var ring=document.createElement('a-torus');
       ring.setAttribute('radius','0.8');ring.setAttribute('radius-tubular','0.06');
       ring.setAttribute('rotation','90 0 0');
@@ -1181,10 +1255,9 @@ function initGame(){
       ring.setAttribute('animation','property:rotation;from:90 0 0;to:90 360 0;loop:true;dur:1200;easing:linear');
       shard.appendChild(ring);
 
-      // Lumière puissante visible de loin
       var sl=document.createElement('a-light');
       sl.setAttribute('type','point');sl.setAttribute('color','#00ffee');
-      sl.setAttribute('intensity','3.0');sl.setAttribute('distance','20'); // visible à 20 unités
+      sl.setAttribute('intensity','3.0');sl.setAttribute('distance','20');
       shard.appendChild(sl);
 
       shard.setAttribute('position',sp.x+' 1.2 '+sp.z);
@@ -1208,7 +1281,6 @@ function initGame(){
     window.FLIGHT_MISSION.active=true;
     window.FLIGHT_MISSION.step='collect';
     window.FLIGHT_MISSION.crystals=0;
-    // Rendre les cristaux visibles
     window._crystalShards.forEach(function(s){s.setAttribute('visible','true');});
     document.getElementById('jetpack-hud').textContent='💎 Cristaux : 0/5 — Ramasse les morceaux !';
     document.getElementById('jetpack-hud').style.display='block';
@@ -1220,7 +1292,6 @@ function initGame(){
     if(!window._jetpackEl3D){
       var jp=document.createElement('a-entity');
       jp.id='jetpack-visual';
-      // Essayer le GLB jetpack d'abord
       var jpGlb=document.createElement('a-gltf-model');
       jpGlb.setAttribute('src','#jetpackGLB');
       jpGlb.setAttribute('scale','1 1 1');
@@ -1231,13 +1302,11 @@ function initGame(){
           var h=Math.max(box.max.y-box.min.y,0.001);
           var sc=0.7/h;
           jpGlb.setAttribute('scale',sc+' '+sc+' '+sc);
-          // Centrer à la bonne hauteur dans le dos
           var offY=-box.min.y*sc;
           jpGlb.setAttribute('position','0 '+offY.toFixed(2)+' 0');
         }catch(e){}
       });
       jpGlb.addEventListener('model-error',function(){
-        // Fallback géométrique si GLB manque
         var jpb=document.createElement('a-box');
         jpb.setAttribute('width','0.52');jpb.setAttribute('height','0.72');jpb.setAttribute('depth','0.26');
         jpb.setAttribute('material','color:#223355;roughness:.2;metalness:.8;emissive:#1144cc;emissiveIntensity:.5');
@@ -1267,7 +1336,6 @@ function initGame(){
     document.getElementById('jetpack-hud').textContent='🌺 Va chercher Lilo ! (près de la maison)';
     document.getElementById('jetpack-hud').style.display='block';
 
-    // Halo doré autour de Lilo pour la repérer
     var halo=document.createElement('a-torus');
     halo.id='lilo-halo';
     halo.setAttribute('radius','1.1');halo.setAttribute('radius-tubular','.07');
@@ -1283,45 +1351,38 @@ function initGame(){
     window.INVENTAIRE.push({icon:'🚀',name:'Jetpack Cristal',desc:'Assemblé par Jumba — pour aller au vaisseau !'});
   };
 
-  // ── FERMER DIALOGUE NANI ──
   window.closeMissionDialog=function(){
     document.getElementById('mission-truck').style.display='none';
     window._pauloDialogShown=false;
   };
 
-  // ── BUG 1 CORRIGÉ : timer toujours réinitialisé à 90 ──
   window.startMission=function(){
     document.getElementById('mission-truck').style.display='none';
-    // Réinitialisation complète à chaque lancement
     window.MISSION.active=true;
     window.MISSION.count=0;
-    window.MISSION.timer=90;   // ← TOUJOURS 90s, pas reprise de l'ancienne valeur
+    window.MISSION.timer=90;
     window.MISSION.done=false;
     document.getElementById('mission-hud').style.display='block';
-    // ── BUG 2 CORRIGÉ : rendre toutes les glaces visibles ──
     if(window.pineappleEls){
       window.pineappleEls.forEach(function(p){
         p.setAttribute('visible','true');
-        p._collected=false; // reset état collecte
+        p._collected=false;
       });
     }
     toast('🍦 Mission démarrée ! Ramasse 20 glaces en 90s !',3000);
   };
 
-  // ── BUG 3 CORRIGÉ : pistolet posé sur le sol, à ramasser ──
   window._spawnGunOnGround=function(){
     if(window._gunWorldEl){
-      // Déjà créé (mission rejouée) — le remettre visible
       window._gunWorldEl.setAttribute('visible','true');
       window._gunWorldEl.setAttribute('position','28 0.5 52');
     } else {
       var g=document.createElement('a-gltf-model');
       g.setAttribute('src','#watergunGLB');
-      g.setAttribute('position','28 0.5 52');  // posé sur le sol près de Nani
+      g.setAttribute('position','28 0.5 52');
       g.setAttribute('scale','3 3 3');
       g.setAttribute('rotation','0 45 0');
       g.id='gun-world-object';
-      // Animation de flottement doux sur place
       g.setAttribute('animation','property:position;from:28 0.5 52;to:28 1.0 52;loop:true;dur:1200;dir:alternate;easing:easeInOutSine');
       document.getElementById('world').appendChild(g);
       window._gunWorldEl=g;
@@ -1369,11 +1430,10 @@ function initGame(){
   var jLX=0,jLY=0,jid=-1,rjLX=0,rjLY=0,rjid=-1,KY={},sprint=false;
   var waveT=0,lastT=performance.now(),windLeaves=null,fishEls=null,_pressingDown=false;
   window._jumpHeld=false;
-  // Cache des éléments DOM pour éviter getElementById à chaque frame
   var _elCache={};
   function gel(id){if(!_elCache[id])_elCache[id]=document.getElementById(id);return _elCache[id];}
-  var _loopFrame=0; // compteur de frames pour throttling
-  var _lastState='ground'; // pour détecter changements de zone
+  var _loopFrame=0;
+  var _lastState='ground';
 
   function loop(){
     requestAnimationFrame(loop);
@@ -1382,22 +1442,18 @@ function initGame(){
     var now=performance.now(),dt=Math.min((now-lastT)/1000,.033);lastT=now;waveT+=dt;
     if(dt<=0)dt=0.016;
 
-    // NPC mixers — toujours
     if(window._npcMixers){for(var mi=0;mi<window._npcMixers.length;mi++){window._npcMixers[mi].update(dt);}}
 
-    // Wind leaves — 1 frame sur 4 seulement (économie CPU)
     if(_loopFrame%4===0){
       if(!windLeaves)windLeaves=document.querySelectorAll('.wind-leaf');
       windLeaves.forEach(function(lf){var ph=parseFloat(lf.dataset.windPhase||0),brx=parseFloat(lf.dataset.brx||0),bry=lf.dataset.bry||'0';var s=Math.sin(waveT*1.15+ph)*3.2;lf.setAttribute('rotation',(brx+s).toFixed(1)+' '+bry+' '+Math.cos(waveT*.75+ph).toFixed(1));});
     }
 
-    // Poissons — 1 frame sur 2
     if(_loopFrame%2===0){
       if(!fishEls)fishEls=document.querySelectorAll('.fish-anim');
       fishEls.forEach(function(fish){var ph=parseFloat(fish.dataset.fishPhase||0),r=parseFloat(fish.dataset.fishR||10),dep=parseFloat(fish.dataset.fishDepth||-2),spd=parseFloat(fish.dataset.fishSpeed||.3),t=waveT*spd;var offX=parseFloat(fish.dataset.fishOffX||0),offZ=parseFloat(fish.dataset.fishOffZ||0);var fx=offX+Math.sin(t+ph)*r,fz=offZ+Math.cos(t+ph)*r,fy=dep+Math.sin(waveT*.5+ph)*.3;fish.setAttribute('position',fx.toFixed(2)+' '+fy.toFixed(2)+' '+fz.toFixed(2));fish.setAttribute('rotation','0 '+(Math.atan2(Math.cos(t+ph),-Math.sin(t+ph))*180/Math.PI).toFixed(1)+' 0');});
     }
 
-    // Tortues et requin — 1 frame sur 3
     if(_loopFrame%3===0){
       if(!window._turtleEls)window._turtleEls=document.querySelectorAll('.turtle-anim');
       window._turtleEls.forEach(function(t){var ph=parseFloat(t.dataset.tPhase||0),r=parseFloat(t.dataset.tR||18),dep=parseFloat(t.dataset.tDepth||-2),sp=parseFloat(t.dataset.tSpeed||.07),tm=waveT*sp;t.setAttribute('position',(Math.sin(tm+ph)*r).toFixed(2)+' '+(dep+Math.sin(waveT*.4+ph)*.8).toFixed(2)+' '+(Math.cos(tm+ph)*r).toFixed(2));t.setAttribute('rotation','0 '+(Math.atan2(Math.cos(tm+ph),-Math.sin(tm+ph))*180/Math.PI).toFixed(1)+' 0');});
@@ -1410,18 +1466,15 @@ function initGame(){
     var moveMag=Math.sqrt(fwd*fwd+lat*lat),gy=getGroundY(P.x,P.z),spd=sprint?9.5:5.2;
     if(moveMag>.05){var mx=fwd*(-Math.sin(CAM.yaw))+lat*Math.cos(CAM.yaw);var mz=fwd*(-Math.cos(CAM.yaw))+lat*(-Math.sin(CAM.yaw));var mn=Math.sqrt(mx*mx+mz*mz);var spdM=(P.state==='surface')?.7:(P.state==='diving')?.65:1.0;P.vx=mx/mn*spd*spdM;P.vz=mz/mn*spd*spdM;var ty=Math.atan2(mx/mn,mz/mn),dyw=ty-P.yaw;while(dyw>Math.PI)dyw-=Math.PI*2;while(dyw<-Math.PI)dyw+=Math.PI*2;var turnFactor=Math.min(1,1-Math.abs(dyw)/Math.PI*0.75);P.vx*=turnFactor;P.vz*=turnFactor;P.yaw+=dyw*Math.min(1,dt*5);}else{P.vx=0;P.vz=0;}
     if(P.state==='ground'||P.state==='air'){
-      // Pas de gravité si jetpack actif et on vole
       if(window._jetpackEquipped&&P.y>2){
-        P.vy-=4*dt; // gravité très légère avec jetpack (était 8)
+        P.vy-=4*dt;
       } else {
         P.vy-=22*dt;
       }
       if(P.vy<-25)P.vy=-25;
       P.y+=P.vy*dt;
-      // Limite Y max pour éviter crash renderer
       if(P.y>80)P.y=80;
       if(gy!==null&&P.y<=gy+P.yOff){
-        // Ne pas tomber dans l'eau si jetpack actif
         if(!window._jetpackEquipped&&gy<WATER_SURFACE-0.1){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;playSound('sndSplash');toast('Dans l eau ! ⬇ PLONGE pour descendre',2200);}
         else if(!window._jetpackEquipped&&P.y<=WATER_SURFACE+WATER_ENTER_THRESHOLD&&gy<=WATER_SURFACE){P.state='surface';P.y=WATER_SURFACE;P.vy=0;P.breath=MAX_BREATH;}
         else{P.y=gy+P.yOff;P.vy=0;P.onGround=true;P.state='ground';}
@@ -1441,7 +1494,6 @@ function initGame(){
       if(P.breath<=0){P.vy=7;P.state='surface';P.breath=25;toast('Plus d air ! 😮‍💨',2000);}
     }
     var PRAD=1.0,nx=P.x+P.vx*dt,nz=P.z+P.vz*dt;
-    // Limiter la zone de déplacement en surface pour éviter l'écran gris (hors-limites)
     if(P.state==='ground'||P.state==='surface'){
       var WORLD_LIMIT=380;
       if(nx>WORLD_LIMIT)nx=WORLD_LIMIT;if(nx<-WORLD_LIMIT)nx=-WORLD_LIMIT;
@@ -1466,10 +1518,10 @@ function initGame(){
     if(Math.abs(rjLY)>.04)CAM.pitch=Math.max(.06,Math.min(.75,CAM.pitch+rjLY*dt*1.5));
     var camDist=CAM.dist,camPitch=CAM.pitch;
     if(P.state==='diving'){camDist=5.0;camPitch=0.10;}
-    if(window._jetpackEquipped&&P.y>5){camDist=8.0;} // caméra plus loin en vol
+    if(window._jetpackEquipped&&P.y>5){camDist=8.0;}
     var cr=camDist*Math.cos(camPitch),cX=P.x+Math.sin(CAM.yaw)*cr,cZ=P.z+Math.cos(CAM.yaw)*cr,cY=P.y+camDist*Math.sin(camPitch)+(P.state==='diving'?0.5:1.8);
     var camMinY=(P.state==='diving')?-10.0:1.2;
-    var camMaxY=85; // jamais au-dessus pour éviter crash
+    var camMaxY=85;
     cY=Math.max(cY,camMinY);
     cY=Math.min(cY,camMaxY);
     var camRig=document.getElementById('cam-rig');
@@ -1491,7 +1543,6 @@ function initGame(){
     var diveHint=gel('dive-hint'),ambLightEl=gel('ambientLight'),scnEl=document.querySelector('a-scene');
     if(!breathBar||!waterOv||!diveHint||!ambLightEl||!scnEl)return;
     if(P.state==='diving'||P.state==='surface'){breathBar.style.display='flex';var pct=P.breath/MAX_BREATH;breathFill.style.width=(pct*100).toFixed(0)+'%';breathFill.style.background=pct>.5?'linear-gradient(90deg,#00ffcc,#0088ff)':pct>.25?'linear-gradient(90deg,#ffcc00,#ff6600)':'linear-gradient(90deg,#ff2200,#ff6600)';}else{breathBar.style.display='none';}
-    // Lumières/fog : seulement si le state change (pas à chaque frame!)
     if(P.state!==_lastState){
       _lastState=P.state;
       var uwL=['uwLight1','uwLight2','uwLight3','uwLight4','uwLight5'];
@@ -1518,28 +1569,23 @@ function initGame(){
         gel('skyEl').setAttribute('color','#4ab8f0');
       }
     }
-    // Hint dive toujours mis à jour (texte)
     if(P.state==='diving'){diveHint.style.display='block';diveHint.textContent='🌊 ⬆ SURF = remonter · ⬇ PLONGE = descendre';if(P.breath<20&&Math.floor(waveT*2)%2===0)diveHint.style.color='#ff3300';else diveHint.style.color='#88ffee';}
     else if(P.state==='surface'){diveHint.style.display='block';diveHint.textContent='🌊 Appuie ⬇ PLONGE pour descendre';diveHint.style.color='#88ffee';}
     else{diveHint.style.display='none';}
     var bubCont=document.getElementById('bubbles-container');
     if(P.state==='diving'){bubCont.style.display='block';if(moveMag>.05&&Math.floor(waveT*8)%2===0){var b=document.createElement('div');b.className='bubble';var sz=4+Math.random()*8;b.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+(38+Math.random()*24)+'%;bottom:'+(35+Math.random()*15)+'%;animation-duration:'+(1.2+Math.random()*.8)+'s';bubCont.appendChild(b);setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b);},2000);}}else{bubCont.style.display='none';if(bubCont.children.length>0)bubCont.innerHTML='';}
 
-    // ── DIALOGUE NANI ──
-    // Nani repropose toujours si la mission n'est pas active et pas encore gagnée
     if(window.MISSION&&!window.MISSION.active&&!window.MISSION.done){
       var pdx=P.x-26,pdz=P.z-55;var pDist=Math.sqrt(pdx*pdx+pdz*pdz);
       if(pDist<4&&!window._pauloDialogShown){window._pauloDialogShown=true;document.getElementById('mission-truck').style.display='block';}
       else if(pDist>6){window._pauloDialogShown=false;}
     }
 
-    // ── TIMER MISSION ──
     if(window.MISSION&&window.MISSION.active){
       window.MISSION.timer-=dt;
       document.getElementById('mission-timer').textContent=Math.max(0,Math.ceil(window.MISSION.timer));
       document.getElementById('mission-count').textContent=window.MISSION.count;
 
-      // ── BUG 2 CORRIGÉ : collecte des glaces ──
       if(window.pineappleEls){
         window.pineappleEls.forEach(function(pa){
           if(pa._collected)return;
@@ -1548,19 +1594,18 @@ function initGame(){
           var ppx=parseFloat(pp.x!==undefined?pp.x:pp.split(' ')[0]);
           var ppz=parseFloat(pp.z!==undefined?pp.z:pp.split(' ')[2]);
           var dx=P.x-ppx,dz=P.z-ppz;
-          if(dx*dx+dz*dz<9){  // rayon 3 unités
+          if(dx*dx+dz*dz<9){
             pa._collected=true;
             pa.setAttribute('visible','false');
             window.MISSION.count++;
             playSound('sndCollect');
             if(window.MISSION.count===10)setTimeout(function(){playSound('sndLaugh');},300);
             toast('🍦 +1 glace ! ('+window.MISSION.count+'/20)',800);
-            // Dès 20 collectées → forcer la fin
             if(window.MISSION.count>=20){
               window.pineappleEls.forEach(function(p2){
                 if(!p2._collected){p2._collected=true;p2.setAttribute('visible','false');}
               });
-              window.MISSION.timer=0.01; // forcer la fin
+              window.MISSION.timer=0.01;
             }
           }
         });
@@ -1571,7 +1616,6 @@ function initGame(){
         document.getElementById('mission-hud').style.display='none';
         var won=window.MISSION.count>=20;
         var txt=won?'🎉 Bravo ! Tu as ramassé 20 glaces !<br><b>Nani te remercie ! Va chercher ton cadeau !</b>':'😢 Temps écoulé ! '+window.MISSION.count+'/20 glaces récupérées.';
-        // ── Toutes les glaces disparaissent à la fin (mission terminée) ──
         if(window.pineappleEls){window.pineappleEls.forEach(function(p){p._collected=true;p.setAttribute('visible','false');});}
         document.getElementById('mission-text').innerHTML=txt;
         var md=document.getElementById('mission-truck');
@@ -1580,7 +1624,6 @@ function initGame(){
           md.querySelector('button').onclick=window.closeMissionDialog;
           md.querySelector('.decline').style.display='none';
           window.MISSION.done=true;
-          // ── BUG 3 CORRIGÉ : pistolet posé sur le sol à ramasser ──
           window._spawnGunOnGround();
           playSound('sndWin');
           setTimeout(function(){playSound('sndOhana');},1500);
@@ -1588,7 +1631,6 @@ function initGame(){
         } else {
           md.querySelector('button').textContent='✅ Réessayer !';
           md.querySelector('button').onclick=function(){
-            // ── BUG 1 CORRIGÉ : reset complet avant de relancer ──
             window.MISSION={active:false,count:0,timer:90,done:false,total:20};
             window.closeMissionDialog();
             window.startMission();
@@ -1596,7 +1638,6 @@ function initGame(){
           md.querySelector('.decline').textContent='❌ Non merci';
           md.querySelector('.decline').onclick=function(){
             playSound('sndNah');
-            // Ne pas mettre done=true → Nani reproposera quand on revient
             window.MISSION.active=false;
             window._pauloDialogShown=false;
             window.closeMissionDialog();
@@ -1608,7 +1649,6 @@ function initGame(){
       }
     }
 
-    // ── DIALOGUE JUMBA (mission vol) ──
     if(window.FLIGHT_MISSION&&!window.FLIGHT_MISSION.active&&!window.FLIGHT_MISSION.done){
       var jdx=P.x-(-12),jdz=P.z-10;
       if(Math.sqrt(jdx*jdx+jdz*jdz)<4&&!window.FLIGHT_MISSION.dialogShown){
@@ -1619,13 +1659,10 @@ function initGame(){
       }
     }
 
-    // ════ MISSION VOL ════
     if(window.FLIGHT_MISSION&&window.FLIGHT_MISSION.active){
       var fm=window.FLIGHT_MISSION;
 
-      // ÉTAPE 1 : Ramasser les 5 morceaux de cristal
       if(fm.step==='collect'&&window._crystalShards){
-        // Flèche vers le cristal le plus proche non collecté
         var nearest=null,nearestDist=9999;
         window._crystalShards.forEach(function(shard){
           if(shard._collected)return;
@@ -1633,7 +1670,7 @@ function initGame(){
           var cdx=P.x-sp.x,cdz=P.z-sp.z;
           var d=Math.sqrt(cdx*cdx+cdz*cdz);
           if(d<nearestDist){nearestDist=d;nearest=shard;}
-          if(cdx*cdx+cdz*cdz<16){ // rayon 4 unités (plus facile)
+          if(cdx*cdx+cdz*cdz<16){
             shard._collected=true;
             shard.setAttribute('visible','false');
             fm.crystals++;
@@ -1646,12 +1683,10 @@ function initGame(){
             }
           }
         });
-        // Afficher direction vers le plus proche
         if(nearest&&fm.step==='collect'){
           var sp2=nearest._shardPos;
           var angle=Math.atan2(sp2.x-P.x,sp2.z-P.z);
           var camAngle=angle-P.yaw;
-          // Convertir en flèche simple
           var arrows=['↑','↗','→','↘','↓','↙','←','↖'];
           var arrowIdx=Math.round(((camAngle*180/Math.PI+360)%360)/45)%8;
           var arrow=arrows[arrowIdx];
@@ -1661,13 +1696,11 @@ function initGame(){
         }
       }
 
-      // ÉTAPE 2 : Retourner chez Jumba (pos -12, 10)
       if(fm.step==='return_jumba'){
         var jdx2=P.x-(-12),jdz2=P.z-10;
         if(jdx2*jdx2+jdz2*jdz2<9){
           fm.step='assembling';
           document.getElementById('jetpack-hud').textContent='⚙️ Jumba assemble le jetpack...';
-          // Animation d'assemblage (3s)
           playSound('sndGobble');
           toast('⚙️ Jumba assemble ton jetpack... 3 secondes !',3500);
           setTimeout(function(){
@@ -1677,21 +1710,17 @@ function initGame(){
         }
       }
 
-      // ÉTAPE 3 : Trouver Lilo (pos 8, 20 — sa position habituelle)
       if(fm.step==='find_lilo'){
         var ldx=P.x-8,ldz=P.z-20;
         if(ldx*ldx+ldz*ldz<9){
           fm.step='fly';
           if(window._liloHalo){window._liloHalo.setAttribute('visible','false');}
 
-          // ── Utiliser le GLB Lilo DÉJÀ dans la scène ──
-          var liloF=window._liloSceneEl; // référence au GLB existant
+          var liloF=window._liloSceneEl;
           if(!liloF){
-            // Fallback : chercher dans le DOM
             liloF=document.querySelector('a-gltf-model[src*="smug_lilo"]');
           }
           if(liloF){
-            // Ajouter aura autour du Lilo existant
             if(!liloF._auraAdded){
               liloF._auraAdded=true;
               var aura=document.createElement('a-torus');
@@ -1717,7 +1746,6 @@ function initGame(){
       }
     }
 
-    // LILO SUIT STITCH (smooth follow)
     if(window._liloFollowing&&window._liloEl3D){
       var lf3d=window._liloEl3D;
       var lo=window._liloOffset;
@@ -1735,26 +1763,21 @@ function initGame(){
       }
     }
 
-    // VOL JETPACK : maintien de JUMP = montée douce
     if(window._jetpackEquipped&&(P.state==='air'||P.y>1)){
       if(KY['Space']||window._jumpHeld){
-        // Accélération douce : 5 au lieu de 20, max 5 m/s au lieu de 14
         P.vy=Math.min(P.vy+5*dt,5);
         P.state='air';
       } else {
-        // Amortissement vertical quand on lâche — descente progressive
         P.vy=P.vy*0.94;
         if(Math.abs(P.vy)<0.05)P.vy=0;
       }
     }
 
-    // ── VAISSEAU : atterrir dessus, entrer automatiquement ──
     if(window._jetpackEquipped&&!window._inShip){
       var svx=P.x-0, svz=P.z-(-20), svy=P.y-28;
-      var shipDist2D=Math.sqrt(svx*svx+svz*svz); // distance horizontale
+      var shipDist2D=Math.sqrt(svx*svx+svz*svz);
       var shipDistFull=Math.sqrt(svx*svx+svy*svy+svz*svz);
 
-      // Hint quand on approche
       var jhud=document.getElementById('jetpack-hud');
       if(shipDistFull<12){
         if(window._liloFollowing){
@@ -1764,15 +1787,12 @@ function initGame(){
         }
       }
 
-      // Atterrissage : Stitch est au-dessus du vaisseau et descend dessus
       if(shipDist2D<4 && P.y>=28 && P.y<=34 && P.vy<=0){
-        // Poser Stitch sur le dessus du vaisseau
         P.y=30;
         P.vy=0;
         P.state='ground';
         P.onGround=true;
 
-        // Si Lilo est là → entrer dans le vaisseau
         if(window._liloFollowing&&!window._inShip){
           window._inShip=true;
           window._liloFollowing=false;
@@ -1787,7 +1807,6 @@ function initGame(){
           P.vx=0;P.vy=0;P.vz=0;
           if(window._liloEl3D)window._liloEl3D.setAttribute('position','1.2 30 -21');
 
-          // Décollage du vaisseau
           var shipGlb=W.querySelector('a-gltf-model[src="#spaceshipGLB"]');
           if(shipGlb){
             shipGlb.setAttribute('animation','property:position;from:0 28 -20;to:0 200 -20;dur:6000;easing:easeInQuad');
@@ -1810,7 +1829,6 @@ function initGame(){
         }
       }
 
-      // Bloquer passage latéral à travers le vaisseau (pas par le dessus)
       if(shipDist2D<3.5 && (P.y<28||P.y>34)){
         var snx=svx/(shipDist2D||1), snz=svz/(shipDist2D||1);
         P.x=0+snx*3.6; P.z=-20+snz*3.6;
@@ -1852,7 +1870,6 @@ function initGame(){
   }
   loop();
 
-  // ── RAMASSER LE PISTOLET (bouton + touche) ──
   window.pickupNearby=function(e){
     if(e&&e.preventDefault)e.preventDefault();
     if(window._gunPickable&&!window._gunCollected){
@@ -1860,11 +1877,9 @@ function initGame(){
       if(Math.sqrt(gdx*gdx+gdz*gdz)<4){
         window._gunCollected=true;
         window._gunPickable=false;
-        // Supprimer l'objet 3D du sol
         if(window._gunWorldEl){window._gunWorldEl.setAttribute('visible','false');}
         document.getElementById('gun-pickup-hint').style.display='none';
         document.getElementById('btn-pickup').style.display='none';
-        // Ajouter à l'inventaire avec bouton équiper
         window.INVENTAIRE.push({icon:'🔫',name:'Pistolet à eau',desc:'Cadeau de Nani — arrose tes amis !',action:'equip'});
         playSound('sndGobble');
         toast('🔫 Pistolet à eau ramassé ! Ouvre ton sac pour l équiper.',3500);
@@ -1879,7 +1894,6 @@ function initGame(){
     else if(P.state==='ground'&&P.onGround){P.vy=8.5;P.onGround=false;P.state='air';}
     else if(P.state==='surface'){P.vy=6;P.state='air';}
     else if(P.state==='air'&&window._jetpackEquipped){
-      // Double-saut jetpack = propulsion
       P.vy=Math.max(P.vy,10);
       toast('🚀 Propulsion !',500);
     }
@@ -1924,7 +1938,6 @@ function initGame(){
         gm.setAttribute('src','#watergunGLB');
         gm.setAttribute('scale','1.5 1.5 1.5');
         g.appendChild(gm);
-        // Attacher au stitch-ROOT (plus stable que stitch-model)
         var sr=document.getElementById('stitch-root');
         if(!sr){toast('Erreur pistolet',1000);return;}
         sr.appendChild(g);
@@ -1938,7 +1951,6 @@ function initGame(){
     }catch(err){console.warn('equipGun err',err);}
   };
 
-  // ── POOL JET D'EAU puissant ──
   window._waterPool=[];
   (function(){
     var W2=document.getElementById('world');
@@ -1961,13 +1973,12 @@ function initGame(){
 
     var fwdX=Math.sin(P.yaw);
     var fwdZ=Math.cos(P.yaw);
-    var speed=45; // jet très puissant
+    var speed=45;
 
     var startX=P.x+fwdX*0.8+fwdZ*0.3;
     var startY=P.y+0.55;
     var startZ=P.z+fwdZ*0.8-fwdX*0.3;
 
-    // 20 segments très rapprochés = jet continu puissant
     for(var ji=0;ji<20;ji++){
       (function(idx,delay){
         setTimeout(function(){
@@ -2023,9 +2034,9 @@ function initGame(){
           }
           requestAnimationFrame(animJet);
         },delay);
-      })(ji,ji*15); // 15ms = quasi-continu
+      })(ji,ji*15);
     }
-  }; // fin fireGun
+  };
 
   window.holsterGun=function(e){
     if(e&&e.preventDefault)e.preventDefault();
