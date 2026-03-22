@@ -116,42 +116,20 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 ```
   <!-- STITCH -->
   <div class="char-btn selected" id="char-stitch" onclick="selectChar('stitch')">
-    <div class="char-preview" id="preview-stitch">
-      <a-scene embedded style="width:110px;height:110px;border-radius:12px;overflow:hidden"
-        renderer="antialias:true" vr-mode-ui="enabled:false" loading-screen="enabled:false"
-        background="color:#0a1a3a" device-orientation-permission-ui="enabled:false">
-        <a-assets timeout="8000">
-          <a-asset-item id="ls-stitch" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/stitch2.glb" crossorigin="anonymous"></a-asset-item>
-        </a-assets>
-        <a-gltf-model id="ls-stitch-mdl" src="#ls-stitch" position="0 -0.6 0" rotation="0 15 0" scale="1 1 1"
-          animation="property:rotation;from:0 0 0;to:0 360 0;loop:true;dur:6000;easing:linear"></a-gltf-model>
-        <a-light type="ambient" color="#ffffff" intensity="1.5"></a-light>
-        <a-light type="directional" position="1 2 1" intensity="1.2"></a-light>
-        <a-camera position="0 0.5 2.2" look-controls="enabled:false" wasd-controls="enabled:false"></a-camera>
-      </a-scene>
+    <div class="char-preview">
+      <canvas id="canvas-stitch" width="110" height="110" style="border-radius:12px;display:block;background:linear-gradient(160deg,#0a1a3a,#1a2a5a)"></canvas>
     </div>
     <div id="stitch-taken-overlay" class="taken-overlay" style="display:none">🔒 Pris</div>
-    <small id="stitch-label">Stitch</small>
+    <small>Stitch</small>
   </div>
 
   <!-- ANGEL -->
   <div class="char-btn" id="char-angel" onclick="selectChar('angel')">
-    <div class="char-preview" id="preview-angel">
-      <a-scene embedded style="width:110px;height:110px;border-radius:12px;overflow:hidden"
-        renderer="antialias:true" vr-mode-ui="enabled:false" loading-screen="enabled:false"
-        background="color:#1a0a2a" device-orientation-permission-ui="enabled:false">
-        <a-assets timeout="8000">
-          <a-asset-item id="ls-angel" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_and_stitch__oc_.glb" crossorigin="anonymous"></a-asset-item>
-        </a-assets>
-        <a-gltf-model id="ls-angel-mdl" src="#ls-angel" position="0 -0.6 0" rotation="0 -15 0" scale="1 1 1"
-          animation="property:rotation;from:0 0 0;to:0 360 0;loop:true;dur:6000;easing:linear"></a-gltf-model>
-        <a-light type="ambient" color="#ffffff" intensity="1.5"></a-light>
-        <a-light type="directional" position="-1 2 1" intensity="1.2"></a-light>
-        <a-camera position="0 0.5 2.2" look-controls="enabled:false" wasd-controls="enabled:false"></a-camera>
-      </a-scene>
+    <div class="char-preview">
+      <canvas id="canvas-angel" width="110" height="110" style="border-radius:12px;display:block;background:linear-gradient(160deg,#1a0a2a,#3a1a4a)"></canvas>
     </div>
     <div id="angel-taken-overlay" class="taken-overlay" style="display:none">🔒 Pris</div>
-    <small id="angel-label">Angel</small>
+    <small>Angel</small>
   </div>
 
 </div>
@@ -376,24 +354,29 @@ function hashPass(pass){
   return 'h'+Math.abs(h).toString(36);
 }
 
-// ── Auto-scale GLB dans les mini scènes login ──
+// ── Previews login : emojis animés CSS, zéro script externe ──
 window.addEventListener('load',function(){
-  ['ls-stitch-mdl','ls-angel-mdl'].forEach(function(id){
-    var el=document.getElementById(id);
-    if(!el)return;
-    el.addEventListener('model-loaded',function(){
-      try{
-        var mesh=el.getObject3D('mesh');if(!mesh)return;
-        var box=new AFRAME.THREE.Box3().setFromObject(mesh);
-        var h=box.max.y-box.min.y;
-        if(h>0.01){
-          var sc=1.2/h;
-          el.setAttribute('scale',sc+' '+sc+' '+sc);
-          var cy=(box.max.y+box.min.y)/2*sc;
-          el.setAttribute('position','0 '+(0.1-cy).toFixed(2)+' 0');
-        }
-      }catch(e){}
+  // Dessiner emojis sur canvas simplement
+  [['canvas-stitch','#0d1f3c','👽'],['canvas-angel','#1a0a2a','💜']].forEach(function(c){
+    var cv=document.getElementById(c[0]);
+    if(!cv)return;
+    var ctx=cv.getContext('2d');
+    // Fond dégradé
+    var grad=ctx.createRadialGradient(55,55,10,55,55,60);
+    grad.addColorStop(0,c[0]==='canvas-stitch'?'#1a3a6a':'#2a0a4a');
+    grad.addColorStop(1,c[0]==='canvas-stitch'?'#0a1a3a':'#1a0a2a');
+    ctx.fillStyle=grad;ctx.fillRect(0,0,110,110);
+    // Étoiles
+    ctx.fillStyle='rgba(255,255,255,0.6)';
+    [[15,20],[90,15],[30,85],[85,75],[50,10],[70,90],[10,50],[100,50]].forEach(function(s){
+      ctx.fillRect(s[0],s[1],1.5,1.5);
     });
+    // Emoji grand
+    ctx.font='58px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(c[2],55,52);
+    // Nom en dessous
+    ctx.font='bold 13px Georgia,serif';ctx.fillStyle='rgba(255,255,255,0.85)';
+    ctx.fillText(c[0]==='canvas-stitch'?'STITCH':'ANGEL',55,95);
   });
   refreshCharAvailability();
   setInterval(refreshCharAvailability,2000);
