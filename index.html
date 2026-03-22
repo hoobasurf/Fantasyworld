@@ -74,6 +74,28 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 #jumba-dialog p{font-size:10px;line-height:1.5;margin-bottom:10px;color:#ddd;}
 #jumba-dialog button{background:#0066cc;border:none;color:#fff;padding:6px 16px;border-radius:8px;font-size:11px;cursor:pointer;margin:3px;}
 #jumba-dialog button.decline{background:#555;}
+/* ── ÉCRAN LOGIN ── */
+#login-screen{position:fixed;inset:0;z-index:1000;background:linear-gradient(160deg,#1a5a8a,#0a2a50 50%,#1a0830);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Georgia,serif;}
+#login-box{background:rgba(0,10,30,.92);border:2px solid rgba(255,160,200,.4);border-radius:24px;padding:28px 24px;width:300px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.6);}
+#login-box h2{color:#fff;font-size:20px;margin-bottom:4px;letter-spacing:1px;}
+#login-box p{color:#ffcc88;font-size:11px;margin-bottom:20px;}
+.login-chars{display:flex;gap:16px;justify-content:center;margin-bottom:20px;}
+.char-btn{width:126px;border-radius:16px;border:3px solid rgba(255,255,255,.2);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:rgba(255,255,255,.06);transition:all .25s;touch-action:manipulation;position:relative;overflow:hidden;padding-bottom:8px;}
+.char-btn:active,.char-btn.selected{border-color:#ffcc00;background:rgba(255,200,0,.12);box-shadow:0 0 18px rgba(255,200,0,.3);}
+.char-btn.taken{border-color:rgba(255,255,255,.1);opacity:.55;cursor:not-allowed;pointer-events:none;}
+.char-preview{width:110px;height:110px;border-radius:12px;overflow:hidden;position:relative;}
+.taken-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-family:Georgia,serif;font-size:13px;color:#ffaaaa;border-radius:12px;pointer-events:none;}
+.char-btn small{color:#fff;font-size:11px;font-family:Georgia,serif;margin-top:6px;font-weight:bold;letter-spacing:.5px;}
+.login-input{width:100%;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 14px;color:#fff;font-size:13px;font-family:Georgia,serif;margin-bottom:10px;outline:none;box-sizing:border-box;}
+.login-input:focus{border-color:#ffcc00;}
+.login-input::placeholder{color:rgba(255,255,255,.4);}
+#login-btn{width:100%;background:linear-gradient(135deg,#ff9900,#e85000);border:none;border-radius:12px;padding:12px;color:#fff;font-size:14px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;margin-top:6px;touch-action:manipulation;}
+#login-btn:active{opacity:.85;}
+#login-err{color:#ff8888;font-size:10px;margin-top:8px;min-height:16px;}
+#login-other{color:#aaddff;font-size:10px;margin-top:10px;cursor:pointer;text-decoration:underline;}
+/* Badge joueur 2 */
+#p2-badge{position:fixed;top:42px;right:12px;z-index:30;background:rgba(180,0,120,.85);border:2px solid #ff88cc;border-radius:12px;padding:3px 10px;font-family:Georgia,serif;font-size:10px;color:#fff;display:none;pointer-events:none;}
+.pill{background:linear-gradient(135deg,rgba(255,100,150,.85),rgba(255,60,80,.75));border-radius:18px;padding:5px 14px;font-family:Georgia,serif;font-size:9px;color:#fff;border:1.5px solid rgba(255,180,200,.5);text-shadow:0 1px 3px rgba(0,0,0,.4);box-shadow:0 2px 8px rgba(0,0,0,.3);font-weight:bold;letter-spacing:.3px;}
 #backpack-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);align-items:center;justify-content:center;}
 #backpack-box{background:linear-gradient(135deg,#3a1a10,#5a2a10,#3a1a10);border:3px solid #ff9900;border-radius:20px;padding:20px;width:290px;max-height:70vh;overflow-y:auto;position:relative;box-shadow:0 8px 30px rgba(200,80,0,.5);}
 #backpack-box h2{color:#ffd966;font-family:Georgia,serif;font-size:15px;text-align:center;margin-bottom:14px;text-shadow:0 1px 6px rgba(255,150,0,.5);}
@@ -82,6 +104,67 @@ repeating-linear-gradient(-45deg,rgba(0,255,200,0.04) 0px,rgba(0,255,200,0) 10px
 </style>
 </head>
 <body>
+
+<!-- ── ÉCRAN LOGIN ── -->
+
+<div id="login-screen">
+  <div id="login-box">
+    <h2>🌺 STITCH ISLAND</h2>
+    <p>Choisis ton personnage et connecte-toi !</p>
+    <div class="login-chars">
+
+```
+  <!-- STITCH -->
+  <div class="char-btn selected" id="char-stitch" onclick="selectChar('stitch')">
+    <div class="char-preview" id="preview-stitch">
+      <a-scene embedded style="width:110px;height:110px;border-radius:12px;overflow:hidden"
+        renderer="antialias:true" vr-mode-ui="enabled:false" loading-screen="enabled:false"
+        background="color:#0a1a3a" device-orientation-permission-ui="enabled:false">
+        <a-assets timeout="8000">
+          <a-asset-item id="ls-stitch" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/stitch2.glb" crossorigin="anonymous"></a-asset-item>
+        </a-assets>
+        <a-gltf-model id="ls-stitch-mdl" src="#ls-stitch" position="0 -0.6 0" rotation="0 15 0" scale="1 1 1"
+          animation="property:rotation;from:0 0 0;to:0 360 0;loop:true;dur:6000;easing:linear"></a-gltf-model>
+        <a-light type="ambient" color="#ffffff" intensity="1.5"></a-light>
+        <a-light type="directional" position="1 2 1" intensity="1.2"></a-light>
+        <a-camera position="0 0.5 2.2" look-controls="enabled:false" wasd-controls="enabled:false"></a-camera>
+      </a-scene>
+    </div>
+    <div id="stitch-taken-overlay" class="taken-overlay" style="display:none">🔒 Pris</div>
+    <small id="stitch-label">Stitch</small>
+  </div>
+
+  <!-- ANGEL -->
+  <div class="char-btn" id="char-angel" onclick="selectChar('angel')">
+    <div class="char-preview" id="preview-angel">
+      <a-scene embedded style="width:110px;height:110px;border-radius:12px;overflow:hidden"
+        renderer="antialias:true" vr-mode-ui="enabled:false" loading-screen="enabled:false"
+        background="color:#1a0a2a" device-orientation-permission-ui="enabled:false">
+        <a-assets timeout="8000">
+          <a-asset-item id="ls-angel" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_and_stitch__oc_.glb" crossorigin="anonymous"></a-asset-item>
+        </a-assets>
+        <a-gltf-model id="ls-angel-mdl" src="#ls-angel" position="0 -0.6 0" rotation="0 -15 0" scale="1 1 1"
+          animation="property:rotation;from:0 0 0;to:0 360 0;loop:true;dur:6000;easing:linear"></a-gltf-model>
+        <a-light type="ambient" color="#ffffff" intensity="1.5"></a-light>
+        <a-light type="directional" position="-1 2 1" intensity="1.2"></a-light>
+        <a-camera position="0 0.5 2.2" look-controls="enabled:false" wasd-controls="enabled:false"></a-camera>
+      </a-scene>
+    </div>
+    <div id="angel-taken-overlay" class="taken-overlay" style="display:none">🔒 Pris</div>
+    <small id="angel-label">Angel</small>
+  </div>
+
+</div>
+<input class="login-input" id="login-name" type="text" placeholder="Prénom" maxlength="20" autocomplete="off"/>
+<input class="login-input" id="login-pass" type="password" placeholder="Mot de passe" maxlength="30" autocomplete="off"/>
+<button id="login-btn" onclick="doLogin()">🏄 Jouer !</button>
+<div id="login-err"></div>
+<div id="login-other" onclick="showRegister()">Première fois ? Créer un compte</div>
+```
+
+  </div>
+</div>
+<div id="p2-badge"></div>
 
 <div id="loading-screen">
   <div id="loading-title">🏝 STITCH ISLAND</div>
@@ -109,7 +192,28 @@ device-orientation-permission-ui="enabled:false">
 <a-asset-item id="sundaeGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Sundae.glb"               crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb"           crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="spaceshipGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hover_ship.vehicle_from_lilo_and_stitch.%202.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
-<a-asset-item id="liloGLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="liloGLB"          src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="angelGLB"         src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_and_stitch__oc_.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="jetpackGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/call_of_duty_black_ops_2_-_jet_pack.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="tikiBARGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/tiki_bar%203.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="tikyBAR2GLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/tiki_bar%202.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="tikyBAR3GLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/tiki_bar3.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="hammockGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hammock_low_poly.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="surfboardGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/wooden_surfboard.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="surfboard2GLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/prancha_de_surf_surfboard.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="surfboard3GLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/game_ready__free_surfboards.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="umbrellaGLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/beach_umbrella_cooler_bag_with_drinks.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="torchGLB"         src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/outdoor_torch.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="beachchairGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/beach_chair.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="dockGLB"          src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/rustic_wooden_dock.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="lighthouseGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lighthouse_-_handpainted.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="tikistatueGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hawaiian_tiki_3dscan.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="seakeepGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sea_keep_lonely_watcher.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="seahouseGLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/sea_house.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="tropicalisleGLB"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/tropical_island.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="coconutpalmGLB"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/coconut_palm.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="beachpackGLB"     src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/psx_beach_pack.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="beachpropsGLB"    src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/lets_go_to_the_beach_-__6_beach_themed_props.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <audio id="sndCollect"  src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Ice%20cream.wav"          preload="none"></audio>
 <audio id="sndSplash"   src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Splash.wav"               preload="none"></audio>
 <audio id="sndWin"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Voicy_Aloha!.mp3"         preload="none"></audio>
@@ -239,6 +343,301 @@ device-orientation-permission-ui="enabled:false">
 </div>
 
 <script>
+// ═══════════════════════════════════════════════
+// ── SUPABASE — SAUVEGARDE & MULTIJOUEUR ──
+// ═══════════════════════════════════════════════
+var SUPA_URL='https://lpofysholzrbkqlnmmzw.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwb2Z5c2hvbHpyYmtxbG5tbXp3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODI1MzIsImV4cCI6MjA4OTc1ODUzMn0.2Rv574L1NsPnGrGgGwwT2gnwEF8H4MSXED6dE18mtZE';
+
+window._currentPlayer={name:'',char:'stitch',loggedIn:false};
+window._selectedChar='stitch';
+window._otherPlayerEl=null;
+
+// ── Appel Supabase REST générique ──
+function supa(method,table,body,filters){
+  var url=SUPA_URL+'/rest/v1/'+table;
+  if(filters)url+='?'+filters;
+  return fetch(url,{
+    method:method,
+    headers:{
+      'apikey':SUPA_KEY,
+      'Authorization':'Bearer '+SUPA_KEY,
+      'Content-Type':'application/json',
+      'Prefer': method==='POST'?'return=representation':'return=representation'
+    },
+    body:body?JSON.stringify(body):undefined
+  }).then(function(r){return r.json();}).catch(function(){return null;});
+}
+
+// ── Hash simple mot de passe (côté client, suffisant pour un jeu) ──
+function hashPass(pass){
+  var h=0;
+  for(var i=0;i<pass.length;i++){h=((h<<5)-h)+pass.charCodeAt(i);h|=0;}
+  return 'h'+Math.abs(h).toString(36);
+}
+
+// ── Auto-scale GLB dans les mini scènes login ──
+window.addEventListener('load',function(){
+  ['ls-stitch-mdl','ls-angel-mdl'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    el.addEventListener('model-loaded',function(){
+      try{
+        var mesh=el.getObject3D('mesh');if(!mesh)return;
+        var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+        var h=box.max.y-box.min.y;
+        if(h>0.01){
+          var sc=1.2/h;
+          el.setAttribute('scale',sc+' '+sc+' '+sc);
+          var cy=(box.max.y+box.min.y)/2*sc;
+          el.setAttribute('position','0 '+(0.1-cy).toFixed(2)+' 0');
+        }
+      }catch(e){}
+    });
+  });
+  refreshCharAvailability();
+  setInterval(refreshCharAvailability,2000);
+});
+
+// ── Vérifier persos pris via Supabase ──
+function refreshCharAvailability(){
+  supa('GET','si_online',null,'select=player_name,char&updated_at=gte.'+new Date(Date.now()-10000).toISOString()).then(function(rows){
+    if(!rows||!Array.isArray(rows))return;
+    var takenChars={};
+    rows.forEach(function(r){
+      if(r.player_name!==window._currentPlayer.name)takenChars[r.char]=r.player_name;
+    });
+    ['stitch','angel'].forEach(function(c){
+      var btn=document.getElementById('char-'+c);
+      var overlay=document.getElementById(c+'-taken-overlay');
+      if(!btn||!overlay)return;
+      var taken=takenChars[c];
+      if(taken&&taken!==window._currentPlayer.name){
+        btn.classList.add('taken');
+        overlay.style.display='flex';
+        overlay.textContent='🔒 '+taken;
+        if(window._selectedChar===c){
+          var other2=c==='stitch'?'angel':'stitch';
+          if(!takenChars[other2])selectChar(other2);
+        }
+      } else {
+        btn.classList.remove('taken');
+        overlay.style.display='none';
+      }
+    });
+  });
+}
+
+function selectChar(c){
+  var btn=document.getElementById('char-'+c);
+  if(btn&&btn.classList.contains('taken'))return;
+  window._selectedChar=c;
+  document.getElementById('char-stitch').classList.toggle('selected',c==='stitch');
+  document.getElementById('char-angel').classList.toggle('selected',c==='angel');
+}
+
+function setLoginErr(msg,ok){
+  var err=document.getElementById('login-err');
+  err.style.color=ok?'#88ff88':'#ff8888';
+  err.textContent=msg;
+}
+
+// ── MODE : inscription ──
+function showRegister(){
+  document.getElementById('login-other').textContent='Déjà un compte ? Se connecter';
+  document.getElementById('login-other').onclick=showLogin;
+  document.getElementById('login-btn').textContent='✅ Créer le compte';
+  document.getElementById('login-btn').onclick=doRegister;
+}
+function showLogin(){
+  document.getElementById('login-other').textContent='Première fois ? Créer un compte';
+  document.getElementById('login-other').onclick=showRegister;
+  document.getElementById('login-btn').textContent='🏄 Jouer !';
+  document.getElementById('login-btn').onclick=doLogin;
+}
+
+// ── INSCRIPTION Supabase ──
+function doRegister(){
+  var name=document.getElementById('login-name').value.trim();
+  var pass=document.getElementById('login-pass').value;
+  if(!name||name.length<2){setLoginErr('Prénom trop court (min 2 lettres)');return;}
+  if(!pass||pass.length<4){setLoginErr('Mot de passe trop court (min 4 car.)');return;}
+  setLoginErr('Création du compte...');
+  // Vérifier si nom existe déjà
+  supa('GET','si_players',null,'select=name&name=eq.'+encodeURIComponent(name)).then(function(rows){
+    if(rows&&rows.length>0){setLoginErr('Ce prénom est déjà pris !');return;}
+    // Créer le joueur
+    supa('POST','si_players',{name:name,password_hash:hashPass(pass),char:window._selectedChar}).then(function(r){
+      if(!r||r.length===0||r.error){setLoginErr('Erreur création : '+(r&&r.error?r.error.message:'?'));return;}
+      // Créer progression vide
+      supa('POST','si_progress',{player_name:name,inventaire:[],mission_glaces_done:false,mission_vol_done:false,gun_collected:false});
+      setLoginErr('Compte créé ! Bienvenue '+name+' ! 🌺',true);
+      setTimeout(function(){launchGame(name,window._selectedChar,{});},900);
+    });
+  });
+}
+
+// ── CONNEXION Supabase ──
+function doLogin(){
+  var name=document.getElementById('login-name').value.trim();
+  var pass=document.getElementById('login-pass').value;
+  if(!name){setLoginErr('Entre ton prénom');return;}
+  if(!pass){setLoginErr('Entre ton mot de passe');return;}
+  setLoginErr('Connexion...');
+  supa('GET','si_players',null,'select=name,char,password_hash&name=eq.'+encodeURIComponent(name)).then(function(rows){
+    if(!rows||rows.length===0){setLoginErr('Compte introuvable — crée-en un !');return;}
+    var user=rows[0];
+    if(user.password_hash!==hashPass(pass)){setLoginErr('Mot de passe incorrect');return;}
+    // Charger progression
+    supa('GET','si_progress',null,'select=*&player_name=eq.'+encodeURIComponent(name)).then(function(prog){
+      var progress=(prog&&prog.length>0)?prog[0]:{};
+      // Mettre à jour le perso si changé
+      supa('PATCH','si_players',{char:window._selectedChar},'name=eq.'+encodeURIComponent(name));
+      setLoginErr('Aloha '+name+' ! 🌺',true);
+      setTimeout(function(){launchGame(name,window._selectedChar,progress);},600);
+    });
+  });
+}
+
+// ── LANCER LE JEU ──
+function launchGame(name,char,progress){
+  window._currentPlayer={name:name,char:char,loggedIn:true,progress:progress};
+  var ls=document.getElementById('login-screen');
+  ls.style.opacity='0';ls.style.transition='opacity .5s';
+  setTimeout(function(){ls.style.display='none';},500);
+  // Changer le modèle joueur
+  var modelEl=document.getElementById('stitch-model');
+  if(char==='angel')modelEl.setAttribute('src','#angelGLB');
+  // HUD nom
+  var pills=document.querySelectorAll('.pill');
+  if(pills.length>0)pills[pills.length-1].textContent='🌺 '+name;
+  // Restaurer progression
+  if(progress.inventaire&&Array.isArray(progress.inventaire)){
+    window.INVENTAIRE=progress.inventaire;
+  }
+  // Démarrer multijoueur Supabase
+  startMultiplayer(name,char);
+}
+
+// ── SAUVEGARDE Supabase ──
+function saveProgress(){
+  if(!window._currentPlayer.loggedIn)return;
+  var name=window._currentPlayer.name;
+  var data={
+    inventaire:window.INVENTAIRE||[],
+    mission_glaces_done:!!(window.MISSION&&window.MISSION.done),
+    mission_vol_done:!!(window.FLIGHT_MISSION&&window.FLIGHT_MISSION.done),
+    gun_collected:!!window._gunCollected,
+    pos_x:Math.round(window.P?window.P.x:0),
+    pos_z:Math.round(window.P?window.P.z:0),
+    updated_at:new Date().toISOString()
+  };
+  // UPSERT progression
+  supa('POST','si_progress',Object.assign({player_name:name},data));
+  // Fallback localStorage
+  try{localStorage.setItem('si_save_'+name,JSON.stringify(data));}catch(e){}
+}
+setInterval(saveProgress,30000);
+window.addEventListener('beforeunload',saveProgress);
+
+// ── MULTIJOUEUR SUPABASE (polling 500ms) ──
+function startMultiplayer(myName,myChar){
+  // Écrire ma présence initiale
+  supa('POST','si_online',{player_name:myName,char:myChar,pos_x:0,pos_y:0,pos_z:0,yaw:0,updated_at:new Date().toISOString()});
+
+  // Boucle multijoueur
+  setInterval(function(){
+    if(!window.P)return;
+    var now=new Date().toISOString();
+    // Mettre à jour ma position
+    supa('PATCH','si_online',{
+      char:myChar,
+      pos_x:parseFloat(P.x.toFixed(1)),
+      pos_y:parseFloat(P.y.toFixed(1)),
+      pos_z:parseFloat(P.z.toFixed(1)),
+      yaw:parseFloat(P.yaw.toFixed(3)),
+      updated_at:now
+    },'player_name=eq.'+encodeURIComponent(myName));
+
+    // Lire les autres joueurs actifs (dernière activité < 5s)
+    var since=new Date(Date.now()-5000).toISOString();
+    supa('GET','si_online',null,'select=*&player_name=neq.'+encodeURIComponent(myName)+'&updated_at=gte.'+since).then(function(rows){
+      if(!rows||!Array.isArray(rows))return;
+      if(rows.length===0){
+        // Plus personne en ligne → cacher badge et perso
+        var badge=document.getElementById('p2-badge');
+        if(badge)badge.style.display='none';
+        if(window._otherPlayerEl)window._otherPlayerEl.setAttribute('visible','false');
+        return;
+      }
+      var other=rows[0]; // max 2 joueurs
+      var badge=document.getElementById('p2-badge');
+      if(badge){
+        badge.style.display='block';
+        badge.textContent=(other.char==='angel'?'💜':'👽')+' '+other.player_name;
+      }
+      if(!window._otherPlayerEl){
+        spawnOtherPlayer({name:other.player_name,char:other.char,x:other.pos_x,y:other.pos_y,z:other.pos_z,yaw:other.yaw});
+      } else {
+        window._otherPlayerEl.setAttribute('visible','true');
+        updateOtherPlayer({x:other.pos_x,y:other.pos_y,z:other.pos_z,yaw:other.yaw});
+      }
+      // Grisage perso pris
+      refreshCharAvailability();
+    });
+  },500);
+
+  // Nettoyer à la fermeture
+  window.addEventListener('beforeunload',function(){
+    navigator.sendBeacon(SUPA_URL+'/rest/v1/si_online?player_name=eq.'+encodeURIComponent(myName),
+      JSON.stringify({updated_at:new Date(0).toISOString()}));
+  });
+}
+
+function spawnOtherPlayer(other){
+  var W2=document.getElementById('world');
+  if(!W2)return;
+  var ent=document.createElement('a-entity');
+  ent.id='other-player';
+  ent.setAttribute('position',other.x+' '+other.y+' '+other.z);
+  // Modèle selon personnage
+  var src=other.char==='angel'?'#angelGLB':'#stitchGLB';
+  var mdl=document.createElement('a-gltf-model');
+  mdl.setAttribute('src',src);
+  mdl.setAttribute('scale','1 1 1');
+  mdl.addEventListener('model-loaded',function(){
+    try{
+      var mesh=mdl.getObject3D('mesh');if(!mesh)return;
+      var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+      var h=box.max.y-box.min.y;
+      if(h>0.01){var sc=1.4/h;mdl.setAttribute('scale',sc+' '+sc+' '+sc);}
+    }catch(e){}
+  });
+  ent.appendChild(mdl);
+  // Étiquette nom
+  var lbl=document.createElement('a-text');
+  lbl.setAttribute('value',other.name);
+  lbl.setAttribute('position','0 2.2 0');
+  lbl.setAttribute('align','center');
+  lbl.setAttribute('color','#ffcc00');
+  lbl.setAttribute('width','4');
+  ent.appendChild(lbl);
+  // Ombre
+  var shad=document.createElement('a-circle');
+  shad.setAttribute('radius','0.5');shad.setAttribute('rotation','-90 0 0');
+  shad.setAttribute('position','0 0.02 0');
+  shad.setAttribute('material','color:#000;transparent:true;opacity:0.3');
+  ent.appendChild(shad);
+  W2.appendChild(ent);
+  window._otherPlayerEl=ent;
+}
+
+function updateOtherPlayer(other){
+  if(!window._otherPlayerEl)return;
+  window._otherPlayerEl.setAttribute('position',other.x.toFixed(2)+' '+other.y.toFixed(2)+' '+other.z.toFixed(2));
+  window._otherPlayerEl.setAttribute('rotation','0 '+(other.yaw*180/Math.PI).toFixed(1)+' 0');
+}
+
 // ── AUDIO ──
 function playSound(id){
   try{
@@ -384,11 +783,9 @@ function initGame(){
 
   // ÎLE PRINCIPALE
   (function(){
-    var GY=0.0,R=80;
-    // Sol sable — base
+    var GY=0.0,R=140;
     mk('cylinder',{radius:R,height:'.4',position:'0 -0.2 0',material:'color:#f5e8b0;roughness:.9',shadow:'receive:true'});
-    // Herbe verte centrale — bien au-dessus du sable pour éviter z-fighting
-    mk('cylinder',{radius:'38',height:'.15',position:'0 0.02 0',material:'color:#5a9a25;roughness:.85',shadow:'receive:true'});
+    mk('cylinder',{radius:'70',height:'.15',position:'0 0.02 0',material:'color:#5a9a25;roughness:.85',shadow:'receive:true'});
     addPlatform(0,0,GY,R-1,R-1);
     islandDefs.push({cx:0,cz:0,y:GY,label:'ILE PRINCIPALE'});
     var mtnEl=document.createElement('a-gltf-model');
@@ -456,35 +853,41 @@ function initGame(){
     // Fleurs et herbes : AUCUNE collision — Stitch passe à travers librement
     for(var vi=0;vi<20;vi++){var va=vi/20*Math.PI*2,vr=4+Math.random()*30;var vx=Math.sin(va)*vr,vz2=Math.cos(va)*vr;makeGiantHibiscus(vx,GY+0.01,vz2);if(vi%2===0)makeBirdOfParadise(vx+1.5,GY+0.01,vz2+1.5);if(vi%3===0)makeFern(vx-1,GY+0.01,vz2-1);if(vi%4===0)makeMonstera(vx+1,GY+0.01,vz2-2);}
     for(var vi=0;vi<20;vi++){var va=Math.random()*Math.PI*2,vr=3+Math.random()*35;makeTallGrass(Math.sin(va)*vr,GY+0.01,Math.cos(va)*vr);}
-    // ── MAISON DE LILO ──
+    // ── MAISON DE LILO ── scale fixe grand + Y sol
     var houseEl=document.createElement('a-gltf-model');
     houseEl.setAttribute('src','#houseGLB');
     houseEl.setAttribute('rotation','0 140 0');
-    houseEl.setAttribute('scale','1 1 1');
+    houseEl.setAttribute('scale','300 300 300');
     houseEl.setAttribute('position','-8 0 -6');
     houseEl.setAttribute('shadow','cast:true');
     houseEl.addEventListener('model-loaded',function(){
       try{
         var mesh=houseEl.getObject3D('mesh');if(!mesh)return;
-        // Mesurer à scale=1 (natif)
+        // Mesurer avec scale=300 déjà appliqué
         var box=new AFRAME.THREE.Box3().setFromObject(mesh);
-        var hN=box.max.y-box.min.y;
-        var wN=Math.max(box.max.x-box.min.x,box.max.z-box.min.z,0.0001);
-        var bigN=Math.max(hN,wN,0.0001);
-        // Viser 12 unités de haut
-        var sc=12/bigN;
-        sc=Math.min(Math.max(sc,0.01),50000);
-        // Y sol = -min.y * sc (déplacer pour que le bas soit à 0)
-        var groundY=Math.max(0,-box.min.y*sc);
-        if(groundY>100)groundY=0; // sécurité valeur aberrante
-        houseEl.setAttribute('scale',sc+' '+sc+' '+sc);
-        houseEl.setAttribute('position','-8 '+groundY.toFixed(2)+' -6');
-        toast('🏠 Maison de Lilo !',2500);
-      }catch(e){houseEl.setAttribute('scale','500 500 500');houseEl.setAttribute('position','-8 0 -6');}
+        var h=box.max.y-box.min.y;
+        // Si la hauteur est raisonnable (5-30 unités) → juste corriger Y
+        if(h>0.5&&h<200){
+          // Corriger Y pour poser au sol
+          var groundY=Math.max(0,-box.min.y);
+          if(groundY<200)houseEl.setAttribute('position','-8 '+groundY.toFixed(1)+' -6');
+        } else if(h>=200){
+          // Trop grand → réduire
+          var sc=300*(14/h);
+          houseEl.setAttribute('scale',sc+' '+sc+' '+sc);
+          houseEl.setAttribute('position','-8 0 -6');
+        } else {
+          // Trop petit → augmenter
+          var sc2=300*(14/Math.max(h,0.01));
+          houseEl.setAttribute('scale',sc2+' '+sc2+' '+sc2);
+          houseEl.setAttribute('position','-8 0 -6');
+        }
+        toast('🏠 Maison de Lilo !',2000);
+      }catch(e){/* garde scale 300 */}
     });
     houseEl.addEventListener('model-error',function(){
-      mk('box',{width:'10',height:'6',depth:'8',position:'-8 3 -6',material:'color:#d4a060;roughness:.85',shadow:'cast:true'});
-      mk('cone',{'radius-bottom':'7','radius-top':'.3',height:'5',position:'-8 8.5 -6',material:'color:#8b3a0a;roughness:.9',shadow:'cast:true'});
+      mk('box',{width:'12',height:'7',depth:'10',position:'-8 3.5 -6',material:'color:#d4a060;roughness:.85',shadow:'cast:true'});
+      mk('cone',{'radius-bottom':'8','radius-top':'.3',height:'5',position:'-8 9 -6',material:'color:#8b3a0a;roughness:.9',shadow:'cast:true'});
     });
     W.appendChild(houseEl);
     setTimeout(function(){
@@ -504,7 +907,6 @@ function initGame(){
         el.setAttribute('shadow','cast:true');
         el.addEventListener('model-loaded',function(){
           try{
-            // Sauvegarder référence si demandé
             if(c.saveRef)window[c.saveRef]=el;
             var mesh=el.getObject3D('mesh');if(!mesh)return;
             var box=new AFRAME.THREE.Box3().setFromObject(mesh);
@@ -512,15 +914,15 @@ function initGame(){
             if(h>0.05){
               var finalSc=(1.4*(c.ratio||1.5))/h;
               el.setAttribute('scale',finalSc+' '+finalSc+' '+finalSc);
-              // Ombre au sol
               var shadow=document.createElement('a-circle');
-              shadow.setAttribute('radius','0.4');
-              shadow.setAttribute('rotation','-90 0 0');
+              shadow.setAttribute('radius','0.4');shadow.setAttribute('rotation','-90 0 0');
               shadow.setAttribute('segments','8');
               shadow.setAttribute('material','color:#000;transparent:true;opacity:0.3');
               var pp=c.pos.split(' ');
               shadow.setAttribute('position',pp[0]+' 0.02 '+pp[2]);
               document.getElementById('world').appendChild(shadow);
+              // ── COLLISION NPC : mur invisible autour du personnage ──
+              addWall(parseFloat(pp[0]),parseFloat(pp[2]),0.6,3,0);
             }
             // Animation GLB intégrée
             var obj=el.getObject3D('mesh');var clips=[],cur=obj;
@@ -546,6 +948,138 @@ function initGame(){
     },4000);
     [[-35,50],[-42,28],[38,45],[44,24],[-18,65],[20,68]].forEach(function(p,i){mk('sphere',{radius:(2+i*.35).toFixed(1),position:p[0]+' 0.6 '+p[1],scale:'1 .5 1',material:'color:#7a6040;roughness:.95',shadow:'cast:true'});});
     [[-28,2],[30,-2],[14,-4],[-18,3]].forEach(function(p,i){mk('sphere',{radius:(1.5+i*.2).toFixed(1),position:p[0]+' -.2 '+p[1],scale:'1 .4 1',material:'color:#6a5030;roughness:.95'});});
+
+    // ── MOBILIER HAWAÏEN — chargement différé pour ne pas bloquer ──
+    setTimeout(function(){
+      var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
+      var W2=document.getElementById('world');
+
+      // Fonction utilitaire : poser un GLB avec auto-scale
+      function placeGLB(src,x,z,targetH,ry,collision){
+        var el=document.createElement('a-gltf-model');
+        el.setAttribute('src',src);
+        el.setAttribute('position',x+' 0 '+z);
+        el.setAttribute('rotation','0 '+(ry||0)+' 0');
+        el.setAttribute('scale','1 1 1');
+        el.setAttribute('shadow','cast:true');
+        el.addEventListener('model-loaded',function(){
+          try{
+            var mesh=el.getObject3D('mesh');if(!mesh)return;
+            var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+            var h=box.max.y-box.min.y;
+            if(h>0.001){
+              var sc=(targetH||3)/h;
+              sc=Math.min(Math.max(sc,0.001),50000);
+              var gy=Math.max(0,-box.min.y*sc);
+              if(gy>300)gy=0;
+              el.setAttribute('scale',sc+' '+sc+' '+sc);
+              el.setAttribute('position',x+' '+gy.toFixed(2)+' '+z);
+            }
+          }catch(e){}
+        });
+        el.addEventListener('model-error',function(){});
+        W2.appendChild(el);
+        if(collision)addWall(x,z,collision,5,0);
+        return el;
+      }
+
+      // ── TIKI BARS (3 versions différentes) ──
+      placeGLB('#tikiBARGLB',   55,  30, 7, -30, 4);   // tiki bar 3 — zone est
+      placeGLB('#tikyBAR2GLB', -55,  40, 7, 150, 4);   // tiki bar 2 — zone ouest
+      placeGLB('#tikyBAR3GLB',  0,   80, 6,  0,  4);   // tiki bar 3 — bord nord
+
+      // ── PHARE ──
+      placeGLB('#lighthouseGLB', 110, -55, 20, 20, 4);
+
+      // ── STATUES TIKI hawaïennes ──
+      placeGLB('#tikistatueGLB',  45,  65, 5,   0, 1.5);
+      placeGLB('#tikistatueGLB', -45,  60, 5, 180, 1.5);
+      placeGLB('#tikistatueGLB',  65, -20, 4,  90, 1.5);
+      placeGLB('#tikistatueGLB', -65, -15, 4, -90, 1.5);
+
+      // ── HAMMOCKS ──
+      placeGLB('#hammockGLB',  25,  42, 2.5,  45, 0);
+      placeGLB('#hammockGLB', -20,  38, 2.5, -30, 0);
+      placeGLB('#hammockGLB',  38, -18, 2.5,  90, 0);
+      placeGLB('#hammockGLB', -35,  70, 2.5,  15, 0);
+
+      // ── PLANCHES DE SURF (3 modèles variés) ──
+      placeGLB('#surfboardGLB',   72, 12, 3,  10, 0);
+      placeGLB('#surfboardGLB',   74, 17, 3, -15, 0);
+      placeGLB('#surfboard2GLB',  76, 10, 3,  25, 0);
+      placeGLB('#surfboard3GLB',  68, 20, 3,  -5, 0);
+      placeGLB('#surfboard2GLB', -72, 25, 3, 170, 0);
+      placeGLB('#surfboard3GLB', -74, 30, 3, 160, 0);
+
+      // ── PARASOLS + CHAISES ──
+      placeGLB('#umbrellaGLB',   85,  25, 4,   0, 0);
+      placeGLB('#umbrellaGLB',  -85,  35, 4,  90, 0);
+      placeGLB('#umbrellaGLB',   60, -50, 4,  45, 0);
+      placeGLB('#umbrellaGLB',  -60, -45, 4, -45, 0);
+      placeGLB('#beachchairGLB', 87,  23, 1.5, 20, 0);
+      placeGLB('#beachchairGLB', 89,  27, 1.5,-10, 0);
+      placeGLB('#beachchairGLB',-83,  33, 1.5, 70, 0);
+      placeGLB('#beachchairGLB', 62, -52, 1.5,110, 0);
+
+      // ── PROPS DE PLAGE (pack 6 objets) ──
+      placeGLB('#beachpropsGLB', 50, -35, 4, 30, 0);
+      placeGLB('#beachpackGLB', -50, -30, 5, -20, 0);
+
+      // ── TORCHES hawaïennes autour du village ──
+      [[28,48],[-28,48],[48,28],[-48,28],[48,-28],[-48,-28],[0,55],[0,-55]].forEach(function(p,i){
+        placeGLB('#torchGLB', p[0], p[1], 2.5, i*45, 0);
+      });
+
+      // ── PALMIERS COCOTIERS supplémentaires ──
+      [[90,45],[-90,40],[80,-35],[-80,-25],[100,5],[-100,15],[70,70],[-70,65]].forEach(function(p,i){
+        placeGLB('#coconutpalmGLB', p[0], p[1], 12, i*40, 0);
+      });
+
+      // ── DOCKS en bois aux bords de l'île ──
+      placeGLB('#dockGLB',  120,   0, 9, -90, 3);
+      placeGLB('#dockGLB', -120,  20, 9,  90, 3);
+      placeGLB('#dockGLB',   0,  130, 9,   0, 3);
+
+    },3000);
+
+    // ── ÎLES SECONDAIRES — décoration ──
+    setTimeout(function(){
+      var W2=document.getElementById('world');
+
+      function placeOnIsle(src,x,z,targetH,ry){
+        var el=document.createElement('a-gltf-model');
+        el.setAttribute('src',src);el.setAttribute('position',x+' 0 '+z);
+        el.setAttribute('rotation','0 '+(ry||0)+' 0');el.setAttribute('scale','1 1 1');
+        el.addEventListener('model-loaded',function(){
+          try{
+            var mesh=el.getObject3D('mesh');if(!mesh)return;
+            var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+            var h=box.max.y-box.min.y;if(h<0.001)return;
+            var sc=(targetH||8)/h;sc=Math.min(sc,50000);
+            el.setAttribute('scale',sc+' '+sc+' '+sc);
+            el.setAttribute('position',x+' '+Math.max(0,-box.min.y*sc).toFixed(1)+' '+z);
+          }catch(e){}
+        });
+        W2.appendChild(el);
+      }
+
+      // ILE VOLCANIQUE (-165,-140) : forteresse sea_keep
+      placeOnIsle('#seakeepGLB', -165, -140, 18, 0);
+
+      // ILE TROPICALE (165,-125) : sea_house
+      placeOnIsle('#seahouseGLB', 165, -125, 12, 30);
+
+      // ILE NORD (0,-220) : tropical island déco
+      placeOnIsle('#tropicalisleGLB', 0, -220, 15, 0);
+
+      // ILE OUEST (-220,50) : tiki bar 2
+      placeOnIsle('#tikyBAR2GLB', -220, 50, 7, 45);
+
+      // ILE EST (220,80) : phare
+      placeOnIsle('#lighthouseGLB', 220, 80, 15, 180);
+
+    },5000);
+
   })();
 
   function makeIsle(CX,CZ,label,col,palmN){
@@ -703,30 +1237,41 @@ function initGame(){
     if(!window._jetpackEl3D){
       var jp=document.createElement('a-entity');
       jp.id='jetpack-visual';
-      // Corps du jetpack — boîte métallique dans le dos
-      var jpb=document.createElement('a-box');
-      jpb.setAttribute('width','0.52');jpb.setAttribute('height','0.72');jpb.setAttribute('depth','0.26');
-      jpb.setAttribute('position','0 0 0');
-      jpb.setAttribute('material','color:#223355;roughness:.2;metalness:.8;emissive:#1144cc;emissiveIntensity:.5');
-      jp.appendChild(jpb);
-      // Détails cristal au centre
-      var jpc=document.createElement('a-sphere');
-      jpc.setAttribute('radius','0.12');jpc.setAttribute('position','0 0.1 0.14');
-      jpc.setAttribute('material','color:#00ffee;emissive:#00ccff;emissiveIntensity:2.0;transparent:true;opacity:.9');
-      jp.appendChild(jpc);
-      // 2 propulseurs orange
-      [-0.16,0.16].forEach(function(ox){
-        var noz=document.createElement('a-cylinder');
-        noz.setAttribute('radius','0.10');noz.setAttribute('height','0.26');
-        noz.setAttribute('position',ox+' -0.38 0');
-        noz.setAttribute('material','color:#ff6600;emissive:#ff4400;emissiveIntensity:2.0');
-        jp.appendChild(noz);
-        // Flamme du propulseur
-        var flame=document.createElement('a-sphere');
-        flame.setAttribute('radius','0.10');flame.setAttribute('position',ox+' -0.56 0');
-        flame.setAttribute('material','color:#ffff00;emissive:#ffcc00;emissiveIntensity:3.0;transparent:true;opacity:.8');
-        jp.appendChild(flame);
+      // Essayer le GLB jetpack d'abord
+      var jpGlb=document.createElement('a-gltf-model');
+      jpGlb.setAttribute('src','#jetpackGLB');
+      jpGlb.setAttribute('scale','1 1 1');
+      jpGlb.addEventListener('model-loaded',function(){
+        try{
+          var mesh=jpGlb.getObject3D('mesh');if(!mesh)return;
+          var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+          var h=Math.max(box.max.y-box.min.y,0.001);
+          var sc=0.7/h;
+          jpGlb.setAttribute('scale',sc+' '+sc+' '+sc);
+          // Centrer à la bonne hauteur dans le dos
+          var offY=-box.min.y*sc;
+          jpGlb.setAttribute('position','0 '+offY.toFixed(2)+' 0');
+        }catch(e){}
       });
+      jpGlb.addEventListener('model-error',function(){
+        // Fallback géométrique si GLB manque
+        var jpb=document.createElement('a-box');
+        jpb.setAttribute('width','0.52');jpb.setAttribute('height','0.72');jpb.setAttribute('depth','0.26');
+        jpb.setAttribute('material','color:#223355;roughness:.2;metalness:.8;emissive:#1144cc;emissiveIntensity:.5');
+        jp.appendChild(jpb);
+        [-0.16,0.16].forEach(function(ox){
+          var noz=document.createElement('a-cylinder');
+          noz.setAttribute('radius','0.10');noz.setAttribute('height','0.26');
+          noz.setAttribute('position',ox+' -0.38 0');
+          noz.setAttribute('material','color:#ff6600;emissive:#ff4400;emissiveIntensity:2.0');
+          jp.appendChild(noz);
+          var flame=document.createElement('a-sphere');
+          flame.setAttribute('radius','0.10');flame.setAttribute('position',ox+' -0.56 0');
+          flame.setAttribute('material','color:#ffff00;emissive:#ffcc00;emissiveIntensity:3.0;transparent:true;opacity:.8');
+          jp.appendChild(flame);
+        });
+      });
+      jp.appendChild(jpGlb);
       jp.setAttribute('position','-0.02 0.52 -0.38');
       jp.setAttribute('rotation','0 180 0');
       var sr=document.getElementById('stitch-root');
@@ -884,7 +1429,7 @@ function initGame(){
     if(P.state==='ground'||P.state==='air'){
       // Pas de gravité si jetpack actif et on vole
       if(window._jetpackEquipped&&P.y>2){
-        P.vy-=8*dt; // gravité réduite avec jetpack
+        P.vy-=4*dt; // gravité très légère avec jetpack (était 8)
       } else {
         P.vy-=22*dt;
       }
@@ -1207,83 +1752,86 @@ function initGame(){
       }
     }
 
-    // VOL JETPACK : maintien de JUMP en l'air = propulsion
+    // VOL JETPACK : maintien de JUMP = montée douce
     if(window._jetpackEquipped&&(P.state==='air'||P.y>1)){
       if(KY['Space']||window._jumpHeld){
-        P.vy=Math.min(P.vy+20*dt,14);
+        // Accélération douce : 5 au lieu de 20, max 5 m/s au lieu de 14
+        P.vy=Math.min(P.vy+5*dt,5);
         P.state='air';
-        // Flammes propulseurs clignotantes (changer opacité)
-        if(window._jetpackEl3D&&_loopFrame%6===0){
-          var flames=window._jetpackEl3D.querySelectorAll('a-sphere[material*="ffff00"]');
-          flames.forEach(function(f){f.setAttribute('scale',(0.8+Math.random()*0.6)+' '+(0.8+Math.random()*0.6)+' 1');});
-        }
+      } else {
+        // Amortissement vertical quand on lâche — descente progressive
+        P.vy=P.vy*0.94;
+        if(Math.abs(P.vy)<0.05)P.vy=0;
       }
     }
 
-    // ── COLLISION VAISSEAU : Stitch ne passe plus à travers ──
+    // ── VAISSEAU : atterrir dessus, entrer automatiquement ──
     if(window._jetpackEquipped&&!window._inShip){
-      // Le vaisseau est à (0, 28, -20) — bloquer si on le touche sans entrer
-      var svx=P.x-0,svz=P.z-(-20),svy=P.y-28;
-      var shipDist=Math.sqrt(svx*svx+svy*svy+svz*svz);
-      // Afficher hint quand proche
+      var svx=P.x-0, svz=P.z-(-20), svy=P.y-28;
+      var shipDist2D=Math.sqrt(svx*svx+svz*svz); // distance horizontale
+      var shipDistFull=Math.sqrt(svx*svx+svy*svy+svz*svz);
+
+      // Hint quand on approche
       var jhud=document.getElementById('jetpack-hud');
-      if(shipDist<8&&window._liloFollowing){
-        if(jhud)jhud.textContent='🚀 Tu es proche ! Entre dans le vaisseau !';
-      }
-      // Bloquer collision (rayon 3.5 autour du vaisseau)
-      if(shipDist<3.5&&!window._inShip){
-        // Repousser Stitch — ne pas laisser traverser
-        var snx=svx/shipDist,sny=svy/shipDist,snz=svz/shipDist;
-        P.x=0+snx*3.6; P.y=28+sny*3.6; P.z=-20+snz*3.6;
-        P.vx=0;P.vy=0;P.vz=0;
-      }
-    }
-
-    // ENTRER DANS LE VAISSEAU (Lilo doit être là)
-    if(window._jetpackEquipped&&window._liloFollowing&&!window._inShip){
-      var sdx=P.x-0,sdz=P.z-(-20),sdy=P.y-28;
-      var distShip=sdx*sdx+sdy*sdy+sdz*sdz;
-      if(distShip<18){ // rayon ~4.2 unités = zone d'entrée
-        window._inShip=true;
-        window._liloFollowing=false;
-        window.FLIGHT_MISSION.done=true;
-        window.FLIGHT_MISSION.active=false;
-        var jhud2=document.getElementById('jetpack-hud');
-        if(jhud2)jhud2.style.display='none';
-        playSound('sndHiii');
-        setTimeout(function(){playSound('sndLaugh');},800);
-        toast('🚀 Stitch ET Lilo dans le vaisseau !',3000);
-
-        // Cacher la collision vaisseau
-        window._inShip=true;
-
-        // Placer Stitch ET Lilo à bord du vaisseau
-        P.x=0; P.y=28.5; P.z=-20;
-        P.vx=0;P.vy=0;P.vz=0;
-        if(window._liloEl3D)window._liloEl3D.setAttribute('position','1.2 28.5 -21');
-
-        // Décollage vaisseau
-        var shipGlb=W.querySelector('a-gltf-model[src="#spaceshipGLB"]');
-        if(shipGlb){
-          shipGlb.setAttribute('animation','property:position;from:0 28 -20;to:0 200 -20;dur:6000;easing:easeInQuad');
-          shipGlb.setAttribute('animation__rs','property:rotation;from:0 30 0;to:0 1440 25;dur:6000;easing:easeInQuad');
+      if(shipDistFull<12){
+        if(window._liloFollowing){
+          if(jhud)jhud.textContent='🚀 Atterris sur le vaisseau !';
+        } else {
+          if(jhud)jhud.textContent='🌺 Va chercher Lilo d\'abord !';
         }
+      }
 
-        // Stitch et Lilo montent ensemble
-        var _liftT=0;
-        var _liftI=setInterval(function(){
-          _liftT+=0.08;
-          P.y=28.5+_liftT*14;
-          P.state='air';
-          P.x=0+Math.sin(_liftT)*0.5;
-          if(window._liloEl3D)window._liloEl3D.setAttribute('position',(1.2+Math.sin(_liftT)*0.3).toFixed(2)+' '+(28.5+_liftT*14).toFixed(2)+' -21');
-          if(_liftT>5){
-            clearInterval(_liftI);
-            playSound('sndWin');
-            setTimeout(function(){playSound('sndOhana');},1000);
-            toast('🌟 ALOHA ! Stitch et Lilo décollent vers l\'aventure !',6000);
+      // Atterrissage : Stitch est au-dessus du vaisseau et descend dessus
+      if(shipDist2D<4 && P.y>=28 && P.y<=34 && P.vy<=0){
+        // Poser Stitch sur le dessus du vaisseau
+        P.y=30;
+        P.vy=0;
+        P.state='ground';
+        P.onGround=true;
+
+        // Si Lilo est là → entrer dans le vaisseau
+        if(window._liloFollowing&&!window._inShip){
+          window._inShip=true;
+          window._liloFollowing=false;
+          window.FLIGHT_MISSION.done=true;
+          window.FLIGHT_MISSION.active=false;
+          if(jhud)jhud.style.display='none';
+          playSound('sndHiii');
+          setTimeout(function(){playSound('sndLaugh');},800);
+          toast('🚀 Stitch ET Lilo dans le vaisseau ! Décollage !',3500);
+
+          P.x=0;P.y=30;P.z=-20;
+          P.vx=0;P.vy=0;P.vz=0;
+          if(window._liloEl3D)window._liloEl3D.setAttribute('position','1.2 30 -21');
+
+          // Décollage du vaisseau
+          var shipGlb=W.querySelector('a-gltf-model[src="#spaceshipGLB"]');
+          if(shipGlb){
+            shipGlb.setAttribute('animation','property:position;from:0 28 -20;to:0 200 -20;dur:6000;easing:easeInQuad');
+            shipGlb.setAttribute('animation__rs','property:rotation;from:0 30 0;to:0 1440 25;dur:6000;easing:easeInQuad');
           }
-        },80);
+          var _liftT=0;
+          var _liftI=setInterval(function(){
+            _liftT+=0.08;
+            P.y=30+_liftT*15;P.state='air';P.x=Math.sin(_liftT)*0.4;
+            if(window._liloEl3D)window._liloEl3D.setAttribute('position',(1.2+Math.sin(_liftT)*0.3).toFixed(2)+' '+(30+_liftT*15).toFixed(2)+' -21');
+            if(_liftT>5){
+              clearInterval(_liftI);
+              playSound('sndWin');
+              setTimeout(function(){playSound('sndOhana');},1000);
+              toast('🌟 ALOHA ! Stitch et Lilo décollent !',6000);
+            }
+          },80);
+        } else if(!window._liloFollowing&&!window._inShip){
+          toast('🌺 Lilo n\'est pas là ! Retourne la chercher !',2500);
+        }
+      }
+
+      // Bloquer passage latéral à travers le vaisseau (pas par le dessus)
+      if(shipDist2D<3.5 && (P.y<28||P.y>34)){
+        var snx=svx/(shipDist2D||1), snz=svz/(shipDist2D||1);
+        P.x=0+snx*3.6; P.z=-20+snz*3.6;
+        P.vx=0;P.vz=0;
       }
     }
     if(window._gunPickable&&!window._gunCollected&&window._gunWorldEl){
