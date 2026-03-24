@@ -171,7 +171,7 @@ device-orientation-permission-ui="enabled:false">
 <a-asset-item id="watergunGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/Water%20gun.glb"           crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="spaceshipGLB" src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/hover_ship.vehicle_from_lilo_and_stitch.%202.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="liloGLB"          src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/smug_lilo.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
-<a-asset-item id="angelGLB"         src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art__lilo_and_stitch__oc_.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
+<a-asset-item id="angelGLB"         src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/angel_fan_art_lilo_and_stitch.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="jetpackGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/call_of_duty_black_ops_2_-_jet_pack.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="tikiBARGLB"       src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/tiki_bar%203.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
 <a-asset-item id="tikyBAR2GLB"      src="https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/tiki_bar%202.glb" crossorigin="anonymous" response-type="arraybuffer"></a-asset-item>
@@ -249,7 +249,7 @@ device-orientation-permission-ui="enabled:false">
 
 <div id="hud">
   <div class="pill" id="zL">🏝 ILE PRINCIPALE</div>
-  <div class="pill">🏝 STITCH ISLAND</div>
+  <div class="pill" id="pill-name">🏝 STITCH ISLAND</div>
 </div>
 <div id="breath-bar">
   <div id="breath-label">🤿 RESPIRATION</div>
@@ -354,29 +354,34 @@ function hashPass(pass){
   return 'h'+Math.abs(h).toString(36);
 }
 
-// ── Previews login : emojis animés CSS, zéro script externe ──
+// ── Previews login : vraies images JPEG des personnages ──
 window.addEventListener('load',function(){
-  // Dessiner emojis sur canvas simplement
-  [['canvas-stitch','#0d1f3c','👽'],['canvas-angel','#1a0a2a','💜']].forEach(function(c){
-    var cv=document.getElementById(c[0]);
+  var BASE='https://raw.githubusercontent.com/hoobasurf/Fantasyworld/main/assets/';
+  var previews=[
+    {id:'canvas-stitch', img:BASE+'IMG_3054.jpeg', emoji:'👽', bg:'#0d1f3c'},
+    {id:'canvas-angel',  img:BASE+'IMG_3055.jpeg', emoji:'💜', bg:'#1a0a2a'}
+  ];
+  previews.forEach(function(cfg){
+    var cv=document.getElementById(cfg.id);
     if(!cv)return;
     var ctx=cv.getContext('2d');
-    // Fond dégradé
-    var grad=ctx.createRadialGradient(55,55,10,55,55,60);
-    grad.addColorStop(0,c[0]==='canvas-stitch'?'#1a3a6a':'#2a0a4a');
-    grad.addColorStop(1,c[0]==='canvas-stitch'?'#0a1a3a':'#1a0a2a');
-    ctx.fillStyle=grad;ctx.fillRect(0,0,110,110);
-    // Étoiles
-    ctx.fillStyle='rgba(255,255,255,0.6)';
-    [[15,20],[90,15],[30,85],[85,75],[50,10],[70,90],[10,50],[100,50]].forEach(function(s){
-      ctx.fillRect(s[0],s[1],1.5,1.5);
-    });
-    // Emoji grand
-    ctx.font='58px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(c[2],55,52);
-    // Nom en dessous
-    ctx.font='bold 13px Georgia,serif';ctx.fillStyle='rgba(255,255,255,0.85)';
-    ctx.fillText(c[0]==='canvas-stitch'?'STITCH':'ANGEL',55,95);
+    var image=new Image();
+    image.crossOrigin='anonymous';
+    image.onload=function(){
+      // Dessiner l'image en rognant en carré centré
+      var size=110;
+      var sx=0,sy=0,sw=image.width,sh=image.height;
+      if(sw>sh){sx=(sw-sh)/2;sw=sh;}
+      else{sy=(sh-sw)/2;sh=sw;}
+      ctx.drawImage(image,sx,sy,sw,sh,0,0,size,size);
+    };
+    image.onerror=function(){
+      // Fallback emoji si image inaccessible
+      ctx.fillStyle=cfg.bg;ctx.fillRect(0,0,110,110);
+      ctx.font='58px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(cfg.emoji,55,55);
+    };
+    image.src=cfg.img;
   });
   refreshCharAvailability();
   setInterval(refreshCharAvailability,2000);
@@ -488,17 +493,41 @@ function launchGame(name,char,progress){
   var ls=document.getElementById('login-screen');
   ls.style.opacity='0';ls.style.transition='opacity .5s';
   setTimeout(function(){ls.style.display='none';},500);
-  // Changer le modèle joueur
+
+  // HUD nom joueur
+  var pill=document.getElementById('pill-name');
+  if(pill)pill.textContent=(char==='angel'?'💜':'👽')+' '+name;
+
+  // Changer modèle si Angel
   var modelEl=document.getElementById('stitch-model');
-  if(char==='angel')modelEl.setAttribute('src','#angelGLB');
-  // HUD nom
-  var pills=document.querySelectorAll('.pill');
-  if(pills.length>0)pills[pills.length-1].textContent='🌺 '+name;
+  if(char==='angel'){
+    modelEl.setAttribute('src','#angelGLB');
+    // Si Angel GLB échoue → rester sur Stitch mais coloré en rose
+    modelEl.addEventListener('model-error',function(){
+      modelEl.setAttribute('src','#stitchGLB');
+      toast('💜 Angel utilise le modèle Stitch !',2000);
+    });
+    // Auto-scale Angel comme Stitch
+    modelEl.addEventListener('model-loaded',function _angelScale(){
+      modelEl.removeEventListener('model-loaded',_angelScale);
+      try{
+        var mesh=modelEl.getObject3D('mesh');if(!mesh)return;
+        var box=new AFRAME.THREE.Box3().setFromObject(mesh);
+        var h=box.max.y-box.min.y;
+        if(h>0.05){
+          var sc=1.4/h;
+          modelEl.setAttribute('scale',sc+' '+sc+' '+sc);
+          var b2=new AFRAME.THREE.Box3().setFromObject(mesh);
+          window.P.yOff=Math.abs(b2.min.y)+0.06;
+        }
+      }catch(e){}
+    });
+  }
+
   // Restaurer progression
   if(progress.inventaire&&Array.isArray(progress.inventaire)){
     window.INVENTAIRE=progress.inventaire;
   }
-  // Démarrer multijoueur Supabase
   startMultiplayer(name,char);
 }
 
