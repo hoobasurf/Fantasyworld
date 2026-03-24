@@ -418,6 +418,7 @@ var _gameStarted=false;
 function launchGame(name,char,progress){
   window._currentPlayer={name:name,char:char,loggedIn:true,progress:progress};
   _gameStarted=true;
+  hideLoadingScreen();  // ← AJOUTER CETTE LIGNE
   var ls=document.getElementById('login-screen');
   ls.style.cssText='display:none!important;opacity:0!important;pointer-events:none!important;';
   var loadEl=document.getElementById('loading-screen');
@@ -530,11 +531,12 @@ var _initDone=false,_loadPct=5,_loadInterval=null,_checkCount=0;
   var scn=document.querySelector('a-scene');
   if(!scn){setTimeout(waitForAframe,100);return;}
   function launch(){
-    if(_initDone)return;_initDone=true;
-    if(_loadInterval){clearInterval(_loadInterval);_loadInterval=null;}
-    setLoadMsg('Pret ! Aloha 🌺',100);hideLoadingScreen();
-    try{initGame();}catch(e){console.error('initGame error:',e);}
-  }
+  if(_initDone)return;_initDone=true;
+  if(_loadInterval){clearInterval(_loadInterval);_loadInterval=null;}
+  setLoadMsg('Pret ! Aloha 🌺',100);
+  // NE PAS cacher le loading ici - laisser le login-screen prendre le relais
+  try{initGame();}catch(e){console.error('initGame error:',e);}
+}
   function checkReady(){
     if(_initDone)return;_checkCount++;
     if(scn.hasLoaded){setTimeout(launch,100);return;}
