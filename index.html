@@ -537,6 +537,7 @@ var _initDone=false,_loadPct=5,_loadInterval=null,_checkCount=0;
   // NE PAS cacher le loading ici - laisser le login-screen prendre le relais
   try{initGame();}catch(e){console.error('initGame error:',e);}
 }
+
   function checkReady(){
     if(_initDone)return;_checkCount++;
     if(scn.hasLoaded){setTimeout(launch,100);return;}
@@ -831,10 +832,23 @@ function initGame(){
   var angelModelEl=document.getElementById('angel-model');
   if(angelModelEl){
     angelModelEl.addEventListener('model-loaded',function(){
-      var mesh=angelModelEl.getObject3D('mesh');if(!mesh)return;
-      var box=new THREE.Box3().setFromObject(mesh);var h=box.max.y-box.min.y;
-      if(h>.05){var sc=1.4/h;angelModelEl.setAttribute('scale',sc+' '+sc+' '+sc);}
-      if(window._playerChar==='angel'){angelModelEl.setAttribute('visible','true');stitchModel.setAttribute('visible','false');setTimeout(function(){var b2=new THREE.Box3().setFromObject(angelModelEl.getObject3D('mesh')||mesh);P.yOff=Math.abs(b2.min.y)+.06;var gy0=getGroundY(P.x,P.z);if(gy0!==null)P.y=gy0+P.yOff;},300);}
+  var mesh=angelModelEl.getObject3D('mesh');if(!mesh)return;
+  var box=new THREE.Box3().setFromObject(mesh);var h=box.max.y-box.min.y;
+  var sc=h>.05?1.4/h:1;
+  angelModelEl.setAttribute('scale',sc+' '+sc+' '+sc);
+  setTimeout(function(){
+    if(window._playerChar==='angel'){
+      angelModelEl.setAttribute('visible','true');
+      stitchModel.setAttribute('visible','false');
+      var mesh2=angelModelEl.getObject3D('mesh');
+      if(mesh2){var b2=new THREE.Box3().setFromObject(mesh2);P.yOff=Math.max(0.5,Math.abs(b2.min.y*sc))+.06;}
+      else{P.yOff=0.7;}
+      var gy0=getGroundY(P.x,P.z);
+      P.y=(gy0!==null?gy0:0)+P.yOff;
+    }else{angelModelEl.setAttribute('visible','false');}
+  },500);
+});
+
       else{angelModelEl.setAttribute('visible','false');}
     });
   }
